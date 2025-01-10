@@ -12,26 +12,33 @@ process save_params_to_file {
 
     script:
 
-    //Channel
-        //.fromPath("${params.studies_dir}/*", type: 'dir')
-      ////  .filter { it.isDirectory() } // Exclude files, include only directories
-        //.set { study_paths }
 
-    //// Get query names from file (including region)
-    //study_paths = study_paths.map{ study_path -> 
-        //study_path.toString()
-        //[study_path]
-    //}.toList()
-    //.set { all_studies }
-    // all_studies = all_studies.flatten()
     """
     echo "organism: ${params.organism}" > params.txt
     echo "census_version: ${params.census_version}" >> params.txt 
     echo "outdir: ${params.outdir}" >> params.txt
     echo "studies_dir: ${params.studies_dir}" >> params.txt
     echo "subsample ref: ${params.subsample_ref}" >> params.txt
+    echo "ref collections: ${params.ref_collections}" >> params.txt
     """
 }
+
+// process getStudies {
+
+    // input:
+        // val experiment
+
+    // output:
+        // path "/space/scratch/gemma-single-cell-data-ensembl-id/${experiment}"
+
+    // script:
+
+    // """
+    // gemma-cli-sc getSingleCellDataMatrix -e ${experiment} \\
+    // --format mex --scale-type count --use-ensembl-ids \\
+    // -o /space/scratch/gemma-single-cell-data-ensembl-id/${experiment}
+    // """
+// }
 
 
 process runSetup {
