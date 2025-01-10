@@ -53,7 +53,8 @@ def main():
   
   for sample_id in sample_ids:
     query_path = os.path.join(study_path, sample_id)
-    all_sample_ids[sample_id] = sc.read_10x_mtx(query_path)
+    new_sample_id = sample_id.split("_")[0]
+    all_sample_ids[new_sample_id] = sc.read_10x_mtx(query_path)
     
   #for sample_id_name, sample_id in all_sample_ids.items():
     #  sc.pp.calculate_qc_metrics(sample_id. qc_vars=["mt", "ribo", "hb"], )

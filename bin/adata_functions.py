@@ -66,7 +66,7 @@ def rename_cells(obs, organism):
                 "cerebral cortex endothelial cell": "endothelial cell"
             })
 
-        obs["cell_type_ontology_term_id"] = obs["cell_type_ontology_term_id"].map(mapping)
+        obs["cell_type_ontology_term_id"] = obs["cell_type"].map(mapping)
     return obs
 
 # Subsample x cells from each cell type if there are n>x cells present
