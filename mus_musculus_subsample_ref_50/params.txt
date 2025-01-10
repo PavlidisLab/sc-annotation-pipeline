@@ -1,0 +1,5 @@
+organism: mus_musculus
+census_version: 2024-07-01
+outdir: /space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mus_musculus_subsample_ref_50
+studies_dir: /space/scratch/gemma-single-cell-data-ensembl-id/
+subsample ref: 50
