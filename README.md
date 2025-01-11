@@ -81,7 +81,14 @@ To resume after an error, run:
 nextflow run main.nf -profile conda -resume
 ```
 
-Please note that to change the organism (must be one of `homo_sapiens` or `mus_musculus`), you should also change `--ref_collections` to `Transcriptomic cytoarchitecture reveals principles of human neocortex organization SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas` (or one of the two). You can also change these parameters directly in `nextflow.config`:
+Please note that to change the organism (must be one of `homo_sapiens` or `mus_musculus`), you should also change `--ref_collections` to:
+
+```
+"Transcriptomic cytoarchitecture reveals principles of human neocortex organization" \
+"SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"
+```
+
+(or one of the two). You can also change these parameters directly in `nextflow.config`, e.g.:
 
 ```
 params.organism = "homo_sapiens"
