@@ -39,4 +39,42 @@ This repository contains a Nextflow pipeline designed to process single-cell dat
 1. Clone this repository:
    ```bash
    git clone https://github.com/rachadele/cell_annotation_cortex.git
+
+## Usage 
+
+The pipeline can be run with the following options:
+
+```
+nextflow run cell_annotation_cortex.nf \
+  --organism <organism_name> \
+  --census_version <version> \
+  --outdir <output_directory> \
+  --studies_dir <path_to_studies> \
+  --subsample_ref <subsample_per_cell_type> \
+  --ref_collections <list_of_collections> \
+  --seed <random_seed> \
+  --cutoff <classification_probability_cutoff>
+```
+
+Default parameters are as follows:
+
+```
+nextflow run main.nf \
+  --organism mus_musculus \
+  --census_version 2024-07-01 \
+  --outdir <organism>_subsample_ref_<subsample_ref> \
+  --studies_dir /space/scratch/gemma-single-cell-data-ensembl-id/ \
+  --subsample_ref 50 \
+  --ref_collections ["A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation"] \
+  --seed 42 \
+  --cutoff 0
+```
+
+Please note that to change the organism (must be one of `homo_sapiens` or `mus_musculus`), you should also change `--ref_collections` to `Transcriptomic cytoarchitecture reveals principles of human neocortex organization SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas` (or one of the two). You can also change these parameters directly in `nextflow.config`:
+
+```
+params.organism = "homo_sapiens"
+params.ref_collections = ["Transcriptomic cytoarchitecture reveals principles of human neocortex organization", "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"]
+```
+
    
