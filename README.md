@@ -81,20 +81,6 @@ To resume from the last completed step after an error, run:
 nextflow run main.nf -profile conda -resume
 ```
 
-Please note that to change the organism (must be one of `homo_sapiens` or `mus_musculus`), you should also change `--ref_collections` to:
-
-```
-"Transcriptomic cytoarchitecture reveals principles of human neocortex organization" \
-"SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"
-```
-
-(or one of the two). You can also change these parameters directly in `nextflow.config`, e.g.:
-
-```
-params.organism = "homo_sapiens"
-params.ref_collections = ["Transcriptomic cytoarchitecture reveals principles of human neocortex organization", "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"]
-```
-
 ## Input
 
 Input single-cell data should be dumped from Gemma in MEX format with ENSEMBL ids like so (replacing `GSE198014` with your desired experiment ID):
@@ -122,7 +108,21 @@ As of right now, experimental factors such as tissue or batch are not incorporat
 | `seed`             | Random seed for reproducibility of subsampling and processing.                                
 | `cutoff`           | Minimum confidence score for assigning a cell type during classification (default = 0).                     
 
-See [Usage](#usage) for for default parameters.
+See [Usage](#usage) for for default parameters. 
+
+Please note that to change the organism to `homo_sapiens`, you should also change `--ref_collections` to:
+
+```
+"Transcriptomic cytoarchitecture reveals principles of human neocortex organization" \
+"SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"
+```
+
+(or one of the two). You can also change these parameters directly in `nextflow.config`, e.g.:
+
+```
+params.organism = "homo_sapiens"
+params.ref_collections = ["Transcriptomic cytoarchitecture reveals principles of human neocortex organization", "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"]
+```
 
 ## Output
 
