@@ -101,7 +101,7 @@ params.ref_collections = ["Transcriptomic cytoarchitecture reveals principles of
 | `seed`             | Random seed for reproducibility of subsampling and processing.                                
 | `cutoff`           | Minimum confidence score for assigning a cell type during classification (default = 0).                     
 
-See <Usage> for for default parameters.
+See [Usage](#usage) for for default parameters.
 
 ## Output
 
