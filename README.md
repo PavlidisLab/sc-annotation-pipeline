@@ -7,7 +7,6 @@ This repository contains a Nextflow pipeline designed to process single-cell dat
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Parameters](#parameters)
 - [Input](#input)
 - [Output](#output)
 - [Workflow Description](#workflow_description)
