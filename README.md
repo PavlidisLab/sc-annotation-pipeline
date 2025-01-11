@@ -107,10 +107,12 @@ See <Usage> for for default parameters.
 
 For each run, an output directory with the following structure will be written:
 
+```
 ├── mus_musculus_subsample_ref_50
 │   ├── GSE198014
 │   │   └── GSE198014_predicted_celltype.tsv
 │   └── params.txt
+```
 
 one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE198014)
 
