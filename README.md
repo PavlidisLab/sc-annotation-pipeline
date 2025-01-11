@@ -73,7 +73,7 @@ To run with defaults, simply run:
 nextflow run main.nf -profile conda
 ```
 
-NExtflow parameters begin with `-` (e.g. `-profile`; pipeline-specific parameters can be changed on the CLI with `--`).
+Nextflow parameters begin with `-` (e.g. `-profile`; pipeline-specific parameters can be changed on the CLI with `--`).
 
 To resume from the last completed step after an error, run:
 
