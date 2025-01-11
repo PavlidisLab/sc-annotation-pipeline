@@ -1,6 +1,6 @@
 # Nextflow Pipeline for Single-Cell Data Processing and Classification
 
-This repository contains a Nextflow pipeline designed to process single-cell data, generate reference and query datasets, and classify cell types using an SCVI model. 
+This repository contains a Nextflow pipeline designed to automatically annotate cell types from single-cell data loaded into the Gemma database using a random forest classifier trained on `scvi` embeddings from the CellxGene data corpus [1][2][3].
 
 ## Table of Contents
 - [Features](#features)
@@ -143,3 +143,8 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 
 
    
+## References
+
+1. Lim N., et al., Curation of over 10,000 transcriptomic studies to enable data reuse. Database, 2021. 
+2. CZI Single-Cell Biology Program, Shibla Abdulla, Brian Aevermann, Pedro Assis, Seve Badajoz, Sidney M. Bell, Emanuele Bezzi, et al. “CZ CELL×GENE Discover: A Single-Cell Data Platform for Scalable Exploration, Analysis and Modeling of Aggregated Data,” November 2, 2023. https://doi.org/10.1101/2023.10.30.563174.
+3. Lopez, Romain, Jeffrey Regier, Michael B. Cole, Michael I. Jordan, and Nir Yosef. “Deep Generative Modeling for Single-Cell Transcriptomics.” Nature Methods 15, no. 12 (December 2018): 1053–58. https://doi.org/10.1038/s41592-018-0229-2.
