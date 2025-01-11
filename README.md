@@ -25,7 +25,7 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 
 ## Requirements
 
-- **Nextflow** (>= 20.10.0)
+- **Nextflow** (=24.10.0)
 - **Conda** (for environment management)
 - My own conda environments are currently hard-coded into the pipeline (I will set up singularity environments in the future)
 ---
