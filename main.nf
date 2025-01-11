@@ -135,7 +135,6 @@ workflow {
 
     Channel
         .fromPath("${params.studies_dir}/*", type: 'dir')
-      //  .filter { it.isDirectory() } // Exclude files, include only directories
         .set { study_paths }
 
     // Get query names from file (including region)

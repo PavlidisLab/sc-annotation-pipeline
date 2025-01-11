@@ -1,0 +1,42 @@
+# Nextflow Pipeline for Single-Cell Data Processing and Classification
+
+This repository contains a Nextflow pipeline designed to process single-cell data, generate reference and query datasets, and classify cell types using an SCVI model. 
+
+## Table of Contents
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Parameters](#parameters)
+- [Processes](#processes)
+- [Workflow Overview](#workflow-overview)
+- [Outputs](#outputs)
+- [License](#license)
+
+---
+
+## Features
+
+- Downloads SCVI models based on organism and census version.
+- Processes query datasets using SCVI models.
+- Pulls reference datasets from CellxGene census data given an oranism and colletion name.
+- Performs cell type classification of query datasets using a random forest model.
+- Saves runtime parameters and outputs in a specified directory.
+
+---
+
+## Requirements
+
+- **Nextflow** (>= 20.10.0)
+- **Conda** (for environment management)
+- My own conda environments are currently hard-coded into the pipeline (I will set up singularity environments in the future)
+---
+
+## Installation
+
+## Installation
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/rachadele/cell_annotation_cortex.git
+   

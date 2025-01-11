@@ -572,12 +572,12 @@ def check_column_ties(probabilities, class_labels):
     
     return tie_rows, tie_columns
 
-def classify_cells(query, ref_keys, cutoff, probabilities, tree):
+def classify_cells(query, cutoff, probabilities):
     class_metrics = {}
     
     # Only use the first ref_key
-    key = ref_keys[0]
-    class_metrics[key] = {}
+    key = "cell_type" 
+    #class_metrics[key] = {}
 
     # Extract the class labels and probabilities (DataFrame structure)
     class_labels = probabilities.columns.values  # Class labels are the column names
@@ -600,11 +600,11 @@ def classify_cells(query, ref_keys, cutoff, probabilities, tree):
         predicted_classes = class_labels[np.argmax(class_probs, axis=1)]
     
     # Store predictions and confidence in `query`
-    query["predicted_" + key] = predicted_classes
-    query["confidence"] = np.max(class_probs, axis=1)  # Store max probability as confidence
+    query.obs[key] = predicted_classes
+    #query["confidence"] = np.max(class_probs, axis=1)  # Store max probability as confidence
     
     # Aggregate predictions (you can keep this logic as needed)
-    query = aggregate_preds(query, ref_keys, tree)
+    #query = aggregate_preds(query, ref_keys, tree)
     
     return query
 
