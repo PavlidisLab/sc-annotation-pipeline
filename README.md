@@ -83,10 +83,14 @@ nextflow run main.nf -profile conda -resume
 
 ## Input
 
-Input single-cell data should be dumped from Gemma in MEX format with ENSEMBL ids like so (replacing `GSE198014` with your desired experiment ID):
+Input single-cell data should be dumped from Gemma in MEX format with ENSEMBL ids like so: 
 
 ```
-gemma-cli-sc getSingleCellDataMatrix -e GSE198014 --format mex --scale-type count --use-ensembl-ids -o /space/scratch/gemma-single-cell-data-ensembl-id/GSE198014
+gemma-cli-sc getSingleCellDataMatrix -e <experiment_id> \
+          --format mex \
+          --scale-type count 
+          --use-ensembl-ids \
+          -o /space/scratch/gemma-single-cell-data-ensembl-id/<experiment_id>
 ```
 
 I am working on incorporating this into the pipeline. Do this as many times as you'd like for single-cell datasets, and collect them into a parent directory (e.g. `/space/scratch/gemma-single-cell-data-ensembl-id/`). Be sure to check which organism the data comes from. 
