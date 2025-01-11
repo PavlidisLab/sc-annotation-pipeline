@@ -73,7 +73,9 @@ To run with defaults, simply run:
 nextflow run main.nf -profile conda
 ```
 
-To resume after an error, run:
+NExtflow parameters begin with `-` (e.g. `-profile`; pipeline-specific parameters can be changed on the CLI with `--`).
+
+To resume from the last completed step after an error, run:
 
 ```
 nextflow run main.nf -profile conda -resume
@@ -95,14 +97,28 @@ params.ref_collections = ["Transcriptomic cytoarchitecture reveals principles of
 
 ## Input
 
+Input single-cell data should be dumped from Gemma in MEX format with ENSEMBL ids like so (replacing `GSE198014` with your desired experiment ID):
+
+```
+gemma-cli-sc getSingleCellDataMatrix -e GSE198014 --format mex --scale-type count --use-ensembl-ids -o /space/scratch/gemma-single-cell-data-ensembl-id/GSE198014
+```
+
+I am working on incorporating this into the pipeline. Do this as many times as you'd like for single-cell datasets, and collect them into a parent directory (e.g. `/space/scratch/gemma-single-cell-data-ensembl-id/`). Be sure to check which organism the data comes from. 
+
+As of right now, experimental factors such as tissue or batch are not incorporated into the label transfer. The sample accession (i.e. each set of .mex files) is taken as the `batch_key` for the `scvi` forward pass.
+
+
+### Parameters
+
+
 | Parameter          | Description                                                                                  
 |--------------------|----------------------------------------------------------------------------------------------
-| `organism`         | The species being analyzed (one of , `homo sapiens`, `mus musculus`).                                         
+| `organism`         | The species being analyzed (one of `homo_sapiens`, `mus_musculus`).                                         
 | `census_version`   | The version of the single-cell census to use (do not change from default)                                                
 | `outdir`           | Directory where output files will be saved.                                                  
 | `studies_dir`      | Path to the directory containing the input single-cell query datasets.                       
 | `subsample_ref`    | Number of cells per cell type to subsample in reference.                                     
-| `ref_collections`  | A space-separated list of reference collection names to use for annotation.                  
+| `ref_collections`  | A space-separated list of quoted reference collection names to use for annotation.                  
 | `seed`             | Random seed for reproducibility of subsampling and processing.                                
 | `cutoff`           | Minimum confidence score for assigning a cell type during classification (default = 0).                     
 
