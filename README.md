@@ -32,7 +32,6 @@ This repository contains a Nextflow pipeline designed to process single-cell dat
 - My own conda environments are currently hard-coded into the pipeline (I will set up singularity environments in the future)
 ---
 
-## Installation
 
 ## Installation
 
@@ -45,7 +44,7 @@ This repository contains a Nextflow pipeline designed to process single-cell dat
 The pipeline can be run with the following options:
 
 ```
-nextflow run cell_annotation_cortex.nf \
+nextflow run main.nf -profile conda \
   --organism <organism_name> \
   --census_version <version> \
   --outdir <output_directory> \
@@ -59,7 +58,7 @@ nextflow run cell_annotation_cortex.nf \
 Default parameters are as follows:
 
 ```
-nextflow run main.nf \
+nextflow run main.nf -profile conda \
   --organism mus_musculus \
   --census_version 2024-07-01 \
   --outdir <organism>_subsample_ref_<subsample_ref> \
@@ -70,11 +69,55 @@ nextflow run main.nf \
   --cutoff 0
 ```
 
+To run with defaults, simply run:
+
+```
+nextflow run main.nf -profile conda
+```
+
+To resume after an error, run:
+
+```
+nextflow run main.nf -profile conda -resume
+```
+
 Please note that to change the organism (must be one of `homo_sapiens` or `mus_musculus`), you should also change `--ref_collections` to `Transcriptomic cytoarchitecture reveals principles of human neocortex organization SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas` (or one of the two). You can also change these parameters directly in `nextflow.config`:
 
 ```
 params.organism = "homo_sapiens"
 params.ref_collections = ["Transcriptomic cytoarchitecture reveals principles of human neocortex organization", "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"]
 ```
+
+## Input
+
+| Parameter          | Description                                                                                  
+|--------------------|----------------------------------------------------------------------------------------------
+| `organism`         | The species being analyzed (one of , `homo sapiens`, `mus musculus`).                                         
+| `census_version`   | The version of the single-cell census to use (do not change from default)                                                
+| `outdir`           | Directory where output files will be saved.                                                  
+| `studies_dir`      | Path to the directory containing the input single-cell query datasets.                       
+| `subsample_ref`    | Number of cells per cell type to subsample in reference.                                     
+| `ref_collections`  | A space-separated list of reference collection names to use for annotation.                  
+| `seed`             | Random seed for reproducibility of subsampling and processing.                                
+| `cutoff`           | Minimum confidence score for assigning a cell type during classification (default = 0).                     
+
+See <Usage> for for default parameters.
+
+## Output
+
+For each run, an output directory with the following structure will be written:
+
+├── mus_musculus_subsample_ref_50
+│   ├── GSE198014
+│   │   └── GSE198014_predicted_celltype.tsv
+│   └── params.txt
+
+one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE198014)
+
+## Workflow Description
+
+![dag.png]
+
+
 
    
