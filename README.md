@@ -118,8 +118,7 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 
 ## Workflow Description
 
-![dag.png]
-
+![Workflow DAG](./dag.png)
 
 
    
