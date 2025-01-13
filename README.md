@@ -133,13 +133,18 @@ params.ref_collections = ["Transcriptomic cytoarchitecture reveals principles of
 For each run, an output directory with the following structure will be written:
 
 ```
-├── mus_musculus_subsample_ref_50
-│   ├── GSE198014
-│   │   └── GSE198014_predicted_celltype.tsv
-│   └── params.txt
+.
+└── mus_musculus_subsample_ref_50
+    ├── GSE152715
+    │   └── GSE152715_predicted_celltype.tsv
+    ├── GSE198014
+    │   └── GSE198014_predicted_celltype.tsv
+    ├── params.txt
+    └── refs
+        └── cortex_and_hippocampus_-_10x_3_v3_and_Smart-seq_V4.h5ad
 ```
 
-one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE198014)
+one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE198014). Likewise, one reference dataset is used for each batch of automatic annotation (stored in `refs/`).
 
 ## Workflow Description
 
