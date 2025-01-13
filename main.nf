@@ -23,23 +23,49 @@ process save_params_to_file {
     """
 }
 
+// process parseStudies {
+    // input:
+        // path study_meta_file
+    // output:
+        // tuple val(study_name), val(mapped_organism), val(study_factors)
+
+    // script:
+    // """
+    // cut -f1,2,3 $study_meta_file | while IFS=$'\\t' read -r study_name organism study_factors; do
+        // # Map organism names
+        // if [[ "$organism" == "human" ]]; then
+            // mapped_organism="homo_sapiens"
+        // elif [[ "$organism" == "mouse" ]]; then
+            // mapped_organism="mus_musculus"
+        // else
+            // mapped_organism="unknown"
+        // fi
+        
+        // # Output the tuple
+        // echo "$study_name $mapped_organism $study_factors"
+    // done
+    // """
+// }
+
+
 // process getStudies {
 
     // input:
-        // val experiment
+        // val study_name, val organism, val study_factors
 
     // output:
-        // path "/space/scratch/gemma-single-cell-data-ensembl-id/${experiment}"
+        // 
+        // path("/space/scratch/gemma-single-cell-data-ensembl-id/${organism}/${experiment}")
+        //
 
     // script:
 
     // """
-    // gemma-cli-sc getSingleCellDataMatrix -e ${experiment} \\
+    // gemma-cli-sc getSingleCellDataMatrix -e ${study_name} \\
     // --format mex --scale-type count --use-ensembl-ids \\
-    // -o /space/scratch/gemma-single-cell-data-ensembl-id/${experiment}
+    // -o /space/scratch/gemma-single-cell-data-ensembl-id/${organism}/${study_name}
     // """
 // }
-
 
 process runSetup {
     conda '/home/rschwartz/anaconda3/envs/scanpyenv'
@@ -83,6 +109,11 @@ python $projectDir/bin/process_query.py \\
 
 process getCensusAdata {
     conda '/home/rschwartz/anaconda3/envs/scanpyenv'
+
+    publishDir (
+       path: "${params.outdir}",
+        mode: "copy"
+    )
 
     input:
     val organism
@@ -130,6 +161,20 @@ process rfClassify{
 
 }
 
+// process loadResults {
+    // input:
+        // path "*.tsv"
+        // val experiment
+        // val target_platform
+
+    //output :
+        // path message.txt
+
+    // script:
+    // """
+    // gemma-cli loadSingleCellData -e <experiment ID> -p <target platform>
+    // """
+
 // Workflow definition
 workflow {
 
@@ -143,6 +188,18 @@ workflow {
         [study_path, study_name]
     }
 
+    // study_meta = parseStudies(params.study_meta_file)
+
+    // study_channel = getStudies(study_meta)
+
+    // combined_study_channel = study_channel.map{ study_path -> 
+        // def study_name = study_path.toString().split('/')[-1]
+        // def organism = study_path.toString().split('/')[-2]
+        // study_factors = study_meta.find{ it[0] == study_name }[2]
+        // [study_path, study_name, organism, study_factors]
+    // }
+
+
     // Call the setup process to download the model
     model_path = runSetup(params.organism, params.census_version)
 
@@ -151,7 +208,9 @@ workflow {
      
     // Get collection names to pull from census
     ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ')
-
+    // assay = params.assay.collect { "\"${it}\"" }.join(' ')
+    // tissue = params.tissue.collect { "\"${it}\"" }.join(' ')
+    
     // Get reference data and save to files
     getCensusAdata(params.organism, params.census_version, params.subsample_ref, ref_collections)
     getCensusAdata.out.ref_paths_adata.flatten()

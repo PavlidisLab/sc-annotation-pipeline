@@ -7,7 +7,7 @@ __pycache__/
 work/
 *h5ad
 *mex
-
+results/
 
 
 # C extensions

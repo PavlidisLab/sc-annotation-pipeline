@@ -37,9 +37,9 @@ def parse_arguments():
     parser.add_argument('--census_version', type=str, default='2024-07-01', help='Census version (e.g., 2024-07-01)')
     parser.add_argument('--ref_collections', type=str, nargs = '+', default = ["A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation"]) 
     parser.add_argument('--seed', type=int, default=42)
-    parser.add_argument('--assay', type=str, help="Must be one of '10x 3' v2', 'Smart-seq v4'", default=None)
+    parser.add_argument('--assay', type=str, nargs = "+", help="Assays to use from reference", default=None)
+    parser.add_argument('--tissue', type=str, nargs="+", default = None, help = "Cortex region to pull from (default: all)")
     parser.add_argument('--subsample', type=str, help="Number of cells per cell type to subsample from reference", default=500)
-    parser.add_argument('--tissue', type=str, default = None, help = "Cortex region to pull from (default: all)")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args

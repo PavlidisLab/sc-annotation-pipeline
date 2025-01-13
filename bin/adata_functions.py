@@ -188,7 +188,7 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
        raise ValueError("Unsupported organism")
 
     if assay:
-        brain_obs_filtered = brain_obs_filtered[brain_obs_filtered["assay"].isin([assay])]
+        brain_obs_filtered = brain_obs_filtered[brain_obs_filtered["assay"].isin(assay)]
     if tissue:
         brain_obs_filtered = brain_obs_filtered[brain_obs_filtered["tissue"].isin(tissue)]
  
@@ -217,7 +217,23 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         cell_columns=cell_columns, dataset_info=dataset_info, seed = seed
     )
     adata.obs=rename_cells(adata.obs, organism) 
-    refs["whole cortex"] = adata
+    
+    
+    # Creating the key dynamically based on tissue and assay
+    if not tissue and not assay:
+        if organism == "Mus musculus":
+            # Assuming 'tissue' and 'assay' are variables holding the tissue and assay information
+            tissue = "cortex and hippocampus"  # or any other tissue name
+            assay = "10x 3' v3 and Smart-seq V4"  # or any other assay type
+        if organism == "Homo sapiens":
+            tissue = "cortex"
+            assay = "10x 3' v3 and Smart-seq V4"
+    
+    # handle tissue and assay params, can be lists
+    key = "_".join([f"{t}-{a}" for t in tissue for a in assay])
+ 
+    key = f"{tissue} - {assay}"
+    refs[key] = adata
     
     for name, ref in refs.items(): 
         for col in ref.obs.columns:
