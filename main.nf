@@ -80,7 +80,7 @@ process save_params_to_file {
 // }
 
 process runSetup {
-    conda '/home/rschwartz/anaconda3/envs/scanpyenv'
+    //conda '/home/rschwartz/anaconda3/envs/scanpyenv'
 
     input:
     val organism
@@ -96,7 +96,7 @@ process runSetup {
 }
 
 process processQuery {
-    conda '/home/rschwartz/anaconda3/envs/scanpyenv'
+  //  conda '/home/rschwartz/anaconda3/envs/scanpyenv'
 
     input:
     val model_path
@@ -120,7 +120,7 @@ python $projectDir/bin/process_query.py \\
 }
 
 process getCensusAdata {
-    conda '/home/rschwartz/anaconda3/envs/scanpyenv'
+  //  conda '/home/rschwartz/anaconda3/envs/scanpyenv'
 
     publishDir (
        path: "${params.outdir}",
@@ -152,7 +152,7 @@ process getCensusAdata {
 
 
 process rfClassify{
-    conda '/home/rschwartz/anaconda3/envs/scanpyenv'
+  //  conda '/home/rschwartz/anaconda3/envs/scanpyenv'
 
     publishDir (
         path: "${params.outdir}",
