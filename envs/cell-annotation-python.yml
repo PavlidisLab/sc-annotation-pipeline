@@ -1,0 +1,26 @@
+name: cell-annotation-python
+channels:
+  - conda-forge
+  - defaults
+  - pytorch
+dependencies:
+  - scanpy
+  - numpy
+  - pandas
+  - anndata
+  - leidenalg
+  - python-igraph
+  - scvi-tools
+  - scipy
+  - botocore
+  - pytorch  # For torch
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - gcc_linux-64
+  - gxx_linux-64
+  - pip  # Add pip as a dependency
+  - pip:
+      - cellxgene-census
+      - cellxgene-census[experimental]
+
