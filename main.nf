@@ -67,7 +67,7 @@ process save_params_to_file {
 
     // output:
         // 
-        // path("/space/scratch/gemma-single-cell-data-ensembl-id/${organism}/${experiment}")
+        // path(${params.studies_dir}/${experiment}")
         //
 
     // script:

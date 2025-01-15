@@ -19,6 +19,7 @@ dependencies:
   - seaborn
   - gcc_linux-64
   - gxx_linux-64
+  - libstdcxx-ng
   - pip  # Add pip as a dependency
   - pip:
       - cellxgene-census
