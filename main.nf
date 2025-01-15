@@ -22,27 +22,39 @@ process save_params_to_file {
     echo "ref collections: ${params.ref_collections}" >> params.txt
     """
 }
+// process parseJsonMeta {
+//     input:
+//         path study_json_file
+//     output:
+//         path study_meta_file
+//     script:
+//         """
+//         python $projectDir/bin/parse_json.py --json_file ${study_json_file}
+//         """
+// }
+//
+
 
 // process parseStudies {
     // input:
         // path study_meta_file
     // output:
-        // tuple val(study_name), val(mapped_organism), val(study_factors)
+        // tuple val(study_name), val(mapped_organism)
 
     // script:
+
+
     // """
-    // cut -f1,2,3 $study_meta_file | while IFS=$'\\t' read -r study_name organism study_factors; do
-        // # Map organism names
-        // if [[ "$organism" == "human" ]]; then
-            // mapped_organism="homo_sapiens"
-        // elif [[ "$organism" == "mouse" ]]; then
-            // mapped_organism="mus_musculus"
-        // else
-            // mapped_organism="unknown"
-        // fi
-        
+    // study_name = study_meta_file.split("_")[0]
+    // readLines("${study_meta_file}").first() { line ->
+    //
+        // def organism = line.split(" ")[1]
+        //
+        //
+    //
+    //  
         // # Output the tuple
-        // echo "$study_name $mapped_organism $study_factors"
+        // echo "$study_name $organism
     // done
     // """
 // }
@@ -51,7 +63,7 @@ process save_params_to_file {
 // process getStudies {
 
     // input:
-        // val study_name, val organism, val study_factors
+        // val study_name, val organism
 
     // output:
         // 
@@ -195,8 +207,7 @@ workflow {
     // combined_study_channel = study_channel.map{ study_path -> 
         // def study_name = study_path.toString().split('/')[-1]
         // def organism = study_path.toString().split('/')[-2]
-        // study_factors = study_meta.find{ it[0] == study_name }[2]
-        // [study_path, study_name, organism, study_factors]
+        // [study_path, study_name, organism]
     // }
 
 
