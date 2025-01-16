@@ -73,10 +73,10 @@ def main():
     query = classify_cells(query, cutoff, prob_df)
     mapping = dict(ref.obs[["cell_type", "cell_type_ontology_term_id"]].drop_duplicates().values)
     query.obs["cell_type_ontology_term_id"] = query.obs["cell_type"].map(mapping)
-    
+    query.obs["cell_type_uri"] = f"http://purl.obolibrary.org/obo/" + query.obs["cell_type_ontology_term_id"].str.replace(":","_") 
     os.makedirs(query_name, exist_ok=True)
     
-    filtered_obs = query.obs[["sample_id","cell_id","cell_type", "cell_type_ontology_term_id"]]
+    filtered_obs = query.obs[["sample_id","cell_id","cell_type", "cell_type_uri"]]
     filtered_obs.to_csv(os.path.join(query_name,f"{query_name}_predicted_celltype.tsv"), sep="\t", index=False)
 
 if __name__ == "__main__":

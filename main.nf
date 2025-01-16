@@ -219,8 +219,6 @@ workflow {
      
     // Get collection names to pull from census
     ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ')
-    // assay = params.assay.collect { "\"${it}\"" }.join(' ')
-    // tissue = params.tissue.collect { "\"${it}\"" }.join(' ')
     
     // Get reference data and save to files
     getCensusAdata(params.organism, params.census_version, params.subsample_ref, ref_collections)

@@ -70,12 +70,17 @@ def main():
    os.makedirs(outdir, exist_ok=True) 
 
    for ref_name, ref in refs.items():
-      new_ref_name = ref_name.replace(" ", "_").replace("\\/", "_") \
+      if len(ref.obs.index) == 0:
+         raise ValueError(f"Reference {ref_name} has no cells, check README for proper ref collections")
+      if len(ref.var.index) == 0:
+         raise ValueError(f"Reference {ref_name} has no genes, check README for proper ref collections")
+      else:
+         new_ref_name = ref_name.replace(" ", "_").replace("\\/", "_") \
          .replace("(","").replace(")","") \
          .replace("\\", "") \
          .replace("'", "") \
          .replace(":", "")
-      ref.write(os.path.join(outdir,f"{new_ref_name}.h5ad"))
+         ref.write(os.path.join(outdir,f"{new_ref_name}.h5ad"))
      
       
 if __name__ == "__main__":
