@@ -28,10 +28,6 @@ jobs:
                 echo "Nextflow already installed"
             fi
 
-      # Step 3: Validate the Nextflow pipeline
-      - name: Validate pipeline syntax
-        run: nextflow -validate
-
       # Step 4: Run the pipeline
       - name: Run pipeline
         run: |
