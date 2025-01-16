@@ -1,0 +1,38 @@
+name: Nextflow Pipeline Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-nextflow:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Install Nextflow
+      - name: Install Nextflow
+        run: |
+            if ! command -v nextflow &> /dev/null; then
+                echo "Nextflow not found, installing..."
+                curl -s https://get.nextflow.io | bash
+                sudo mv nextflow /usr/local/bin/
+            else
+                echo "Nextflow already installed"
+            fi
+
+      # Step 3: Validate the Nextflow pipeline
+      - name: Validate pipeline syntax
+        run: nextflow -validate
+
+      # Step 4: Run the pipeline
+      - name: Run pipeline
+        run: |
+          nextflow run main.nf -profile conda -params-file params.mm.json
