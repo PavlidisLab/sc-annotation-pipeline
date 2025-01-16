@@ -132,7 +132,7 @@ Please note that to change the organism to `homo_sapiens`, you should also chang
     ]
 ```
 
-I have provided two `params.json` files as examples (`params.hs.json` and `params.mm.json`) as examples. Please do not change these files or `nextflow.config`; instead please make a copy of the `.json` and pass it via the command line. Parameters can also be passed via command line arguments, which will override `params.json`. However, as nextflow has trouble with parameter values which contain spaces, it's best to pass `ref_collections` via your `params.json`.
+I have provided two `params.json` files as examples (`params.hs.json` and `params.mm.json`). Please do not change these files or `nextflow.config`; instead please make a copy of the `.json` and pass it via the command line. Parameters can also be passed via command line arguments, which will override `params.json`. However, as nextflow has trouble with parameter values which contain spaces, it's best to pass `ref_collections` via your `params.json`.
 
 ## Output
 
