@@ -9,6 +9,8 @@ work/
 *mex
 *mtx
 results/
+envs/
+*json
 
 
 # C extensions
