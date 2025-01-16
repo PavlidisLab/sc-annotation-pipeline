@@ -1,0 +1,11 @@
+{
+    "organism": "mus_musculus",
+    "census_version": "2024-07-01",
+    "cutoff": 0,
+    "seed": 42,
+    "subsample_ref": 50,
+    "studies_dir": "/space/scratch/gemma-single-cell-data-ensembl-id/mus_musculus",
+    "ref_collections": [
+        "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation"
+    ]
+}
