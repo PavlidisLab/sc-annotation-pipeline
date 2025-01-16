@@ -57,9 +57,6 @@ def main():
    assay = args.assay
    subsample = args.subsample
    tissue = args.tissue
-   #random.seed(seed)         # For `random`
-   #np.random.seed(seed)      # For `numpy`
-  # scvi.settings.seed = seed # For `scvi`
   
    refs=get_census(organism=organism, 
                      subsample=subsample, census_version=census_version, 
@@ -81,6 +78,8 @@ def main():
          .replace("'", "") \
          .replace(":", "")
          ref.write(os.path.join(outdir,f"{new_ref_name}.h5ad"))
+         pd.DataFrame(ref.obs[["cell_type","collection_name","dataset_title"]].value_counts().reset_index()).to_csv(os.path.join(outdir,"ref_cell_info.tsv"),sep='\t',index=False)
+
      
       
 if __name__ == "__main__":

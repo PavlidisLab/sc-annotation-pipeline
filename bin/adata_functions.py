@@ -179,7 +179,6 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
     if organism == "homo_sapiens":
         brain_obs_filtered = brain_obs_filtered[~brain_obs_filtered['cell_type'].isin(["unknown", "glutamatergic neuron"])] # remove non specific cells
     
-        #pd.DataFrame(brain_obs_filtered[["cell_type","collection_name","dataset_title"]].value_counts().reset_index()).to_csv("/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/hs_census_brain_info.tsv",sep='\t',index=False)
     
     elif organism == "mus_musculus":
          brain_obs_filtered = brain_obs_filtered[~brain_obs_filtered['cell_type'].isin([# remove non specific cells

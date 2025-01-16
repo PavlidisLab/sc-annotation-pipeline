@@ -135,6 +135,7 @@ process getCensusAdata {
 
     output:
     path "refs/*.h5ad", emit: ref_paths_adata
+    path "refs/ref_cell_info.tsv"
 
     script:
     """
