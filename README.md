@@ -48,10 +48,12 @@ nextflow run main.nf -profile conda \
   --outdir <output_directory> \
   --studies_dir <path_to_studies> \
   --subsample_ref <subsample_per_cell_type> \
-  --ref_collections <list_of_collections> \
   --seed <random_seed> \
   --cutoff <classification_probability_cutoff>
+  --params-file <params.json>
 ```
+
+The `params.json` file can be passed instead of all command-line parameters. Inside params.json, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line (see #[Input](#input) section for details). Examples of the params file can be found in `params.hs.json` and `params.mm.json`.
 
 Default parameters are as follows:
 
@@ -72,6 +74,13 @@ To run with defaults, simply run:
 ```
 nextflow run main.nf -profile conda
 ```
+
+Parameters are configured in order of priority:
+1. Command line arguments 
+2. `params.json`
+3. `nextflow.config`
+
+So, 1 will override 2 and 2 will override 3.
 
 Nextflow parameters begin with `-` (e.g. `-profile`; pipeline-specific parameters can be changed on the CLI with `--`).
 
@@ -114,19 +123,16 @@ As of right now, experimental factors such as tissue or batch are not incorporat
 
 See [Usage](#usage) for for default parameters. 
 
-Please note that to change the organism to `homo_sapiens`, you should also change `--ref_collections` to:
+Please note that to change the organism to `homo_sapiens`, you should also change `--ref_collections` in `params.json` to:
 
 ```
-"Transcriptomic cytoarchitecture reveals principles of human neocortex organization" \
-"SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"
+    "ref_collections": [
+        "Transcriptomic cytoarchitecture reveals principles of human neocortex organization", 
+        "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"
+    ]
 ```
 
-(or one of the two). You can also change these parameters directly in `nextflow.config`, e.g.:
-
-```
-params.organism = "homo_sapiens"
-params.ref_collections = ["Transcriptomic cytoarchitecture reveals principles of human neocortex organization", "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"]
-```
+I have provided two `params.json` files as examples (`params.hs.json` and `params.mm.json`) as examples. Please do not change these files or `nextflow.config`; instead please make a copy of the `.json` and pass it via the command line. Parameters can also be passed via command line arguments, which will override `params.json`. However, as nextflow has trouble with parameter values which contain spaces, it's best to pass `ref_collections` via your `params.json`.
 
 ## Output
 
