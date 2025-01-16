@@ -139,18 +139,15 @@ I have provided two `params.json` files as examples (`params.hs.json` and `param
 For each run, an output directory with the following structure will be written:
 
 ```
-.
-└── mus_musculus_subsample_ref_50
-    ├── GSE152715
-    │   └── GSE152715_predicted_celltype.tsv
-    ├── GSE198014
-    │   └── GSE198014_predicted_celltype.tsv
+└── mus_musculus_subsample_ref_50_2025-01-15_17-51-37
+    ├── GSE154208
+    │   └── GSE154208_predicted_celltype.tsv
     ├── params.txt
     └── refs
         └── cortex_and_hippocampus_-_10x_3_v3_and_Smart-seq_V4.h5ad
 ```
 
-one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE198014). Likewise, one reference dataset is used for each batch of automatic annotation (stored in `refs/`).
+one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE154208). Likewise, one reference dataset is used for each batch of automatic annotation (stored in `refs/`). Note that this directory may contain multiple studies all annotated usin the same configuration parameters and reference data.
 
 ## Workflow Description
 
