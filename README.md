@@ -33,9 +33,11 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 
 ## Installation
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/rachadele/cell_annotation_cortex.git
+1. Stable release is installed in:
+
+```
+/space/grp/Pipelines/sc-annotation-pipeline
+```
 
 ## Usage 
 
@@ -51,9 +53,15 @@ nextflow run main.nf -profile conda \
   --seed <random_seed> \
   --cutoff <classification_probability_cutoff>
   -params-file <params.json>
+  -work-dir my_work_dir
 ```
 
-The `params.json` file can be passed instead of all command-line parameters. Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line (see [Input](#input) section for details). Examples of the params file can be found in `params.hs.json` and `params.mm.json`.
+The `params.json` file can be passed instead of all command-line parameters. Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line (see [Input](#input) section for details). Examples of the params file can be found in `params.hs.json` and `params.mm.json`. 
+
+### Working directories and caching
+
+Task hashes are stored by default in `.nextflow/cache`. Intermediate files for each pipeline run stored by default in the `work` directory. Both of these are necessary to resume your pipeline run with `-resume`. You can read more about caching and resuming with Nextflow [here](https://www.nextflow.io/docs/latest/cache-and-resume.html#work-directory).
+`work-dir` is an optional parameter to keep the working directory for your pipeline run separate from others. It's a good idea to delete your working directory when you're finished.
 
 Default parameters are as follows:
 
