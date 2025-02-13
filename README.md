@@ -50,7 +50,7 @@ nextflow run main.nf -profile conda \
   --subsample_ref <subsample_per_cell_type> \
   --seed <random_seed> \
   --cutoff <classification_probability_cutoff>
-  --params-file <params.json>
+  -params-file <params.json>
 ```
 
 The `params.json` file can be passed instead of all command-line parameters. Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line (see [Input](#input) section for details). Examples of the params file can be found in `params.hs.json` and `params.mm.json`.
