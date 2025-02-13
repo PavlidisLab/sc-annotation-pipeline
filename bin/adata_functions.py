@@ -55,9 +55,7 @@ def rename_cells(obs):
     
 #if organism == "Homo sapiens":
     mapping = dict(obs[["cell_type","cell_type_ontology_term_id"]].drop_duplicates().values)
-
     # add new CL terms to mapping dict
-    
     mapping["L2/3 intratelencephalic projecting glutamatergic neuron"] = "CL:4030059"
     mapping["L4/5 intratelencephalic projecting glutamatergic neuron"] = "CL:4030062"
     mapping["L5/6 near-projecting glutamatergic neuron"] = "CL:4030067"
@@ -65,7 +63,7 @@ def rename_cells(obs):
     
     #change to cat.rename_categories
     obs["cell_type"] = obs["cell_type"].replace({
-            "astrocyte of the cerebtral cortex": "astrocyte",
+            "astrocyte of the cerebral cortex": "astrocyte",
             "cerebral cortex endothelial cell": "endothelial cell",
             "L2/3 intratelencephalic projecting glutamatergic neuron of the primary motor cortex": "L2/3 intratelencephalic projecting glutamatergic neuron",
             "L4/5 intratelencephalic projecting glutamatergic neuron of the primary motor cortex": "L4/5 intratelencephalic projecting glutamatergic neuron",
