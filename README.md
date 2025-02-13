@@ -61,7 +61,7 @@ The `params.json` file can be passed instead of all command-line parameters. Ins
 ### Working directories and caching
 
 Task hashes are stored by default in `.nextflow/cache`. Intermediate files for each pipeline run stored by default in the `work` directory. Both of these are necessary to resume your pipeline run with `-resume`. You can read more about caching and resuming with Nextflow [here](https://www.nextflow.io/docs/latest/cache-and-resume.html#work-directory).
-`work-dir` is an optional parameter to keep the working directory for your pipeline run separate from others. It's a good idea to delete your working directory when you're finished.
+`work-dir` is an optional parameter to keep the working directory for your pipeline runs separate. It's a good idea to delete your working directory when you're finished.
 
 Default parameters are as follows:
 
