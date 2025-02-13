@@ -4,7 +4,7 @@
     "cutoff": 0,
     "seed": 42,
     "subsample_ref": 50,
-    "studies_dir": "/home/bxu/parent-pipeline/",
+    "studies_dir": "/home/lbonaobra/parentdirectory/human",
     "ref_collections": [
         "Transcriptomic cytoarchitecture reveals principles of human neocortex organization", 
         "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"
