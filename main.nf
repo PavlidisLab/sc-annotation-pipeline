@@ -122,11 +122,6 @@ python $projectDir/bin/process_query.py \\
 process getCensusAdata {
   //  conda '/home/rschwartz/anaconda3/envs/scanpyenv'
 
-    publishDir (
-       path: "${params.outdir}",
-        mode: "copy"
-    )
-
     input:
     val organism
     val census_version
