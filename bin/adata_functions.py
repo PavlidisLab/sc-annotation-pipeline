@@ -68,7 +68,8 @@ def rename_cells(obs):
             "L2/3 intratelencephalic projecting glutamatergic neuron of the primary motor cortex": "L2/3 intratelencephalic projecting glutamatergic neuron",
             "L4/5 intratelencephalic projecting glutamatergic neuron of the primary motor cortex": "L4/5 intratelencephalic projecting glutamatergic neuron",
             "L5/6 near-projecting glutamatergic neuron of the primary motor cortex": "L5/6 near-projecting glutamatergic neuron",
-            "L6 intratelencephalic projecting glutamatergic neuron of the primary motor cortex": "L6 intratelencephalic projecting glutamatergic neuron"
+            "L6 intratelencephalic projecting glutamatergic neuron of the primary motor cortex": "L6 intratelencephalic projecting glutamatergic neuron",
+            "central nervous system macrophage": "macrophage"
         })
 
     obs["cell_type_ontology_term_id"] = obs["cell_type"].map(mapping)
