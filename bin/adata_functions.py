@@ -190,13 +190,7 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         brain_obs_filtered = brain_obs_filtered[~brain_obs_filtered['cell_type'].isin(["unknown", "glutamatergic neuron"])] # remove non specific cells
      
     elif organism == "mus_musculus":
-         brain_obs_filtered = brain_obs_filtered[~brain_obs_filtered['cell_type'].isin([# remove non specific cells
-                                                                                        "unknown",
-                                                                                        "hippocampal neuron", 
-                                                                                        "cortical interneuron", 
-                                                                                        "meis2 expressing cortical GABAergic cell", 
-                                                                                        "glutamatergic neuron"])]
-        # pd.DataFrame(brain_obs_filtered[["cell_type","collection_name","dataset_title"]].value_counts().reset_index()).to_csv("/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/mm_census_brain_info.tsv",sep='\t',index=False)
+         brain_obs_filtered = brain_obs_filtered[~brain_obs_filtered['cell_type'].isin(["unknown"])]
     else:
        raise ValueError("Unsupported organism")
     
