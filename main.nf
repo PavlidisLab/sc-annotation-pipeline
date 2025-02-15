@@ -22,62 +22,7 @@ process save_params_to_file {
     echo "ref collections: ${params.ref_collections}" >> params.txt
     """
 }
-// process parseJsonMeta {
-//     input:
-//         path study_json_file
-//     output:
-//         path study_meta_file
-//     script:
-//         """
-//         python $projectDir/bin/parse_json.py --json_file ${study_json_file}
-//         """
-// }
-//
 
-
-// process parseStudies {
-    // input:
-        // path study_meta_file
-    // output:
-        // tuple val(study_name), val(mapped_organism)
-
-    // script:
-
-
-    // """
-    // study_name = study_meta_file.split("_")[0]
-    // readLines("${study_meta_file}").first() { line ->
-    //
-        // def organism = line.split(" ")[1]
-        //
-        //
-    //
-    //  
-        // # Output the tuple
-        // echo "$study_name $organism
-    // done
-    // """
-// }
-
-
-// process getStudies {
-
-    // input:
-        // val study_name, val organism
-
-    // output:
-        // 
-        // path(${params.studies_dir}/${experiment}")
-        //
-
-    // script:
-
-    // """
-    // gemma-cli-sc getSingleCellDataMatrix -e ${study_name} \\
-    // --format mex --scale-type count --use-ensembl-ids \\
-    // -o /space/scratch/gemma-single-cell-data-ensembl-id/${organism}/${study_name}
-    // """
-// }
 
 process runSetup {
     //conda '/home/rschwartz/anaconda3/envs/scanpyenv'
@@ -127,6 +72,7 @@ process getCensusAdata {
     val census_version
     val subsample_ref
     val ref_collections
+    val organ
 
     output:
     path "refs/*.h5ad", emit: ref_paths_adata
@@ -137,6 +83,7 @@ process getCensusAdata {
     # Run the python script to generate the files
     python $projectDir/bin/get_census_adata.py \\
         --organism ${organism} \\
+        --organ ${organ} \\
         --census_version ${census_version} \\
         --subsample_ref ${subsample_ref} \\
         --ref_collections ${ref_collections} \\
@@ -217,7 +164,7 @@ workflow {
     ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ')
     
     // Get reference data and save to files
-    getCensusAdata(params.organism, params.census_version, params.subsample_ref, ref_collections)
+    getCensusAdata(params.organism, params.census_version, params.subsample_ref, ref_collections, params.organ)
     getCensusAdata.out.ref_paths_adata.flatten()
     .set { ref_paths_adata }
     

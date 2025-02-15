@@ -166,7 +166,7 @@ def split_and_extract_data(data, split_column, subsample=500, organism=None, cen
 
     return refs
 
-def get_brain_obs(census, organism, organ="brain", primary_data=True, disease="normal"):
+def get_cellxgene_obs(census, organism, organ="brain", primary_data=True, disease="normal"):
     value_filter = (
         f"tissue_general == '{organ}' and "
         f"is_primary_data == {str(primary_data)} and "
@@ -181,23 +181,26 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
     census = cellxgene_census.open_soma(census_version=census_version)
     dataset_info = census.get("census_info").get("datasets").read().concat().to_pandas()
     
-    brain_obs = brain_obs = get_brain_obs(census, organism, organ=organ, primary_data=True, disease="normal")
+    cellxgene_obs = cellxgene_obs = get_cellxgene_obs(census, organism, organ=organ, primary_data=True, disease="normal")
 
-    brain_obs = brain_obs.merge(dataset_info, on="dataset_id", suffixes=(None,"_y"))
-    brain_obs.drop(columns=['soma_joinid_y'], inplace=True)
-    brain_obs_filtered = brain_obs[brain_obs['collection_name'].isin(ref_collections)]
+    cellxgene_obs = cellxgene_obs.merge(dataset_info, on="dataset_id", suffixes=(None,"_y"))
+    cellxgene_obs.drop(columns=['soma_joinid_y'], inplace=True)
+    cellxgene_obs_filtered = cellxgene_obs[cellxgene_obs['collection_name'].isin(ref_collections)]
+    # eventually change this to filter out "restricted cell types" from passed file
+    restricted_celltypes_hs=["unknown", "glutamatergic neuron"]
+    restricted_celltypes_mmus=["unknown"]
     if organism == "homo_sapiens":
-        brain_obs_filtered = brain_obs_filtered[~brain_obs_filtered['cell_type'].isin(["unknown", "glutamatergic neuron"])] # remove non specific cells
+        cellxgene_obs_filtered = cellxgene_obs_filtered[~cellxgene_obs_filtered['cell_type'].isin(restricted_celltypes_hs)] # remove non specific cells
      
     elif organism == "mus_musculus":
-         brain_obs_filtered = brain_obs_filtered[~brain_obs_filtered['cell_type'].isin(["unknown"])]
+         cellxgene_obs_filtered = cellxgene_obs_filtered[~cellxgene_obs_filtered['cell_type'].isin(restricted_celltypes_mmus)]
     else:
        raise ValueError("Unsupported organism")
     
     if assay:
-        brain_obs_filtered = brain_obs_filtered[brain_obs_filtered["assay"].isin(assay)]
+        cellxgene_obs_filtered = cellxgene_obs_filtered[cellxgene_obs_filtered["assay"].isin(assay)]
     if tissue:
-        brain_obs_filtered = brain_obs_filtered[brain_obs_filtered["tissue"].isin(tissue)]
+        cellxgene_obs_filtered = cellxgene_obs_filtered[cellxgene_obs_filtered["tissue"].isin(tissue)]
  
     # Adjust organism naming for compatibility
     organism_name_mapping = {
@@ -210,15 +213,15 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         "assay", "cell_type", "cell_type_ontology_term_id", "tissue",
         "tissue_general", "suspension_type",
         "disease", "dataset_id", "development_stage",
-        "soma_joinid"
+        "soma_joinid", "obervation_joinid"
     ]
     
     refs = {}
     
     # Get embeddings for all data together
-    filtered_ids = brain_obs_filtered['soma_joinid'].values
+    filtered_ids = cellxgene_obs_filtered['soma_joinid'].values
     adata = extract_data(
-        brain_obs_filtered, filtered_ids,
+        cellxgene_obs_filtered, filtered_ids,
         subsample=subsample, organism=organism,
         census=census, obs_filter=None,
         cell_columns=cell_columns, dataset_info=dataset_info, seed = seed

@@ -1,6 +1,0 @@
-organism: mus_musculus
-census_version: 2024-07-01
-outdir: /space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/results/mus_musculus_subsample_ref_50_2025-01-15_17-51-37
-studies_dir: /home/bxu/parent-pipeline/
-subsample ref: 50
-ref collections: [A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation]
