@@ -87,6 +87,7 @@ process getCensusAdata {
         --census_version ${census_version} \\
         --subsample_ref ${subsample_ref} \\
         --ref_collections ${ref_collections} \\
+        --rename_file ${params.rename_file} \\
         --seed ${params.seed}
 
     # After running the python script, all .h5ad files will be saved in the refs/ directory inside a work directory

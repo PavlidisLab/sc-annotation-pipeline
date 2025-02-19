@@ -74,7 +74,7 @@ def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotatio
 
 # Subsample x cells from each cell type if there are n>x cells present
 # ensures equal representation of cell types in reference
-def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo sapiens"):
+def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo sapiens", rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv"):
     random.seed(seed)         # For `random`
     np.random.seed(seed)      # For `numpy`
     scvi.settings.seed = seed # For `scvi`
@@ -82,7 +82,7 @@ def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo s
     # Filter data based on filtered_ids
     obs = data[data['soma_joinid'].isin(filtered_ids)]
 
-    obs = rename_cells(obs)
+    obs = rename_cells(obs, rename_file=rename_file)
  
     celltypes = obs["cell_type"].unique()
     final_idx = []
@@ -174,7 +174,8 @@ def get_cellxgene_obs(census, organism, organ="brain", primary_data=True, diseas
 
 
 def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5, assay=None, tissue=None, organ="brain",
-               ref_collections=["Transcriptomic cytoarchitecture reveals principles of human neocortex organization"," SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"], seed=42):
+               ref_collections=["Transcriptomic cytoarchitecture reveals principles of human neocortex organization"," SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"], 
+               rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv",seed=42):
 
     census = cellxgene_census.open_soma(census_version=census_version)
     dataset_info = census.get("census_info").get("datasets").read().concat().to_pandas()
@@ -224,7 +225,7 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         census=census, obs_filter=None,
         cell_columns=cell_columns, dataset_info=dataset_info, seed = seed
     )
-    adata.obs=rename_cells(adata.obs) 
+    adata.obs=rename_cells(adata.obs, rename_file=rename_file) 
     
     
     # Creating the key dynamically based on tissue and assay
