@@ -51,8 +51,9 @@ def setup(organism="homo_sapiens", version="2024-07-01"):
     return(outdir)
 
 #clean up cellxgene ontologies
+# will have to change this to use files, i don't want it to be hardcoded in
 def rename_cells(obs):
-    
+
 #if organism == "Homo sapiens":
     mapping = dict(obs[["cell_type","cell_type_ontology_term_id"]].drop_duplicates().values)
     # add new CL terms to mapping dict
@@ -60,6 +61,7 @@ def rename_cells(obs):
     mapping["L4/5 intratelencephalic projecting glutamatergic neuron"] = "CL:4030062"
     mapping["L5/6 near-projecting glutamatergic neuron"] = "CL:4030067"
     mapping["L6 intratelencephalic projecting glutamatergic neuron"] = "CL:4030065"
+    mapping["vascular leptomeningeal cell"] =  "CL:4023051"
     
     #change to cat.rename_categories
     obs["cell_type"] = obs["cell_type"].replace({
@@ -86,7 +88,7 @@ def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo s
     
     # Filter data based on filtered_ids
     obs = data[data['soma_joinid'].isin(filtered_ids)]
-    
+
     obs = rename_cells(obs)
  
     celltypes = obs["cell_type"].unique()
