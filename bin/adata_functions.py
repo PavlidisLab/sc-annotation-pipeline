@@ -52,31 +52,24 @@ def setup(organism="homo_sapiens", version="2024-07-01"):
 
 #clean up cellxgene ontologies
 # will have to change this to use files, i don't want it to be hardcoded in
-def rename_cells(obs):
-
-#if organism == "Homo sapiens":
-    mapping = dict(obs[["cell_type","cell_type_ontology_term_id"]].drop_duplicates().values)
-    # add new CL terms to mapping dict
-    mapping["L2/3 intratelencephalic projecting glutamatergic neuron"] = "CL:4030059"
-    mapping["L4/5 intratelencephalic projecting glutamatergic neuron"] = "CL:4030062"
-    mapping["L5/6 near-projecting glutamatergic neuron"] = "CL:4030067"
-    mapping["L6 intratelencephalic projecting glutamatergic neuron"] = "CL:4030065"
-    mapping["vascular leptomeningeal cell"] =  "CL:4023051"
+def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv"):
+    # Read renaming terms from file
+    rename_df = pd.read_csv(rename_file)
     
-    #change to cat.rename_categories
-    obs["cell_type"] = obs["cell_type"].replace({
-            "astrocyte of the cerebral cortex": "astrocyte",
-            "cerebral cortex endothelial cell": "endothelial cell",
-            "L2/3 intratelencephalic projecting glutamatergic neuron of the primary motor cortex": "L2/3 intratelencephalic projecting glutamatergic neuron",
-            "L4/5 intratelencephalic projecting glutamatergic neuron of the primary motor cortex": "L4/5 intratelencephalic projecting glutamatergic neuron",
-            "L5/6 near-projecting glutamatergic neuron of the primary motor cortex": "L5/6 near-projecting glutamatergic neuron",
-            "L6 intratelencephalic projecting glutamatergic neuron of the primary motor cortex": "L6 intratelencephalic projecting glutamatergic neuron",
-            "central nervous system macrophage": "macrophage",
-            "vascular leptomeningeal cell (Mmus)": "vascular leptomeningeal cell",
-            "cortical interneuron": "corticothalamic-projecting glutamatergic cortical neuron"
-        })
-
-    obs["cell_type_ontology_term_id"] = obs["cell_type"].map(mapping)
+    # Ensure expected columns exist
+    if not {'cell_type', 'new_cell_type', 'cell_type_ontology_term_id'}.issubset(rename_df.columns):
+        raise ValueError("Rename file must contain 'cell_type', 'new_cell_type', and 'cell_type_ontology_term_id' columns.")
+    
+    # Create mapping dictionaries
+    rename_mapping = dict(zip(rename_df['cell_type'], rename_df['new_cell_type']))
+    ontology_mapping = dict(zip(rename_df['new_cell_type'], rename_df['cell_type_ontology_term_id']))
+    
+    # Apply renaming
+    obs['cell_type'] = obs['cell_type'].replace(rename_mapping)
+    
+    # Assign new ontology IDs
+    obs['cell_type_ontology_term_id'] = obs['cell_type'].map(ontology_mapping)
+    
     return obs
 
 # Subsample x cells from each cell type if there are n>x cells present
