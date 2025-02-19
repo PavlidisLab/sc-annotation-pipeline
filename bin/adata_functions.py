@@ -51,10 +51,10 @@ def setup(organism="homo_sapiens", version="2024-07-01"):
     return(outdir)
 
 #clean up cellxgene ontologies
-# will have to change this to use files, i don't want it to be hardcoded in
+
 def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv"):
     # Read renaming terms from file
-    rename_df = pd.read_csv(rename_file)
+    rename_df = pd.read_csv(rename_file, sep="\t")
     
     # Ensure expected columns exist
     if not {'cell_type', 'new_cell_type', 'cell_type_ontology_term_id'}.issubset(rename_df.columns):
@@ -67,10 +67,18 @@ def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotatio
     # Apply renaming
     obs['cell_type'] = obs['cell_type'].replace(rename_mapping)
     
-    # Assign new ontology IDs
-    obs['cell_type_ontology_term_id'] = obs['cell_type'].map(ontology_mapping)
+    if pd.api.types.is_categorical_dtype(obs['cell_type_ontology_term_id']):
+        # Add any new categories to 'cell_type_ontology_term_id'
+        new_categories = list(set(ontology_mapping.values()) - set(obs['cell_type_ontology_term_id'].cat.categories))
+        if new_categories:
+            obs['cell_type_ontology_term_id'] = obs['cell_type_ontology_term_id'].cat.add_categories(new_categories)
+ 
+    # Assign new ontology IDs only for replaced cells
+    replaced_cells = obs['cell_type'].isin(rename_mapping.values())
+    obs.loc[replaced_cells, 'cell_type_ontology_term_id'] = obs.loc[replaced_cells, 'cell_type'].map(ontology_mapping)
     
     return obs
+
 
 # Subsample x cells from each cell type if there are n>x cells present
 # ensures equal representation of cell types in reference
