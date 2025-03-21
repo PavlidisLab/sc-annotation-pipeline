@@ -4,7 +4,7 @@
     "cutoff": 0,
     "seed": 42,
     "subsample_ref": 100,
-    "studies_dir": "/space/scratch/gemma-single-cell-data-ensembl-id/mus_musculus",
+    "study_names": "study_names.txt",
     "ref_collections": [
         "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
         "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
@@ -12,5 +12,10 @@
         "Tabula Muris Senis",
         "Single-cell transcriptomics characterization of oligodendrocytes and microglia in white matter aging"
     ],
-    "organ": "brain"
+    "organ": "brain",
+    "target_platform": "Generic_mouse_ncbiIds",
+    "restricted_celltypes": [
+        "unknown",
+        "neuron"
+    ]
 }

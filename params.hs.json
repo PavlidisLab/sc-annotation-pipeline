@@ -9,5 +9,9 @@
         "Transcriptomic cytoarchitecture reveals principles of human neocortex organization",
         "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"
     ],
-    "organ": "brain"
+    "organ": "brain",
+    "restricted_celltypes": [
+        "unknown",
+        "glutamatergic neuron"
+    ]
 }

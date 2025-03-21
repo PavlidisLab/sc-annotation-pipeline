@@ -1,5 +1,4 @@
 #!/usr/bin/env nextflow
-
 process save_params_to_file {
 
     publishDir (
@@ -24,6 +23,24 @@ process save_params_to_file {
 }
 
 
+
+ process downloadStudies {
+   // publishDir "${params.outdir}/studies", mode: 'copy'
+
+    input:
+        val study_name
+
+    output:
+        tuple val(study_name), path("${study_name}/"), emit: study_channel
+
+
+     script:
+
+     """
+     gemma-cli-sc getSingleCellDataMatrix -e $study_name --format mex --scale-type count --use-ensembl-ids -o $study_name
+     """
+ }
+
 process runSetup {
     //conda '/home/rschwartz/anaconda3/envs/scanpyenv'
 
@@ -45,7 +62,7 @@ process processQuery {
 
     input:
     val model_path
-    tuple val(study_path), val(study_name)
+    tuple val(study_name), path(study_path)
 
     output:
     path "${study_name}.h5ad", emit: processed_query
@@ -88,7 +105,8 @@ process getCensusAdata {
         --subsample_ref ${subsample_ref} \\
         --ref_collections ${ref_collections} \\
         --rename_file ${params.rename_file} \\
-        --seed ${params.seed}
+        --seed ${params.seed} \\ 
+        --restricted_celltypes ${params.restricted_celltypes}
 
     # After running the python script, all .h5ad files will be saved in the refs/ directory inside a work directory
     """
@@ -119,47 +137,37 @@ process rfClassify{
 
 // process loadResults {
     // input:
-        // path "*.tsv"
-        // val experiment
-        // val target_platform
+        // tuple path(celltype_file), val(study_name), val(target_platform)
+
 
     //output :
         // path message.txt
 
     // script:
     // """
-    // gemma-cli loadSingleCellData -e <experiment ID> -p <target platform>
+    // gemma-cli-sc loadSingleCellData -e ${study_name} -a ${params.target_platform} --preferred-quantitation-type
     // """
 
 // Workflow definition
 workflow {
 
-    Channel
-        .fromPath("${params.studies_dir}/*", type: 'dir')
-        .set { study_paths }
 
     // Get query names from file (including region)
-    study_paths = study_paths.map{ study_path -> 
-        def study_name = study_path.toString().split('/')[-1]
-        [study_path, study_name]
+    study_names = Channel.fromPath(params.study_names).flatMap { file ->
+        // Read the file, split by lines, and trim any extra spaces
+        file.readLines().collect { it.trim() }
     }
 
-    // study_meta = parseStudies(params.study_meta_file)
+    downloadStudies(study_names)
+    downloadStudies.out.study_channel.set { study_channel }
+    study_channel.view()
 
-    // study_channel = getStudies(study_meta)
-
-    // combined_study_channel = study_channel.map{ study_path -> 
-        // def study_name = study_path.toString().split('/')[-1]
-        // def organism = study_path.toString().split('/')[-2]
-        // [study_path, study_name, organism]
-    // }
-
-
+    study_channel.view()
     // Call the setup process to download the model
     model_path = runSetup(params.organism, params.census_version)
 
     // Process each query by relabeling, subsampling, and passing through scvi model
-    processed_queries_adata = processQuery(model_path, study_paths) 
+    processed_queries_adata = processQuery(model_path, study_channel) 
      
     // Get collection names to pull from census
     ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ')
