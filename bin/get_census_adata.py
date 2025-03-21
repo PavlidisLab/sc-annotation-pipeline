@@ -61,7 +61,7 @@ def main():
    tissue = args.tissue
    organ=args.organ
    rename_file=args.rename_file
-   refs=get_census(organism=organism, 
+   ref=get_census(organism=organism, 
                      subsample=subsample, census_version=census_version, organ=organ,
                         ref_collections=ref_collections, assay=assay, tissue=tissue, rename_file=rename_file, seed=SEED)
 
@@ -69,19 +69,32 @@ def main():
    outdir="refs"
    os.makedirs(outdir, exist_ok=True) 
 
-   for ref_name, ref in refs.items():
-      if len(ref.obs.index) == 0:
-         raise ValueError(f"Reference {ref_name} has no cells, check README for proper ref collections")
-      if len(ref.var.index) == 0:
-         raise ValueError(f"Reference {ref_name} has no genes, check README for proper ref collections")
-      else:
-         new_ref_name = ref_name.replace(" ", "_").replace("\\/", "_") \
-         .replace("(","").replace(")","") \
-         .replace("\\", "") \
-         .replace("'", "") \
-         .replace(":", "")
-         ref.write(os.path.join(outdir,f"{new_ref_name}.h5ad"))
-         pd.DataFrame(ref.obs[["cell_type","collection_name","dataset_title"]].value_counts().reset_index()).to_csv(os.path.join(outdir,"ref_cell_info.tsv"),sep='\t',index=False)
+    ## Creating the key dynamically based on tissue and assay
+   if not tissue and not assay:
+      if organism == "Mus musculus":
+         # Assuming 'tissue' and 'assay' are variables holding the tissue and assay information
+         tissue = "cortex and hippocampus"  # or any other tissue name
+         assay = "10x 3' v3 and Smart-seq V4"  # or any other assay type
+      if organism == "Homo sapiens":
+         tissue = "cortex"
+         assay = "10x 3' v3 and Smart-seq V4"
+      ref_name = f"{tissue} - {assay}"
+    # handle tissue and assay params, can be lists
+      ref_name = "_".join([f"{t}-{a}" for t in tissue for a in assay])
+   
+    #refs[key] = adata
+   if len(ref.obs.index) == 0:
+      raise ValueError(f"Reference {ref_name} has no cells, check README for proper ref collections")
+   if len(ref.var.index) == 0:
+      raise ValueError(f"Reference {ref_name} has no genes, check README for proper ref collections")
+   else:
+      new_ref_name = ref_name.replace(" ", "_").replace("\\/", "_") \
+      .replace("(","").replace(")","") \
+      .replace("\\", "") \
+      .replace("'", "") \
+      .replace(":", "")
+      ref.write(os.path.join(outdir,f"{new_ref_name}.h5ad"))
+      pd.DataFrame(ref.obs[["cell_type","collection_name","dataset_title"]].value_counts().reset_index()).to_csv(os.path.join(outdir,"ref_cell_info.tsv"),sep='\t',index=False)
 
      
       
