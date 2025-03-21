@@ -181,7 +181,7 @@ def get_cellxgene_obs(census, organism, organ="brain", primary_data=True, diseas
     return cellxgene_census.get_obs(census, organism, value_filter=value_filter)
 
 
-def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5, assay=None, tissue=None, organ="brain",
+def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5, assay=None, tissue=None, organ="brain", restricted_celltypes = ["unknown", "glutamatergic neuron"],
                ref_collections=["Transcriptomic cytoarchitecture reveals principles of human neocortex organization"," SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"], 
                rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv",seed=42):
 
@@ -194,16 +194,12 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
     cellxgene_obs.drop(columns=['soma_joinid_y'], inplace=True)
     cellxgene_obs_filtered = cellxgene_obs[cellxgene_obs['collection_name'].isin(ref_collections)]
     # eventually change this to filter out "restricted cell types" from passed file
-    restricted_celltypes_hs=["unknown", "glutamatergic neuron"]
-    restricted_celltypes_mmus=["unknown"]
-    if organism == "homo_sapiens":
-        cellxgene_obs_filtered = cellxgene_obs_filtered[~cellxgene_obs_filtered['cell_type'].isin(restricted_celltypes_hs)] # remove non specific cells
+    #restricted_celltypes_hs=["unknown", "glutamatergic neuron"]
+  #  restricted_celltypes_mmus=["unknown", "neuron"]
+    #if organism == "homo_sapiens":
      
-    elif organism == "mus_musculus":
-         cellxgene_obs_filtered = cellxgene_obs_filtered[~cellxgene_obs_filtered['cell_type'].isin(restricted_celltypes_mmus)]
-    else:
-       raise ValueError("Unsupported organism")
-    
+    #elif organism == "mus_musculus":
+    cellxgene_obs_filtered = cellxgene_obs_filtered[~cellxgene_obs_filtered['cell_type'].isin(restricted_celltypes)]   
     if assay:
         cellxgene_obs_filtered = cellxgene_obs_filtered[cellxgene_obs_filtered["assay"].isin(assay)]
     if tissue:

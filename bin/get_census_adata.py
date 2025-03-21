@@ -43,7 +43,7 @@ def parse_arguments():
     parser.add_argument('--subsample', type=str, help="Number of cells per cell type to subsample from reference", default=500)
     parser.add_argument('--rename_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv")
     parser.add_argument('--ref_name', type=str, default="whole_cortex", help="Prefix of temporary reference file created")
-    
+    parser.add_argument('--restricted_celltypes', type=str, nargs="+", default=["unknown","neuron"], help="Cell types to remove from reference") 
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -63,9 +63,11 @@ def main():
    tissue = args.tissue
    organ=args.organ
    rename_file=args.rename_file
+   restricted_celltypes=args.restricted_celltypes
+   
    ref=get_census(organism=organism, 
                      subsample=subsample, census_version=census_version, organ=organ,
-                        ref_collections=ref_collections, assay=assay, tissue=tissue, rename_file=rename_file, seed=SEED)
+                        ref_collections=ref_collections, assay=assay, tissue=tissue, rename_file=rename_file, seed=SEED, restricted_celltypes=restricted_celltypes)
 
    print("finished fetching anndata")
    outdir="refs"
