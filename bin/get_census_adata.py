@@ -38,10 +38,12 @@ def parse_arguments():
     parser.add_argument('--ref_collections', type=str, nargs = '+', default = ["A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation"]) 
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--organ', type=str, default="brain")
-    parser.add_argument('--assay', type=str, nargs = "+", help="Assays to use from reference", default=None)
-    parser.add_argument('--tissue', type=str, nargs="+", default = None, help = "Cortex region to pull from (default: all)")
+    parser.add_argument('--assay', type=str, nargs = "+", help="Assays to subset from referenc (unnecessary)", default=None)
+    parser.add_argument('--tissue', type=str, nargs="+", default = None, help = "tissue to pull from (different from organ, this can select for mroe specific brain regions)")
     parser.add_argument('--subsample', type=str, help="Number of cells per cell type to subsample from reference", default=500)
     parser.add_argument('--rename_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv")
+    parser.add_argument('--ref_name', type=str, default="whole_cortex", help="Prefix of temporary reference file created")
+    
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -69,20 +71,12 @@ def main():
    outdir="refs"
    os.makedirs(outdir, exist_ok=True) 
 
-    ## Creating the key dynamically based on tissue and assay
-   if not tissue and not assay:
-      if organism == "Mus musculus":
-         # Assuming 'tissue' and 'assay' are variables holding the tissue and assay information
-         tissue = "cortex and hippocampus"  # or any other tissue name
-         assay = "10x 3' v3 and Smart-seq V4"  # or any other assay type
-      if organism == "Homo sapiens":
-         tissue = "cortex"
-         assay = "10x 3' v3 and Smart-seq V4"
-      ref_name = f"{tissue} - {assay}"
     # handle tissue and assay params, can be lists
+   if tissue and assay:
       ref_name = "_".join([f"{t}-{a}" for t in tissue for a in assay])
-   
-    #refs[key] = adata
+   else:
+      ref_name = args.ref_name
+
    if len(ref.obs.index) == 0:
       raise ValueError(f"Reference {ref_name} has no cells, check README for proper ref collections")
    if len(ref.var.index) == 0:
