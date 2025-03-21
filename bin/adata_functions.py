@@ -220,7 +220,7 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         "assay", "cell_type", "cell_type_ontology_term_id", "tissue",
         "tissue_general", "suspension_type",
         "disease", "dataset_id", "development_stage",
-        "soma_joinid", "obervation_joinid"
+        "soma_joinid", "observation_joinid"
     ]
     
     refs = {}
