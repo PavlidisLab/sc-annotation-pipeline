@@ -39,11 +39,11 @@ def parse_arguments():
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--organ', type=str, default="brain")
     parser.add_argument('--assay', type=str, nargs = "+", help="Assays to subset from referenc (unnecessary)", default=None)
-    parser.add_argument('--tissue', type=str, nargs="+", default = None, help = "tissue to pull from (different from organ, this can select for mroe specific brain regions)")
+    parser.add_argument('--tissue', type=str, nargs="+", default = None, help = "tissues to pull from (different from organ, this can select for more specific brain regions)")
     parser.add_argument('--subsample', type=str, help="Number of cells per cell type to subsample from reference", default=500)
     parser.add_argument('--rename_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv")
     parser.add_argument('--ref_name', type=str, default="whole_cortex", help="Prefix of temporary reference file created")
-    parser.add_argument('--restricted_celltypes', type=str, nargs="+", default=["unknown","neuron"], help="Cell types to remove from reference") 
+    parser.add_argument('--restricted_celltypes', type=str, nargs="+", default=["unknown","neuron"], help="Cell types to remove from reference")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args

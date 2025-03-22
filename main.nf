@@ -65,7 +65,7 @@ process processQuery {
     tuple val(study_name), path(study_path)
 
     output:
-    path "${study_name}.h5ad", emit: processed_query
+    tuple val("${study_name}"), path("${study_name}.h5ad"), emit: processed_query
 
 script:
 
@@ -90,6 +90,7 @@ process getCensusAdata {
     val subsample_ref
     val ref_collections
     val organ
+    val restricted_celltypes
 
     output:
     path "refs/*.h5ad", emit: ref_paths_adata
@@ -105,8 +106,8 @@ process getCensusAdata {
         --subsample_ref ${subsample_ref} \\
         --ref_collections ${ref_collections} \\
         --rename_file ${params.rename_file} \\
-        --seed ${params.seed} \\ 
-        --restricted_celltypes ${params.restricted_celltypes}
+        --restricted_celltypes ${restricted_celltypes} \\
+        --seed ${params.seed}
 
     # After running the python script, all .h5ad files will be saved in the refs/ directory inside a work directory
     """
@@ -122,10 +123,10 @@ process rfClassify{
     )
 
     input:
-    tuple val(query_path), val(ref_path)
+    tuple val(study_name), val(query_path), val(ref_path)
 
     output:
-    path "${query_path.getName().toString().replace(".h5ad","")}/${query_path.getName().toString().replace(".h5ad","")}_predicted_celltype.tsv"
+    tuple val{$study_name}, path("${study_name}/${study_name}_predicted_celltype.tsv"), emit : celltype_file_channel
 
     script:
     """
@@ -135,18 +136,20 @@ process rfClassify{
 
 }
 
-// process loadResults {
-    // input:
-        // tuple path(celltype_file), val(study_name), val(target_platform)
+process loadResults {
+     input:
+        tuple val(study_name), path(celltype_file)
 
 
-    //output :
-        // path message.txt
+    output :
+        path message.txt
 
-    // script:
-    // """
-    // gemma-cli-sc loadSingleCellData -e ${study_name} -a ${params.target_platform} --preferred-quantitation-type
-    // """
+    script:
+     """
+    gemma-cli-sc loadSingleCellData -e ${study_name} -a ${params.target_platform} \\
+                --preferred-quantitation-type --ctaFile ${celltype_file}
+    """
+}
 
 // Workflow definition
 workflow {
@@ -171,18 +174,23 @@ workflow {
      
     // Get collection names to pull from census
     ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ')
+    restricted_celltypes = params.restricted_celltypes.collect { "\"${it}\"" }.join(' ') 
     
+
     // Get reference data and save to files
-    getCensusAdata(params.organism, params.census_version, params.subsample_ref, ref_collections, params.organ)
+    getCensusAdata(params.organism, params.census_version, params.subsample_ref, ref_collections, params.organ, restricted_celltypes)
     getCensusAdata.out.ref_paths_adata.flatten()
     .set { ref_paths_adata }
     
     // Combine the processed queries with the reference paths
     combos_adata = processed_queries_adata.combine(ref_paths_adata)
-    
+    combos_adata.view()
     // Process each query-reference pair
     rfClassify(combos_adata)
 
+    celltype_files = rfClassify.out.celltype_file_channel
+
+    celltype_files.view()
     save_params_to_file()
 }
 
