@@ -16,6 +16,7 @@
     "target_platform": "Generic_mouse_ncbiIds",
     "restricted_celltypes": [
         "unknown",
-        "neuron"
+        "neuron",
+        "interneuron"
     ]
 }
