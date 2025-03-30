@@ -4,7 +4,7 @@
     "cutoff": 0,
     "seed": 42,
     "subsample_ref": 100,
-    "study_names": "study_names.txt",
+    "study_names": "study_names_mouse.txt",
     "ref_collections": [
         "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
         "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
@@ -14,9 +14,5 @@
     ],
     "organ": "brain",
     "target_platform": "Generic_mouse_ncbiIds",
-    "restricted_celltypes": [
-        "unknown",
-        "neuron",
-        "interneuron"
-    ]
+    "rename_file": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv"
 }
