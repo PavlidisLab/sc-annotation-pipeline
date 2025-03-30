@@ -52,37 +52,63 @@ def setup(organism="homo_sapiens", version="2024-07-01"):
 
 #clean up cellxgene ontologies
 
-def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv"):
-    # Read renaming terms from file
+def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv"):
+    """
+    Rename cell types and map them to ontology terms.
+    obs : pd.DataFrame
+        The input DataFrame containing cell annotations. 
+        Must include the columns: 'cell_type' and 'cell_type_ontology_term_id'.
+    
+    rename_file : str, optional (default: "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv")
+        Path to the TSV file containing the renaming information.
+        The file must contain the columns:
+        - 'cell_type': Original cell type names.
+        - 'new_cell_type': New cell type names.
+        - 'cell_type_ontology_term_id': Corresponding ontology terms.
+    
+    Returns:
+        - Cells filtered to only include those in `new_cell_type`.
+        - Updated cell type names.
+        - Mapped ontology terms.
+    """
     rename_df = pd.read_csv(rename_file, sep="\t")
     
     # Ensure expected columns exist
     if not {'cell_type', 'new_cell_type', 'cell_type_ontology_term_id'}.issubset(rename_df.columns):
         raise ValueError("Rename file must contain 'cell_type', 'new_cell_type', and 'cell_type_ontology_term_id' columns.")
-    
+   
+    # Filter cells to keep only those with valid new cell types
+    # this replaces the "restricted cell types" command line argument
+    obs = obs[obs['cell_type'].isin(rename_df['new_cell_type'])]
+ 
     # Create mapping dictionaries
     rename_mapping = dict(zip(rename_df['cell_type'], rename_df['new_cell_type']))
     ontology_mapping = dict(zip(rename_df['new_cell_type'], rename_df['cell_type_ontology_term_id']))
     
     # Apply renaming
     obs['cell_type'] = obs['cell_type'].replace(rename_mapping)
-    
     if pd.api.types.is_categorical_dtype(obs['cell_type_ontology_term_id']):
         # Add any new categories to 'cell_type_ontology_term_id'
         new_categories = list(set(ontology_mapping.values()) - set(obs['cell_type_ontology_term_id'].cat.categories))
         if new_categories:
             obs['cell_type_ontology_term_id'] = obs['cell_type_ontology_term_id'].cat.add_categories(new_categories)
- 
-    # Assign new ontology IDs only for replaced cells
-    replaced_cells = obs['cell_type'].isin(rename_mapping.values())
-    obs.loc[replaced_cells, 'cell_type_ontology_term_id'] = obs.loc[replaced_cells, 'cell_type'].map(ontology_mapping)
+            
+    obs["cell_type_ontology_term_id"] = obs["cell_type"].map(ontology_mapping)
+    
+    # remove NAs
     
     return obs
 
 
 # Subsample x cells from each cell type if there are n>x cells present
+# calls "rename cells" to filter out generic/ambiguous cell types
 # ensures equal representation of cell types in reference
-def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo sapiens", rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv"):
+def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo sapiens", 
+                    rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv"):
+    """
+    Subsample up to `subsample` cells per cell type, ensuring balanced representation.
+    Filter and rename cells before sub-sampling (see rename_cells).
+    """
     random.seed(seed)         # For `random`
     np.random.seed(seed)      # For `numpy`
     scvi.settings.seed = seed # For `scvi`
@@ -181,7 +207,7 @@ def get_cellxgene_obs(census, organism, organ="brain", primary_data=True, diseas
     return cellxgene_census.get_obs(census, organism, value_filter=value_filter)
 
 
-def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5, assay=None, tissue=None, organ="brain", restricted_celltypes = ["unknown", "glutamatergic neuron"],
+def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5, assay=None, tissue=None, organ="brain",
                ref_collections=["Transcriptomic cytoarchitecture reveals principles of human neocortex organization"," SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"], 
                rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv",seed=42):
 
@@ -193,18 +219,14 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
     cellxgene_obs = cellxgene_obs.merge(dataset_info, on="dataset_id", suffixes=(None,"_y"))
     cellxgene_obs.drop(columns=['soma_joinid_y'], inplace=True)
     cellxgene_obs_filtered = cellxgene_obs[cellxgene_obs['collection_name'].isin(ref_collections)]
-    # eventually change this to filter out "restricted cell types" from passed file
-    #restricted_celltypes_hs=["unknown", "glutamatergic neuron"]
-  #  restricted_celltypes_mmus=["unknown", "neuron"]
-    #if organism == "homo_sapiens":
      
-    #elif organism == "mus_musculus":
-    cellxgene_obs_filtered = cellxgene_obs_filtered[~cellxgene_obs_filtered['cell_type'].isin(restricted_celltypes)]   
     if assay:
         cellxgene_obs_filtered = cellxgene_obs_filtered[cellxgene_obs_filtered["assay"].isin(assay)]
     if tissue:
         cellxgene_obs_filtered = cellxgene_obs_filtered[cellxgene_obs_filtered["tissue"].isin(tissue)]
- 
+    obs = cellxgene_obs_filtered[["cell_type","cell_type_ontology_term_id","collection_name","dataset_title"]].value_counts().reset_index() 
+    obs.to_csv(f"{organism}_ref_cell_info.tsv",sep='\t',index=False)
+    
     # Adjust organism naming for compatibility
     organism_name_mapping = {
         "homo_sapiens": "Homo sapiens",
