@@ -90,11 +90,10 @@ process getCensusAdata {
     val subsample_ref
     val ref_collections
     val organ
-    val restricted_celltypes
 
     output:
     path "refs/*.h5ad", emit: ref_paths_adata
-    path "refs/ref_cell_info.tsv"
+    path "**ref_cell_info.tsv"
 
     script:
     """
@@ -106,7 +105,6 @@ process getCensusAdata {
         --subsample_ref ${subsample_ref} \\
         --ref_collections ${ref_collections} \\
         --rename_file ${params.rename_file} \\
-        --restricted_celltypes ${restricted_celltypes} \\
         --seed ${params.seed}
 
     # After running the python script, all .h5ad files will be saved in the refs/ directory inside a work directory
@@ -174,11 +172,10 @@ workflow {
      
     // Get collection names to pull from census
     ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ')
-    restricted_celltypes = params.restricted_celltypes.collect { "\"${it}\"" }.join(' ') 
     
 
     // Get reference data and save to files
-    getCensusAdata(params.organism, params.census_version, params.subsample_ref, ref_collections, params.organ, restricted_celltypes)
+    getCensusAdata(params.organism, params.census_version, params.subsample_ref, ref_collections, params.organ)
     getCensusAdata.out.ref_paths_adata.flatten()
     .set { ref_paths_adata }
     
