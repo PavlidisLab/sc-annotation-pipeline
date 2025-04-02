@@ -48,12 +48,15 @@ nextflow run main.nf -profile conda \
   --organism <organism_name> \
   --census_version <version> \
   --outdir <output_directory> \
-  --studies_dir <path_to_studies> \
+  --study_names <study_names_file> \
   --subsample_ref <subsample_per_cell_type> \
   --seed <random_seed> \
-  --cutoff <classification_probability_cutoff>
-  -params-file <params.json>
-  -work-dir my_work_dir
+  --cutoff <classification_probability_cutoff> \
+  -params-file <params.json> \
+  -work-dir my_work_dir \
+  -organ <organ> \
+  -rename_file <renaming_file>
+
 ```
 
 The `params.json` file can be passed instead of all command-line parameters. Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line (see [Input](#input) section for details). Examples of the params file can be found in `params.hs.json` and `params.mm.json`. 
@@ -63,24 +66,33 @@ The `params.json` file can be passed instead of all command-line parameters. Ins
 Task hashes are stored by default in `.nextflow/cache`. Intermediate files for each pipeline run stored by default in the `work` directory. Both of these are necessary to resume your pipeline run with `-resume`. You can read more about caching and resuming with Nextflow [here](https://www.nextflow.io/docs/latest/cache-and-resume.html#work-directory).
 `work-dir` is an optional parameter to keep the working directory for your pipeline runs separate. It's a good idea to delete your working directory when you're finished.
 
-Default parameters are as follows:
+Default parameters for mouse are as follows:
 
 ```
 nextflow run main.nf -profile conda \
   --organism mus_musculus \
   --census_version 2024-07-01 \
-  --outdir <organism>_subsample_ref_<subsample_ref> \
-  --studies_dir /space/scratch/gemma-single-cell-data-ensembl-id/ \
-  --subsample_ref 50 \
-  --ref_collections ["A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation"] \
+  --outdir mus_musculus \
+  --subsample_ref 500 \
+  --study_names "study_names_mouse.txt" \
+  --subsample_ref 500 \
+  --ref_collections [
+        "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
+        "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
+        "Adult mouse cortical cell taxonomy revealed by single cell transcriptomics",
+        "Tabula Muris Senis",
+        "Single-cell transcriptomics characterization of oligodendrocytes and microglia in white matter aging"
+    ] \
   --seed 42 \
-  --cutoff 0
+  --cutoff 0 \
+  --organ brain \
+  --rename_file meta/rename_cells_mmus.tsv
 ```
 
 To run with defaults, simply run:
 
 ```
-nextflow run main.nf -profile conda
+nextflow run main.nf -profile conda -params-file params.mm.json
 ```
 
 Parameters are configured in order of priority:
@@ -100,13 +112,7 @@ nextflow run main.nf -profile conda -resume
 
 ## Input
 
-Input single-cell data should be dumped from Gemma in MEX format with ENSEMBL ids like so: 
-
-```
-gemma-cli-sc getSingleCellDataMatrix -e <experiment_id> --format mex --scale-type count --use-ensembl-ids -o /space/scratch/gemma-single-cell-data-ensembl-id/<experiment_id>
-```
-
-I am working on incorporating this into the pipeline. Do this as many times as you'd like for single-cell datasets, and collect them into a parent directory (e.g. `/space/scratch/gemma-single-cell-data-ensembl-id/`). Be sure to check which organism the data comes from. 
+A text file with the names of studies to be downloaded, annotated, and uploaded back to Gemma. Names are separated by newline. See `study_names_mouse.txt` for example.
 
 As of right now, experimental factors such as tissue or batch are not incorporated into the label transfer. The sample accession (i.e. each set of .mex files) is taken as the `batch_key` for the `scvi` forward pass.
 
@@ -119,10 +125,12 @@ As of right now, experimental factors such as tissue or batch are not incorporat
 | `organism`         | The species being analyzed (one of `homo_sapiens`, `mus_musculus`).                                         
 | `census_version`   | The version of the single-cell census to use (do not change from default)                                                
 | `outdir`           | Directory where output files will be saved.                                                  
-| `studies_dir`      | Path to the directory containing the input single-cell query datasets.                       
+| `study_names`      | See study_names_mouse.txt for exampl.                    
 | `subsample_ref`    | Number of cells per cell type to subsample in reference.                                     
 | `ref_collections`  | A space-separated list of quoted reference collection names to use for annotation.                  
 | `seed`             | Random seed for reproducibility of subsampling and processing.                                
+| `organ`            | Organ to sample from CELLxGENE Census. Defaults to brain.
+| `rename_file`      | Tab-delimited file defining cell types to sub-sample and any renaming of ontologies (if applicable). See `meta/rename_cells_mmus.tsv`.
 | `cutoff`           | Minimum confidence score for assigning a cell type during classification (default = 0).                     
 
 See [Usage](#usage) for for default parameters. 
@@ -147,8 +155,6 @@ For each run, an output directory with the following structure will be written:
     ├── GSE154208
     │   └── GSE154208_predicted_celltype.tsv
     ├── params.txt
-    └── refs
-        └── cortex_and_hippocampus_-_10x_3_v3_and_Smart-seq_V4.h5ad
 ```
 
 one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE154208). Likewise, one reference dataset is used for each batch of automatic annotation (stored in `refs/`). Note that this directory may contain multiple studies all annotated usin the same configuration parameters and reference data.
