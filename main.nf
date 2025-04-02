@@ -124,7 +124,7 @@ process rfClassify{
     tuple val(study_name), val(query_path), val(ref_path)
 
     output:
-    tuple val{$study_name}, path("${study_name}/${study_name}_predicted_celltype.tsv"), emit : celltype_file_channel
+    tuple val{study_name}, path("${study_name}/${study_name}_predicted_celltype.tsv"), emit : celltype_file_channel
 
     script:
     """
@@ -135,17 +135,23 @@ process rfClassify{
 }
 
 process loadResults {
+    publishDir (
+        "${params.outdir}/${study_name}", mode: 'copy'
+    )
      input:
         tuple val(study_name), path(celltype_file)
 
 
     output :
-        path message.txt
+        path "message.txt"
 
-    script:
-     """
-    gemma-cli-sc loadSingleCellData -e ${study_name} -a ${params.target_platform} \\
-                --preferred-quantitation-type --ctaFile ${celltype_file}
+
+    """
+    gemma-cli-sc deleteSingleCellData -deleteCta "sc-pipeline-${params.version}" -e ${study_name} || true
+
+    gemma-cli-sc loadSingleCellData -loadCta -e ${study_name} \\
+               -ctaFile ${celltype_file} -preferredCta \\
+               -ctaName "sc-pipeline-${params.version}" 2> "message.txt"
     """
 }
 
@@ -181,13 +187,13 @@ workflow {
     
     // Combine the processed queries with the reference paths
     combos_adata = processed_queries_adata.combine(ref_paths_adata)
-    combos_adata.view()
     // Process each query-reference pair
     rfClassify(combos_adata)
 
     celltype_files = rfClassify.out.celltype_file_channel
 
     celltype_files.view()
+    loadResults(celltype_files)
     save_params_to_file()
 }
 
@@ -207,6 +213,8 @@ workflow.onComplete {
     workDir     : ${workflow.workDir}
     Config files: ${workflow.configFiles}
     exit status : ${workflow.exitStatus}
+    version : ${params.version}
+    outdir : ${params.outdir}
 
     --------------------------------------------------------------------------------
     ================================================================================
