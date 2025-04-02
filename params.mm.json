@@ -3,7 +3,7 @@
     "census_version": "2024-07-01",
     "cutoff": 0,
     "seed": 42,
-    "subsample_ref": 100,
+    "subsample_ref": 500,
     "study_names": "study_names_mouse.txt",
     "ref_collections": [
         "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
