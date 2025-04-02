@@ -1,5 +1,4 @@
 #!/usr/bin/env nextflow
-
 process save_params_to_file {
 
     publishDir (
@@ -22,62 +21,25 @@ process save_params_to_file {
     echo "ref collections: ${params.ref_collections}" >> params.txt
     """
 }
-// process parseJsonMeta {
-//     input:
-//         path study_json_file
-//     output:
-//         path study_meta_file
-//     script:
-//         """
-//         python $projectDir/bin/parse_json.py --json_file ${study_json_file}
-//         """
-// }
-//
 
 
-// process parseStudies {
-    // input:
-        // path study_meta_file
-    // output:
-        // tuple val(study_name), val(mapped_organism)
 
-    // script:
+ process downloadStudies {
+   // publishDir "${params.outdir}/studies", mode: 'copy'
 
+    input:
+        val study_name
 
-    // """
-    // study_name = study_meta_file.split("_")[0]
-    // readLines("${study_meta_file}").first() { line ->
-    //
-        // def organism = line.split(" ")[1]
-        //
-        //
-    //
-    //  
-        // # Output the tuple
-        // echo "$study_name $organism
-    // done
-    // """
-// }
+    output:
+        tuple val(study_name), path("${study_name}/"), emit: study_channel
 
 
-// process getStudies {
+     script:
 
-    // input:
-        // val study_name, val organism
-
-    // output:
-        // 
-        // path(${params.studies_dir}/${experiment}")
-        //
-
-    // script:
-
-    // """
-    // gemma-cli-sc getSingleCellDataMatrix -e ${study_name} \\
-    // --format mex --scale-type count --use-ensembl-ids \\
-    // -o /space/scratch/gemma-single-cell-data-ensembl-id/${organism}/${study_name}
-    // """
-// }
+     """
+     gemma-cli-sc getSingleCellDataMatrix -e $study_name --format mex --scale-type count --use-ensembl-ids -o $study_name
+     """
+ }
 
 process runSetup {
     //conda '/home/rschwartz/anaconda3/envs/scanpyenv'
@@ -100,10 +62,10 @@ process processQuery {
 
     input:
     val model_path
-    tuple val(study_path), val(study_name)
+    tuple val(study_name), path(study_path)
 
     output:
-    path "${study_name}.h5ad", emit: processed_query
+    tuple val("${study_name}"), path("${study_name}.h5ad"), emit: processed_query
 
 script:
 
@@ -127,19 +89,22 @@ process getCensusAdata {
     val census_version
     val subsample_ref
     val ref_collections
+    val organ
 
     output:
     path "refs/*.h5ad", emit: ref_paths_adata
-    path "refs/ref_cell_info.tsv"
+    path "**ref_cell_info.tsv"
 
     script:
     """
     # Run the python script to generate the files
     python $projectDir/bin/get_census_adata.py \\
         --organism ${organism} \\
+        --organ ${organ} \\
         --census_version ${census_version} \\
         --subsample_ref ${subsample_ref} \\
         --ref_collections ${ref_collections} \\
+        --rename_file ${params.rename_file} \\
         --seed ${params.seed}
 
     # After running the python script, all .h5ad files will be saved in the refs/ directory inside a work directory
@@ -156,10 +121,10 @@ process rfClassify{
     )
 
     input:
-    tuple val(query_path), val(ref_path)
+    tuple val(study_name), val(query_path), val(ref_path)
 
     output:
-    path "${query_path.getName().toString().replace(".h5ad","")}/${query_path.getName().toString().replace(".h5ad","")}_predicted_celltype.tsv"
+    tuple val{study_name}, path("${study_name}/${study_name}_predicted_celltype.tsv"), emit : celltype_file_channel
 
     script:
     """
@@ -169,64 +134,66 @@ process rfClassify{
 
 }
 
-// process loadResults {
-    // input:
-        // path "*.tsv"
-        // val experiment
-        // val target_platform
+process loadResults {
+    publishDir (
+        "${params.outdir}/${study_name}", mode: 'copy'
+    )
+     input:
+        tuple val(study_name), path(celltype_file)
 
-    //output :
-        // path message.txt
 
-    // script:
-    // """
-    // gemma-cli loadSingleCellData -e <experiment ID> -p <target platform>
-    // """
+    output :
+        path "message.txt"
+
+
+    """
+    gemma-cli-sc deleteSingleCellData -deleteCta "sc-pipeline-${params.version}" -e ${study_name} || true
+
+    gemma-cli-sc loadSingleCellData -loadCta -e ${study_name} \\
+               -ctaFile ${celltype_file} -preferredCta \\
+               -ctaName "sc-pipeline-${params.version}" 2> "message.txt"
+    """
+}
 
 // Workflow definition
 workflow {
 
-    Channel
-        .fromPath("${params.studies_dir}/*", type: 'dir')
-        .set { study_paths }
 
     // Get query names from file (including region)
-    study_paths = study_paths.map{ study_path -> 
-        def study_name = study_path.toString().split('/')[-1]
-        [study_path, study_name]
+    study_names = Channel.fromPath(params.study_names).flatMap { file ->
+        // Read the file, split by lines, and trim any extra spaces
+        file.readLines().collect { it.trim() }
     }
 
-    // study_meta = parseStudies(params.study_meta_file)
+    downloadStudies(study_names)
+    downloadStudies.out.study_channel.set { study_channel }
+    study_channel.view()
 
-    // study_channel = getStudies(study_meta)
-
-    // combined_study_channel = study_channel.map{ study_path -> 
-        // def study_name = study_path.toString().split('/')[-1]
-        // def organism = study_path.toString().split('/')[-2]
-        // [study_path, study_name, organism]
-    // }
-
-
+    study_channel.view()
     // Call the setup process to download the model
     model_path = runSetup(params.organism, params.census_version)
 
     // Process each query by relabeling, subsampling, and passing through scvi model
-    processed_queries_adata = processQuery(model_path, study_paths) 
+    processed_queries_adata = processQuery(model_path, study_channel) 
      
     // Get collection names to pull from census
     ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ')
     
+
     // Get reference data and save to files
-    getCensusAdata(params.organism, params.census_version, params.subsample_ref, ref_collections)
+    getCensusAdata(params.organism, params.census_version, params.subsample_ref, ref_collections, params.organ)
     getCensusAdata.out.ref_paths_adata.flatten()
     .set { ref_paths_adata }
     
     // Combine the processed queries with the reference paths
     combos_adata = processed_queries_adata.combine(ref_paths_adata)
-    
     // Process each query-reference pair
     rfClassify(combos_adata)
 
+    celltype_files = rfClassify.out.celltype_file_channel
+
+    celltype_files.view()
+    loadResults(celltype_files)
     save_params_to_file()
 }
 
@@ -246,6 +213,8 @@ workflow.onComplete {
     workDir     : ${workflow.workDir}
     Config files: ${workflow.configFiles}
     exit status : ${workflow.exitStatus}
+    version : ${params.version}
+    outdir : ${params.outdir}
 
     --------------------------------------------------------------------------------
     ================================================================================
