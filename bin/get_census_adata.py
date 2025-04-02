@@ -37,9 +37,12 @@ def parse_arguments():
     parser.add_argument('--census_version', type=str, default='2024-07-01', help='Census version (e.g., 2024-07-01)')
     parser.add_argument('--ref_collections', type=str, nargs = '+', default = ["A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation"]) 
     parser.add_argument('--seed', type=int, default=42)
-    parser.add_argument('--assay', type=str, nargs = "+", help="Assays to use from reference", default=None)
-    parser.add_argument('--tissue', type=str, nargs="+", default = None, help = "Cortex region to pull from (default: all)")
+    parser.add_argument('--organ', type=str, default="brain")
+    parser.add_argument('--assay', type=str, nargs = "+", help="Assays to subset from referenc (unnecessary)", default=None)
+    parser.add_argument('--tissue', type=str, nargs="+", default = None, help = "tissues to pull from (different from organ, this can select for more specific brain regions)")
     parser.add_argument('--subsample', type=str, help="Number of cells per cell type to subsample from reference", default=500)
+    parser.add_argument('--rename_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv")
+    parser.add_argument('--ref_name', type=str, default="whole_cortex", help="Prefix of temporary reference file created")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -57,30 +60,33 @@ def main():
    assay = args.assay
    subsample = args.subsample
    tissue = args.tissue
-  
-   refs=get_census(organism=organism, 
-                     subsample=subsample, census_version=census_version, 
-                        ref_collections=ref_collections, assay=assay, tissue=tissue, seed=SEED)
+   organ=args.organ
+   rename_file=args.rename_file   
+   ref=get_census(organism=organism, 
+                     subsample=subsample, census_version=census_version, organ=organ,
+                        ref_collections=ref_collections, assay=assay, tissue=tissue, rename_file=rename_file, seed=SEED)
 
    print("finished fetching anndata")
    outdir="refs"
    os.makedirs(outdir, exist_ok=True) 
 
-   for ref_name, ref in refs.items():
-      if len(ref.obs.index) == 0:
-         raise ValueError(f"Reference {ref_name} has no cells, check README for proper ref collections")
-      if len(ref.var.index) == 0:
-         raise ValueError(f"Reference {ref_name} has no genes, check README for proper ref collections")
-      else:
-         new_ref_name = ref_name.replace(" ", "_").replace("\\/", "_") \
-         .replace("(","").replace(")","") \
-         .replace("\\", "") \
-         .replace("'", "") \
-         .replace(":", "")
-         ref.write(os.path.join(outdir,f"{new_ref_name}.h5ad"))
-         pd.DataFrame(ref.obs[["cell_type","collection_name","dataset_title"]].value_counts().reset_index()).to_csv(os.path.join(outdir,"ref_cell_info.tsv"),sep='\t',index=False)
+    # handle tissue and assay params, can be lists
+   if tissue and assay:
+      ref_name = "_".join([f"{t}-{a}" for t in tissue for a in assay])
+   else:
+      ref_name = args.ref_name
 
-     
-      
+   if len(ref.obs.index) == 0:
+      raise ValueError(f"Reference {ref_name} has no cells, check README for proper ref collections")
+   if len(ref.var.index) == 0:
+      raise ValueError(f"Reference {ref_name} has no genes, check README for proper ref collections")
+   else:
+      new_ref_name = ref_name.replace(" ", "_").replace("\\/", "_") \
+      .replace("(","").replace(")","") \
+      .replace("\\", "") \
+      .replace("'", "") \
+      .replace(":", "")
+      ref.write(os.path.join(outdir,f"{new_ref_name}.h5ad"))
+
 if __name__ == "__main__":
     main()
