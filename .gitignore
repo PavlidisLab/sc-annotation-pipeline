@@ -10,7 +10,7 @@ work/
 *mtx
 results/
 envs/
-*json
+mmus/
 
 
 # C extensions
