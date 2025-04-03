@@ -10,6 +10,5 @@
         "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"
     ],
     "organ": "brain",
-    "target_platform": "Generic_human_ncbiIds",
     "rename_file": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_hsap.tsv"
 }
