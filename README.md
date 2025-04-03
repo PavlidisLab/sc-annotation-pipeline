@@ -44,7 +44,7 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 The pipeline can be run with the following options:
 
 ```
-nextflow run main.nf -profile conda \
+nextflow main.nf -profile conda \
   --organism <organism_name> \
   --census_version <version> \
   --outdir <output_directory> \
