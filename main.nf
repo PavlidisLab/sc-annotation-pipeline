@@ -16,7 +16,7 @@ process save_params_to_file {
     echo "organism: ${params.organism}" > params.txt
     echo "census_version: ${params.census_version}" >> params.txt 
     echo "outdir: ${params.outdir}" >> params.txt
-    echo "studies_dir: ${params.studies_dir}" >> params.txt
+    echo "study_names: ${params.study_names}" >> params.txt
     echo "subsample ref: ${params.subsample_ref}" >> params.txt
     echo "ref collections: ${params.ref_collections}" >> params.txt
     """
