@@ -152,12 +152,13 @@ For each run, an output directory with the following structure will be written:
 
 ```
 └── mus_musculus_subsample_ref_50_2025-01-15_17-51-37
-    ├── GSE154208
-    │   └── GSE154208_predicted_celltype.tsv
+     ├── GSE152715.1_predicted_celltype.tsv
+     └── message.txt
     ├── params.txt
 ```
 
-one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE154208). Likewise, one reference dataset is used for each batch of automatic annotation (stored in `refs/`). Note that this directory may contain multiple studies all annotated usin the same configuration parameters and reference data.
+one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE154208).
+`message.txt` is the output of `'oadSingleCellData` command which uploaded `predicted_celltypes.tsv` to Gemma.
 
 ## Workflow Description
 
