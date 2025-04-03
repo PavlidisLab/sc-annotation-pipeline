@@ -52,10 +52,10 @@ nextflow run main.nf -profile conda \
   --subsample_ref <subsample_per_cell_type> \
   --seed <random_seed> \
   --cutoff <classification_probability_cutoff> \
+  --organ <organ> \
+  --rename_file <renaming_file> \
   -params-file <params.json> \
   -work-dir my_work_dir \
-  -organ <organ> \
-  -rename_file <renaming_file>
 
 ```
 
