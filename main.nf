@@ -155,34 +155,33 @@ process loadResults {
     """
 }
 
-
 process plotQC {
-    conda '/home/rschwartz/anaconda3/envs/scanpyenv'
+   // conda '/home/rschwartz/anaconda3/envs/scanpyenv'
     
     publishDir (
-        path: "${params.outdir}/qc_plots/${study_name}"
-        mode: "copy"
-        )
+        "${params.outdir}/${study_name}/qc_results", mode: 'copy'
+    )
 
     input:
-    tuple val(study_name), path(predicted_meta), path(study_path)
+        tuple val(study_name), path(predicted_meta), path(study_path)
 
     output:
-    path "**png" // Wildcard to capture all relevant output files
+        path "**png" // Wildcard to capture all relevant output files
+        path "**tsv"
 
     script:
-    ref_keys = params.ref_keys.join(' ')
     """
     python $projectDir/bin/plot_QC.py --query_path ${study_path} \\
         --assigned_celltypes_path ${predicted_meta} \\
-        --gene_mapping ${params.gene_mapping} 
+        --gene_mapping ${params.gene_mapping} \\
+        --rename_file ${params.rename_file} \\
+        --nmads ${params.nmads}
     """ 
 }
 
 
 // Workflow definition
 workflow {
-
 
     // Get query names from file (including region)
     study_names = Channel.fromPath(params.study_names).flatMap { file ->
@@ -192,9 +191,7 @@ workflow {
 
     downloadStudies(study_names)
     downloadStudies.out.study_channel.set { study_channel }
-    study_channel.view()
 
-    study_channel.view()
     // Call the setup process to download the model
     model_path = runSetup(params.organism, params.census_version)
 
@@ -217,9 +214,10 @@ workflow {
 
     celltype_files = rfClassify.out.celltype_file_channel
 
-    celltype_files.join(processed_queries_adata, : by 0)
+    celltype_files.join(processed_queries_adata, by: 0)
     .set{qc_channel}
-    qc_channel.view
+
+    plotQC(qc_channel)
 
     loadResults(celltype_files)
     save_params_to_file()

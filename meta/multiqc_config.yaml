@@ -1,0 +1,20 @@
+# Global cell_type_composition for all samples
+cell_type_composition:
+  plot_type: 'bargraph'
+  file_format: 'tsv'
+  section_name: 'Study Metrics'
+  pconfig:
+    id: 'example_bargraph'
+    title: 'Example Bargraph'
+    ylab: 'y values'
+
+sp:
+  # Global path for cell_type_composition across all samples
+  cell_type_composition:
+    fn: '{sample_id}/celltype_counts_mqc.tsv'  # Path to the TSV file with your metrics
+
+ignore_images: false
+
+custom_content:
+    order:
+        - 'cell_type_composition'
