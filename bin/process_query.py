@@ -28,7 +28,7 @@ def parse_arguments():
   parser = argparse.ArgumentParser(description="Download model file based on organism, census version, and tree file.")
   parser.add_argument('--model_path', type=str, default="/space/grp/rschwartz/rschwartz/biof501_proj/scvi-human-2024-07-01", help='Path to the scvi model file')
   parser.add_argument('--study_name', type=str, default="GSE198014", help='Name of the study')
-  parser.add_argument('--study_path', type=str, default="/space/scratch/gemma-single-cell-data-ensembl-id/GSE198014", help='Path to the study file')
+  parser.add_argument('--study_path', type=str, default="/space/scratch/gemma-single-cell-data-ensembl-id/GSE178226", help='Path to the study file')
   parser.add_argument('--seed', type=int, default=42)
    
   if __name__ == "__main__":
