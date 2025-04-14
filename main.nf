@@ -166,8 +166,8 @@ process plotQC {
         tuple val(study_name), path(predicted_meta), path(study_path)
 
     output:
-        path "**png" // Wildcard to capture all relevant output files
-        path "**tsv"
+    tuple val(study_name), path("multiqc_dir/"), emit: qc_channel
+
 
     script:
     """
@@ -177,6 +177,23 @@ process plotQC {
         --rename_file ${params.rename_file} \\
         --nmads ${params.nmads}
     """ 
+}
+
+process runMultiQC {
+    publishDir (
+        "${params.outdir}/multiqc/${study_name}", mode: 'copy'
+    )
+
+    input:
+        tuple val(study_name), path(qc_dir)
+
+    output:
+        path "**html"
+
+    script:
+    """
+    multiqc ${qc_dir} -d --config ${params.multiqc_config}
+    """
 }
 
 
@@ -218,6 +235,9 @@ workflow {
     .set{qc_channel}
 
     plotQC(qc_channel)
+    multiqc_channel = plotQC.out.qc_channel
+
+    runMultiQC(multiqc_channel)
 
     loadResults(celltype_files)
     save_params_to_file()
