@@ -169,9 +169,8 @@ def get_original_celltypes(columns_file="/space/grp/rschwartz/rschwartz/nextflow
     duplicate_observation_joinid = aggregate_obs[aggregate_obs["new_observation_joinid"].duplicated()]
     duplicate_observation_joinid.columns
     assert aggregate_obs["new_observation_joinid"].nunique() == aggregate_obs.shape[0]
-    original_celltypes["whole_cortex"] = aggregate_obs
    
-    return original_celltypes
+    return aggregate_obs
 
 def relabel(adata, relabel_path, join_key="", sep="\t"):
     # Read the relabel table from the file

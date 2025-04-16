@@ -76,7 +76,7 @@ def main():
   
    ref=get_census(organism=organism, 
                      subsample=subsample, census_version=census_version, organ=organ,
-                        ref_collections=ref_collections, assay=assay, tissue=tissue, rename_file=rename_file, seed=SEED)
+                        ref_collections=ref_collections, assay=assay, tissue=tissue, rename_file=rename_file, seed=SEED, original_celltypes=original_celltypes)
 
    print("finished fetching anndata")
    outdir="refs"
