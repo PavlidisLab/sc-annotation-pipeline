@@ -13,5 +13,5 @@
         "Single-cell transcriptomics characterization of oligodendrocytes and microglia in white matter aging"
     ],
     "organ": "brain",
-    "rename_file": "/space/grp/Pipelines/sc-annotation-pipeline/meta/rename_cells_mmus.tsv"
+    "rename_file": "/space/grp/Pipelines/sc-annotation-pipeline/meta/rename_cells_author_mmus.tsv"
 }
