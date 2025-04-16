@@ -43,6 +43,9 @@ def parse_arguments():
     parser.add_argument('--subsample', type=str, help="Number of cells per cell type to subsample from reference", default=500)
     parser.add_argument('--rename_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv")
     parser.add_argument('--ref_name', type=str, default="whole_cortex", help="Prefix of temporary reference file created")
+    parser.add_argument('--original_celltype_columns', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/original_celltype_columns.tsv")
+    parser.add_argument('--author_annotations_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/author_cell_annotations")
+    
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -61,7 +64,16 @@ def main():
    subsample = args.subsample
    tissue = args.tissue
    organ=args.organ
-   rename_file=args.rename_file   
+   rename_file=args.rename_file
+   original_celltype_columns = args.original_celltype_columns
+   author_annotations_path = args.author_annotations_path
+   
+   if organism == "mus_musculus":
+      original_celltypes = get_original_celltypes(columns_file=original_celltype_columns,
+                                          author_annotations_path=author_annotations_path) 
+   else:
+      original_celltypes = None
+  
    ref=get_census(organism=organism, 
                      subsample=subsample, census_version=census_version, organ=organ,
                         ref_collections=ref_collections, assay=assay, tissue=tissue, rename_file=rename_file, seed=SEED)

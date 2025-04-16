@@ -133,6 +133,46 @@ def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo s
     # Return final indices
     return final_idx
 
+def replace_ambiguous_cells(refs, ambiguous_celltypes):
+    for ref_name, ref in refs.items():
+        obs = ref.obs
+        obs["new_cell_type"] = obs["cell_type"]
+        obs["new_cell_type"] = np.where(obs["cell_type"].isin(ambiguous_celltypes), obs["author_cell_type"], obs["cell_type"])
+        ref.obs = obs
+        refs[ref_name] = ref
+        obs[["subclass","cell_type","new_cell_type","author_cell_type","dataset_title"]].value_counts().reset_index().to_csv(f"refs/{ref_name}_new_celltypes.tsv", sep="\t", index=False)
+        
+    #return refs
+
+def get_original_celltypes(columns_file="/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/meta/author_cell_annotations/original_celltype_columns.tsv", 
+                           author_annotations_path="/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/meta/author_cell_annotations"):
+    original_celltype_columns = pd.read_csv(columns_file, sep="\t", low_memory=False)
+
+    original_celltypes = {}
+    for file in os.listdir(author_annotations_path):
+        if "obs.tsv" in file:
+            dataset_title = file.split(".")[0]
+            og_obs = pd.read_csv(os.path.join(author_annotations_path, file), sep="\t", low_memory=False)
+            # check if all observation_joinid are unique
+            assert og_obs["observation_joinid"].nunique() == og_obs.shape[0]
+            og_column = original_celltype_columns[original_celltype_columns["dataset_title"] == dataset_title]["author_cell_type"].values[0]
+            og_obs["author_cell_type"] = og_obs[og_column]
+            original_celltypes[dataset_title] = og_obs
+
+    for dataset_title, obs in original_celltypes.items():
+        #original_celltypes[dataset_title]["new_dataset_title"] = dataset_title
+        original_celltypes[dataset_title]["new_observation_joinid"] = original_celltypes[dataset_title]["observation_joinid"].apply(lambda x: f"{dataset_title}_{x}")
+    
+        # concat all original_celltypes
+    aggregate_obs = pd.concat([original_celltypes[ref_name] for ref_name in original_celltypes.keys()])
+    # find duplicate observation_joinid in aggregate_obs
+    duplicate_observation_joinid = aggregate_obs[aggregate_obs["new_observation_joinid"].duplicated()]
+    duplicate_observation_joinid.columns
+    assert aggregate_obs["new_observation_joinid"].nunique() == aggregate_obs.shape[0]
+    original_celltypes["whole_cortex"] = aggregate_obs
+   
+    return original_celltypes
+
 def relabel(adata, relabel_path, join_key="", sep="\t"):
     # Read the relabel table from the file
     relabel_df = pd.read_csv(relabel_path, sep=sep)  # Adjust the separator as needed
@@ -150,10 +190,28 @@ def relabel(adata, relabel_path, join_key="", sep="\t"):
     adata.obs.drop(columns=columns_to_drop, inplace=True)
     return adata
 
+def map_author_labels(obs, original_celltypes):
+    obs["new_dataset_title"] = obs["dataset_title"].apply(lambda x: x.replace(" ", "_")
+                                                                .replace("\\/", "_")
+                                                                .replace("(", "")
+                                                                .replace(")", "")
+                                                                .replace("\\", "")
+                                                                .replace("'", "")
+                                                                .replace(":", "")
+                                                                .replace(";", "")
+                                                                .replace("&", ""))
+
+    obs["new_observation_joinid"] = obs["new_dataset_title"].astype(str) + "_" + obs["observation_joinid"].astype(str)
+    
+    mapping = dict(zip(original_celltypes["new_observation_joinid"], original_celltypes["author_cell_type"]))
+    obs["author_cell_type"] = obs["new_observation_joinid"].map(mapping)
+
+    return obs
 
 def extract_data(data, filtered_ids, subsample=10, organism=None, census=None, 
-    obs_filter=None, cell_columns=None, dataset_info=None, seed=42):
-    
+    obs_filter=None, cell_columns=None, dataset_info=None, dims=50, 
+    original_celltypes=None, seed=42):
+     
     brain_cell_subsampled_ids = subsample_cells(data, filtered_ids, subsample, seed=seed, organism=organism)
     # Assuming get_seurat is defined to return an AnnData object
     adata = cellxgene_census.get_anndata(
@@ -164,10 +222,16 @@ def extract_data(data, filtered_ids, subsample=10, organism=None, census=None,
         obs_coords=brain_cell_subsampled_ids,
         var_value_filter = "nnz > 10",
         obs_embeddings=["scvi"])
+    
     sc.pp.filter_genes(adata, min_cells=3)
+    sc.pp.filter_genes(adata, min_counts=200)
+    
     print("Subsampling successful.")
     newmeta = adata.obs.merge(dataset_info, on="dataset_id", suffixes=(None,"y"))
     adata.obs = newmeta
+    
+    if original_celltypes is not None: 
+        adata.obs = map_author_labels(adata.obs, original_celltypes)
     # Assuming relabel_wrapper is defined
     # Convert all columns in adata.obs to factors (categorical type in pandas)
     return adata
@@ -209,6 +273,7 @@ def get_cellxgene_obs(census, organism, organ="brain", primary_data=True, diseas
 
 def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5, assay=None, tissue=None, organ="brain",
                ref_collections=["Transcriptomic cytoarchitecture reveals principles of human neocortex organization"," SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"], 
+               original_celltypes = None,
                rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv",seed=42):
 
     census = cellxgene_census.open_soma(census_version=census_version)
@@ -241,21 +306,21 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         "soma_joinid", "observation_joinid"
     ]
     
-    refs = {}
-    
+    if original_celltypes:
+        cellxgene_obs_filtered = map_author_labels(cellxgene_obs_filtered, original_celltypes)
+        
     # Get embeddings for all data together
     filtered_ids = cellxgene_obs_filtered['soma_joinid'].values
     adata = extract_data(
         cellxgene_obs_filtered, filtered_ids,
         subsample=subsample, organism=organism,
         census=census, obs_filter=None,
-        cell_columns=cell_columns, dataset_info=dataset_info, seed = seed
+        cell_columns=cell_columns, dataset_info=dataset_info, seed = seed,
+        original_celltypes=original_celltypes
     )
     adata.obs=rename_cells(adata.obs, rename_file=rename_file) 
     
-    
-
-    
+     
    # for name, ref in refs.items(): 
     for col in adata.obs.columns:
         if adata.obs[col].dtype.name =='category':
