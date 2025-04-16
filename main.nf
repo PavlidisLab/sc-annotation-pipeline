@@ -85,11 +85,7 @@ process getCensusAdata {
   //  conda '/home/rschwartz/anaconda3/envs/scanpyenv'
 
     input:
-    val organism
-    val census_version
-    val subsample_ref
     val ref_collections
-    val organ
 
     output:
     path "refs/*.h5ad", emit: ref_paths_adata
@@ -99,13 +95,15 @@ process getCensusAdata {
     """
     # Run the python script to generate the files
     python $projectDir/bin/get_census_adata.py \\
-        --organism ${organism} \\
-        --organ ${organ} \\
-        --census_version ${census_version} \\
-        --subsample_ref ${subsample_ref} \\
+        --organism ${params.organism} \\
+        --organ ${params.organ} \\
+        --census_version ${params.census_version} \\
+        --subsample ${params.subsample_ref} \\
         --ref_collections ${ref_collections} \\
         --rename_file ${params.rename_file} \\
-        --seed ${params.seed}
+        --seed ${params.seed} \\
+        --original_celltype_columns ${params.original_celltype_columns} \\
+        --author_annotations_path ${params.author_annotations_path}
 
     # After running the python script, all .h5ad files will be saved in the refs/ directory inside a work directory
     """
@@ -220,7 +218,7 @@ workflow {
     
 
     // Get reference data and save to files
-    getCensusAdata(params.organism, params.census_version, params.subsample_ref, ref_collections, params.organ)
+    getCensusAdata(ref_collections)
     getCensusAdata.out.ref_paths_adata.flatten()
     .set { ref_paths_adata }
     

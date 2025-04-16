@@ -53,49 +53,29 @@ def setup(organism="homo_sapiens", version="2024-07-01"):
 #clean up cellxgene ontologies
 
 def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv"):
-    """
-    Rename cell types and map them to ontology terms.
-    obs : pd.DataFrame
-        The input DataFrame containing cell annotations. 
-        Must include the columns: 'cell_type' and 'cell_type_ontology_term_id'.
-    
-    rename_file : str, optional (default: "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv")
-        Path to the TSV file containing the renaming information.
-        The file must contain the columns:
-        - 'cell_type': Original cell type names.
-        - 'new_cell_type': New cell type names.
-        - 'cell_type_ontology_term_id': Corresponding ontology terms.
-    
-    Returns:
-        - Cells filtered to only include those in `new_cell_type`.
-        - Updated cell type names.
-        - Mapped ontology terms.
-    """
+    # change to handle author_cell_type as first column name of rename df (distinguishes between author and cellxgene annotations)
     rename_df = pd.read_csv(rename_file, sep="\t")
     
-    # Ensure expected columns exist
-    if not {'cell_type', 'new_cell_type', 'cell_type_ontology_term_id'}.issubset(rename_df.columns):
-        raise ValueError("Rename file must contain 'cell_type', 'new_cell_type', and 'cell_type_ontology_term_id' columns.")
-   
+    rename_key = rename_df.columns[0]
+
     # Filter cells to keep only those with valid new cell types
     # this replaces the "restricted cell types" command line argument
-    obs = obs[obs['cell_type'].isin(rename_df['new_cell_type'])]
+    obs = obs[obs[rename_key].isin(rename_df[rename_key])]
  
     # Create mapping dictionaries
-    rename_mapping = dict(zip(rename_df['cell_type'], rename_df['new_cell_type']))
+    rename_mapping = dict(zip(rename_df[rename_key], rename_df['new_cell_type']))
     ontology_mapping = dict(zip(rename_df['new_cell_type'], rename_df['cell_type_ontology_term_id']))
     
     # Apply renaming
-    obs['cell_type'] = obs['cell_type'].replace(rename_mapping)
-    if pd.api.types.is_categorical_dtype(obs['cell_type_ontology_term_id']):
-        # Add any new categories to 'cell_type_ontology_term_id'
-        new_categories = list(set(ontology_mapping.values()) - set(obs['cell_type_ontology_term_id'].cat.categories))
-        if new_categories:
-            obs['cell_type_ontology_term_id'] = obs['cell_type_ontology_term_id'].cat.add_categories(new_categories)
+    obs['cell_type'] = obs[rename_key].replace(rename_mapping)
+    # this doesn't work with empty ontologies, skip
+    #if pd.api.types.is_categorical_dtype(obs['cell_type_ontology_term_id']):
+        ## Add any new categories to 'cell_type_ontology_term_id'
+        #new_categories = list(set(ontology_mapping.values()) - set(obs['cell_type_ontology_term_id'].cat.categories))
+        #if new_categories:
+            #obs['cell_type_ontology_term_id'] = obs['cell_type_ontology_term_id'].cat.add_categories(new_categories)
             
     obs["cell_type_ontology_term_id"] = obs["cell_type"].map(ontology_mapping)
-    
-    # remove NAs
     
     return obs
 
@@ -117,7 +97,6 @@ def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo s
     obs = data[data['soma_joinid'].isin(filtered_ids)]
 
     obs = rename_cells(obs, rename_file=rename_file)
- 
     celltypes = obs["cell_type"].unique()
     final_idx = []
     for celltype in celltypes:
@@ -207,11 +186,11 @@ def map_author_labels(obs, original_celltypes):
 
     return obs
 
-def extract_data(data, filtered_ids, subsample=10, organism=None, census=None, 
+def extract_data(cellxgene_obs_filtered, filtered_ids, subsample=10, organism=None, census=None, 
     obs_filter=None, cell_columns=None, dataset_info=None, dims=50, 
     original_celltypes=None, seed=42):
      
-    brain_cell_subsampled_ids = subsample_cells(data, filtered_ids, subsample, seed=seed, organism=organism)
+    brain_cell_subsampled_ids = subsample_cells(cellxgene_obs_filtered, filtered_ids, subsample, seed=seed, organism=organism)
     # Assuming get_seurat is defined to return an AnnData object
     adata = cellxgene_census.get_anndata(
         census=census,
@@ -229,37 +208,12 @@ def extract_data(data, filtered_ids, subsample=10, organism=None, census=None,
     newmeta = adata.obs.merge(dataset_info, on="dataset_id", suffixes=(None,"y"))
     adata.obs = newmeta
     
-    if original_celltypes is not None: 
+    if not original_celltypes.empty:
         adata.obs = map_author_labels(adata.obs, original_celltypes)
     # Assuming relabel_wrapper is defined
     # Convert all columns in adata.obs to factors (categorical type in pandas)
     return adata
 
-def split_and_extract_data(data, split_column, subsample=500, organism=None, census=None, 
-                           cell_columns=None, dataset_info=None, dims=20, relabel_path="/biof501_proj/meta/relabel/census_map_human.tsv", seed=42):
-    # Get unique split values from the specified column
-    unique_values = data[split_column].unique()
-    refs = {}
-
-    for split_value in unique_values:
-        # Filter the brain observations based on the split value
-        filtered_ids = data[data[split_column] == split_value]['soma_joinid'].values
-        obs_filter = f"{split_column} == '{split_value}'"
-        
-        adata = extract_data(data, filtered_ids, subsample, organism, census, obs_filter, 
-                             cell_columns, dataset_info, dims=dims, relabel_path=relabel_path, seed=seed)
-        dataset_titles = adata.obs['dataset_title'].unique()
-
-        if split_column == "tissue": 
-            name_to_use = split_value
-        elif split_column == "dataset_id":
-            name_to_use = dataset_titles[0]
-        else:
-            name_to_use = split_value
-
-        refs[name_to_use] = adata
-
-    return refs
 
 def get_cellxgene_obs(census, organism, organ="brain", primary_data=True, disease="normal"):
     value_filter = (
@@ -305,8 +259,8 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         "soma_joinid", "observation_joinid"
     ]
     
-    if original_celltypes:
-        cellxgene_obs_filtered = map_author_labels(cellxgene_obs_filtered, original_celltypes)
+    if not original_celltypes.empty:
+       cellxgene_obs_filtered = map_author_labels(cellxgene_obs_filtered, original_celltypes)
         
     # Get embeddings for all data together
     filtered_ids = cellxgene_obs_filtered['soma_joinid'].values
