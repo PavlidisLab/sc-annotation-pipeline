@@ -208,7 +208,7 @@ def extract_data(cellxgene_obs_filtered, filtered_ids, subsample=10, organism=No
     newmeta = adata.obs.merge(dataset_info, on="dataset_id", suffixes=(None,"y"))
     adata.obs = newmeta
     
-    if not original_celltypes.empty:
+    if isinstance(original_celltypes, pd.DataFrame) and not original_celltypes.empty:
         adata.obs = map_author_labels(adata.obs, original_celltypes)
     # Assuming relabel_wrapper is defined
     # Convert all columns in adata.obs to factors (categorical type in pandas)
@@ -259,7 +259,7 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         "soma_joinid", "observation_joinid"
     ]
     
-    if not original_celltypes.empty:
+    if isinstance(original_celltypes, pd.DataFrame) and not original_celltypes.empty:
        cellxgene_obs_filtered = map_author_labels(cellxgene_obs_filtered, original_celltypes)
         
     # Get embeddings for all data together
