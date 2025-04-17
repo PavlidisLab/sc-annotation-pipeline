@@ -29,8 +29,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
    # parser.add_argument('--organism', type=str, default='homo_sapiens', help='Organism name (e.g., homo_sapiens)')
   #  parser.add_argument('--census_version', type=str, default='2024-07-01', help='Census version (e.g., 2024-07-01)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/9a/c8024bb30c691c937917bcee847f6b/GSE152715.1.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/9a/c8024bb30c691c937917bcee847f6b/GSE152715.1_predicted_celltype.tsv")
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/3a/4d61e9a968e4881c76954fcd90f6b6/GSE152715.1.h5ad")
+    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/3a/4d61e9a968e4881c76954fcd90f6b6/GSE152715.1_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="")
     parser.add_argument('--rename_file', type=str, default = "/space/grp/Pipelines/sc-annotation-pipeline/meta/rename_cells_mmus.tsv")
     parser.add_argument('--nmads', type=int, default="5")
@@ -124,99 +124,38 @@ def get_qc_metrics(query, nmads):
     return query
 
     
-def plot_jointplots(query, query_name):
-    
-    # First jointplot
-    plot1 = sns.jointplot(
-        data=query.obs,
-        x="log1p_n_genes_by_counts",
-        y="log1p_total_counts",
-        hue="counts_outlier",
-        kind="scatter"
-    )
-    # save jointplot to directory named after y val
-    output_dir = os.path.join("multiqc_dir",query_name, "counts")
-    os.makedirs(output_dir, exist_ok=True)
-    plot1.savefig(os.path.join(output_dir, f"jointplot_mqc.png"))
-    
-    # Second jointplot
-    plot2 = sns.jointplot(
-        data=query.obs,
-        x="log1p_n_genes_by_counts",
-        y="pct_counts_mito",
-        hue="outlier_mito",
-        kind="scatter"
-    )
-    # save jointplot to directory named after y val
-    output_dir = os.path.join("multiqc_dir",query_name, "mitochondrial")
-    os.makedirs(output_dir, exist_ok=True)
-    plot2.savefig(os.path.join(output_dir, "jointplot_mqc.png"))
-    
+def plot_jointplots(query, study_name, sample_name):
+    os.makedirs(study_name, exist_ok=True)
+    # Save query.obs to CSV
+    query.obs.to_csv(f"{study_name}/{sample_name}_obs.tsv", sep="\t", index=False)
+    tsv_path = os.path.abspath(f"{study_name}/{sample_name}_obs.tsv")
 
-    # Third jointplot
-    plot3 = sns.jointplot(
-        data=query.obs,
-        x="log1p_n_genes_by_counts",
-        y="pct_counts_ribo",
-        hue="outlier_ribo",
-        kind="scatter"
-    )
-    # save jointplot to directory named after y val
-    output_dir = os.path.join("multiqc_dir",query_name, "ribosomal")
-    os.makedirs(output_dir, exist_ok=True)
-    plot3.savefig(os.path.join(output_dir, "jointplot_mqc.png"))
-    
-    
-    plot4 = sns.jointplot(
-        data=query.obs,
-        x="log1p_n_genes_by_counts",
-        y="pct_counts_hb",
-        hue="outlier_hb",
-        kind="scatter"
-    )
-    # save jointplot to directory named after y val
-    output_dir = os.path.join("multiqc_dir",query_name, "hemoglobin")
-    os.makedirs(output_dir, exist_ok=True)
-    plot4.savefig(os.path.join(output_dir, "jointplot_mqc.png")) 
+    # get path to Rscript
+    rscript_path = os.path.join(os.path.dirname(__file__), "plot_jointplots.R")
+    subprocess.run([
+        "Rscript", rscript_path,
+        tsv_path, study_name, sample_name
+    ])
+
         
-    
 
-def plot_umap_qc(query, query_name, subclass_colors):
-    colors = ["cell_type", "total_outlier", 
-            "pct_counts_mito", "pct_counts_ribo", "pct_counts_hb","predicted_doublet"]
+def plot_umap_qc(query, study_name, sample_name):
+    colors = ["outlier_hb", "outlier_ribo", "outlier_mito","predicted_doublet","counts_outlier","total_outlier"]
 
-    dirname_mapping = {
-        "cell_type": "celltype",
-        "total_outlier": "total_outlier",
-        "pct_counts_mito": "mitochondrial",
-        "pct_counts_ribo": "ribosomal",
-        "pct_counts_hb": "hemoglobin",
-        "predicted_doublet": "predicted_doublet"
-    }
-    
-    
-    for color in colors:
-        is_categorical = query.obs[color].dtype.name == "category" or query.obs[color].dtype == object
-        dirname=dirname_mapping.get(color, None)
-        # Set output directory
-        output_dir = os.path.join("multiqc_dir",query_name, dirname)
-        os.makedirs(output_dir, exist_ok=True)
+    output_dir = os.path.join(study_name, sample_name)
+    os.makedirs(output_dir, exist_ok=True)
 
-        # Plot without saving
-        sc.pl.umap(
-            query,
-            color=color,
-            use_raw=False,
-            save=None,
-            show=False,
-            title=f"{color} - {query_name}",
-            palette=subclass_colors if is_categorical else None,
-            color_map="viridis" if not is_categorical else None,
-        )
-
+    sc.pl.umap(
+        query,
+        color=colors,
+        use_raw=False,
+        save=None,
+        show=False,
+       # title=f"Sample {sample_name}",
+        ncols=2)
         # Manually save the plot
-        plt.savefig(os.path.join(output_dir, "umap_mqc.png"), dpi=150, bbox_inches='tight')
-        plt.close()
+    plt.savefig(os.path.join(output_dir, "umap_mqc.png"), dpi=150, bbox_inches='tight')
+    plt.close()
             
         
 def make_stable_colors(color_mapping_df):
@@ -229,11 +168,6 @@ def make_stable_colors(color_mapping_df):
     return subclass_colors 
         
 def main():
-    SEED = 42
-    random.seed(SEED)         # For `random`
-    np.random.seed(SEED)      # For `numpy`
-    # For `torch`'
-    scvi.settings.seed = SEED # For `scvi`
     # Parse command line arguments
     args = parse_arguments()
 
@@ -253,40 +187,50 @@ def main():
     subclass_colors = make_stable_colors(rename_cells_df)
 
     # Load query and reference datasets
-    query_name = os.path.basename(query_path).replace(".h5ad", "")
+    study_name = os.path.basename(query_path).replace(".h5ad", "")
     
     assigned_celltypes = pd.read_csv(assigned_celltypes_path, sep="\t", header=0)
     
    # markers = pd.read_csv(markers_file, sep="\t", header=0)
-    os.makedirs("multiqc_dir", exist_ok=True)
+    os.makedirs(study_name, exist_ok=True)
 
     query = read_adata(query_path, gene_mapping, assigned_celltypes)
     query.obs.index = query.obs["index"]
     sc.pp.scrublet(query, batch_key="sample_id")
     query.raw = query.copy()
     query = process_adata(query)
-
+    query_subsets = {}
     for sample_id in query.obs["sample_id"].unique():
         query_subset = query[query.obs["sample_id"] == sample_id]
         
         query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
+        query_subsets[sample_id] = query_subset
         
-        plot_umap_qc(query_subset, query_name=sample_id, subclass_colors=subclass_colors)
-        plot_jointplots(query_subset, query_name=sample_id)
+        plot_umap_qc(query_subset, study_name=study_name, sample_name=sample_id)
+        plot_jointplots(query_subset, study_name=study_name, sample_name=sample_id)
            
     # Count occurrences
-    counts = (
+    celltype_counts = (
         query.obs
         .groupby(["sample_id", "cell_type"])
         .size()                             # count cells per (sample, cell_type)
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_id a column
     )
-    counts.to_csv(os.path.join("multiqc_dir","celltype_counts_mqc.tsv"), sep="\t", index=False)
+    celltype_counts.to_csv(os.path.join(study_name,"celltype_counts_mqc.tsv"), sep="\t", index=False)
 
-        # make a wide table for the query but with qc metrics
-    
-    # Add outlier column to query
+    #combine query subsets
+    query_combined = ad.concat(query_subsets.values(), axis=0) 
+    ## make a table of counts by outliers
+    outlier_counts = (
+        query_combined.obs
+        .groupby(["sample_id", "total_outlier"])
+        .size()                             # count cells per (sample, cell_type)
+        .unstack(fill_value=0)              # pivot cell types into columns
+        .reset_index()                      # make sample_id a column
+    )
+    outlier_counts.to_csv(os.path.join(study_name,"outlier_counts_mqc.tsv"), sep="\t", index=False)
+
     
     
 if __name__ == "__main__":

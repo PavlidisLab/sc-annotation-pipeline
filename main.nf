@@ -164,7 +164,7 @@ process plotQC {
         tuple val(study_name), path(predicted_meta), path(study_path)
 
     output:
-    tuple val(study_name), path("multiqc_dir/"), emit: qc_channel
+    tuple val(study_name), path("${study_name}/"), emit: qc_channel
 
 
     script:
