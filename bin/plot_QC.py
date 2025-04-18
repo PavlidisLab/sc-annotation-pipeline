@@ -29,20 +29,20 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
    # parser.add_argument('--organism', type=str, default='homo_sapiens', help='Organism name (e.g., homo_sapiens)')
   #  parser.add_argument('--census_version', type=str, default='2024-07-01', help='Census version (e.g., 2024-07-01)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/3a/4d61e9a968e4881c76954fcd90f6b6/GSE152715.1.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/3a/4d61e9a968e4881c76954fcd90f6b6/GSE152715.1_predicted_celltype.tsv")
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mmus/2a/69d63b6c1090d6f10a71cc5662301c/GSE152715.1.h5ad")
+    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mmus/2a/69d63b6c1090d6f10a71cc5662301c/GSE152715.1_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="")
     parser.add_argument('--rename_file', type=str, default = "/space/grp/Pipelines/sc-annotation-pipeline/meta/rename_cells_mmus.tsv")
     parser.add_argument('--nmads', type=int, default="5")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mmus/2a/69d63b6c1090d6f10a71cc5662301c/GSE152715.1_sample_meta.tsv")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
 
 
     
-def read_adata(query_path, gene_mapping, new_meta):
-    
+def read_adata(query_path, gene_mapping, new_meta, sample_meta):
     query = sc.read_h5ad(query_path)
     # filter query for cells and genes
     #sc.pp.filter_cells(query, min_counts=3)
@@ -61,6 +61,13 @@ def read_adata(query_path, gene_mapping, new_meta):
     new_meta["full_barcode"] = new_meta["sample_id"].astype(str) + "_" + new_meta["cell_id"].astype(str)
     
     query.obs = query.obs.merge(new_meta, left_on="full_barcode", right_on="full_barcode", how="left", suffixes=("", "_y"))
+   
+   
+   
+    sample_meta["sample_id"] = sample_meta["sample_id"].astype(str)
+    query.obs = query.obs.merge(sample_meta, left_on="sample_id", right_on="sample_id", how="left", suffixes=("", "_y"))
+    
+    
     columns_to_drop = [col for col in query.obs.columns if col.endswith("_y")]
     query.obs.drop(columns=columns_to_drop, inplace=True)
     return query
@@ -174,6 +181,7 @@ def main():
     # Set variables from arguments
     query_path = args.query_path
     assigned_celltypes_path = args.assigned_celltypes_path
+    sample_meta = args.sample_meta
     markers_file = args.markers_file
     gene_mapping_path = args.gene_mapping 
     rename_cells_df = pd.read_csv(args.rename_file, sep="\t", header=0)
@@ -184,38 +192,39 @@ def main():
     gene_mapping = gene_mapping.drop_duplicates(subset="ENSEMBL_ID")
     gene_mapping.set_index("ENSEMBL_ID", inplace=True)
     
-    subclass_colors = make_stable_colors(rename_cells_df)
+   # subclass_colors = make_stable_colors(rename_cells_df)
 
     # Load query and reference datasets
     study_name = os.path.basename(query_path).replace(".h5ad", "")
-    
     assigned_celltypes = pd.read_csv(assigned_celltypes_path, sep="\t", header=0)
-    
+    sample_meta = pd.read_csv(sample_meta, sep="\t", header=0)
    # markers = pd.read_csv(markers_file, sep="\t", header=0)
     os.makedirs(study_name, exist_ok=True)
 
-    query = read_adata(query_path, gene_mapping, assigned_celltypes)
+    query = read_adata(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
+    
+    
     query.obs.index = query.obs["index"]
     sc.pp.scrublet(query, batch_key="sample_id")
     query.raw = query.copy()
     query = process_adata(query)
     query_subsets = {}
-    for sample_id in query.obs["sample_id"].unique():
-        query_subset = query[query.obs["sample_id"] == sample_id]
+    for sample_name in query.obs["sample_name"].unique():
+        query_subset = query[query.obs["sample_name"] == sample_name]
         
         query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
-        query_subsets[sample_id] = query_subset
+        query_subsets[sample_name] = query_subset
         
-        plot_umap_qc(query_subset, study_name=study_name, sample_name=sample_id)
-        plot_jointplots(query_subset, study_name=study_name, sample_name=sample_id)
+        plot_umap_qc(query_subset, study_name=study_name, sample_name=sample_name)
+        plot_jointplots(query_subset, study_name=study_name, sample_name=sample_name)
            
     # Count occurrences
     celltype_counts = (
         query.obs
-        .groupby(["sample_id", "cell_type"])
+        .groupby(["sample_name", "cell_type"])
         .size()                             # count cells per (sample, cell_type)
         .unstack(fill_value=0)              # pivot cell types into columns
-        .reset_index()                      # make sample_id a column
+        .reset_index()                      # make sample_name a column
     )
     celltype_counts.to_csv(os.path.join(study_name,"celltype_counts_mqc.tsv"), sep="\t", index=False)
 
@@ -224,7 +233,7 @@ def main():
     ## make a table of counts by outliers
     outlier_counts = (
         query_combined.obs
-        .groupby(["sample_id", "total_outlier"])
+        .groupby(["sample_name", "total_outlier"])
         .size()                             # count cells per (sample, cell_type)
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_id a column

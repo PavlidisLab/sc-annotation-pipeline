@@ -153,6 +153,24 @@ process loadResults {
     """
 }
 
+process getMeta {
+    publishDir (
+        "${params.outdir}/${study_name}", mode: 'copy'
+    )
+
+    input:
+        tuple val(study_name), path(study_path)
+
+    output:
+       tuple val(study_name), path("**sample_meta.tsv"), emit: meta_channel
+
+    script:
+    """
+    python $projectDir/bin/get_gemma_meta.py --study_name ${study_name}
+    """
+}
+
+
 process plotQC {
    // conda '/home/rschwartz/anaconda3/envs/scanpyenv'
     
@@ -161,7 +179,7 @@ process plotQC {
     )
 
     input:
-        tuple val(study_name), path(predicted_meta), path(study_path)
+        tuple val(study_name), path(predicted_meta), path(study_path), path(sample_meta)
 
     output:
     tuple val(study_name), path("${study_name}/"), emit: qc_channel
@@ -173,9 +191,11 @@ process plotQC {
         --assigned_celltypes_path ${predicted_meta} \\
         --gene_mapping ${params.gene_mapping} \\
         --rename_file ${params.rename_file} \\
-        --nmads ${params.nmads}
+        --nmads ${params.nmads} \\
+        --sample_meta ${sample_meta}
     """ 
 }
+
 
 process runMultiQC {
     publishDir (
@@ -228,11 +248,17 @@ workflow {
     rfClassify(combos_adata)
 
     celltype_files = rfClassify.out.celltype_file_channel
-
     celltype_files.join(processed_queries_adata, by: 0)
     .set{qc_channel}
 
-    plotQC(qc_channel)
+    getMeta(study_channel)
+    meta_channel = getMeta.out.meta_channel
+    meta_channel.view()
+
+    qc_channel.join(meta_channel, by: 0)
+    .set { qc_channel_with_meta }
+
+    plotQC(qc_channel_with_meta)
     multiqc_channel = plotQC.out.qc_channel
 
     runMultiQC(multiqc_channel)
