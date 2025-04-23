@@ -12,7 +12,8 @@ results/
 envs/
 mmus/
 meta/author_cell_annotations/
-
+hsap/
+.vscode/
 # C extensions
 *.so
 

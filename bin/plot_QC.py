@@ -32,7 +32,7 @@ def parse_arguments():
   #  parser.add_argument('--census_version', type=str, default='2024-07-01', help='Census version (e.g., 2024-07-01)')
     parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mmus/2a/69d63b6c1090d6f10a71cc5662301c/GSE152715.1.h5ad")
     parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mmus/2a/69d63b6c1090d6f10a71cc5662301c/GSE152715.1_predicted_celltype.tsv")
-    parser.add_argument('--markers_table', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
+    parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--rename_file', type=str, default = "/space/grp/Pipelines/sc-annotation-pipeline/meta/rename_cells_mmus.tsv")
     parser.add_argument('--nmads', type=int, default="5")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
@@ -168,8 +168,8 @@ def plot_umap_qc(query, study_name, sample_name):
     plt.close()
             
 
-def read_markers(markers_table, organism):
-    df = pd.read_csv(markers_table, sep="\t", header=0)
+def read_markers(markers_file, organism):
+    df = pd.read_csv(markers_file, sep="\t", header=0)
     
     # Split markers column into list
     df['markers'] = df['markers'].str.split(',\s*', regex=True)
@@ -195,9 +195,9 @@ def read_markers(markers_table, organism):
     return nested_dict
 
     
-def map_celltype_hierarchy(query, markers_table):
+def map_celltype_hierarchy(query, markers_file):
     # Load the markers table
-    df = pd.read_csv(markers_table, sep="\t", header=0)
+    df = pd.read_csv(markers_file, sep="\t", header=0)
     df.drop(columns="markers", inplace=True)
     query.obs = query.obs.merge(df, left_on="cell_type", right_on="cell_type", how="left", suffixes=("", "_y"))
     return query
@@ -212,16 +212,16 @@ def make_stable_colors(color_mapping_df):
     subclass_colors = dict(zip(all_subclasses, color_palette))
     return subclass_colors 
 
-def make_celltype_matrices(query, markers_table, organism="mus_musculus", study_name=""):
+def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_name=""):
     # Drop vars with NaN feature names
     query = query[:, ~query.var["feature_name"].isnull()]
     query.var_names = query.var["feature_name"]
     
     # Map cell type hierarchy
-    query = map_celltype_hierarchy(query, markers_table=markers_table)
+    query = map_celltype_hierarchy(query, markers_file=markers_file)
 
     # Read marker genes
-    nested_dict = read_markers(markers_table, organism)
+    nested_dict = read_markers(markers_file, organism)
 
     # Collect all unique markers across all families/classes/cell types
     all_markers = set()
@@ -252,7 +252,7 @@ def main():
     query_path = args.query_path
     assigned_celltypes_path = args.assigned_celltypes_path
     sample_meta = args.sample_meta
-    markers_table = args.markers_table
+    markers_file = args.markers_file
     gene_mapping_path = args.gene_mapping 
     organism = args.organism
     
@@ -261,16 +261,20 @@ def main():
     gene_mapping = gene_mapping.dropna(subset=["ENSEMBL_ID", "OFFICIAL_SYMBOL"])
     # Set the index of gene_mapping to "ENSEMBL_ID" and ensure it's unique
     gene_mapping = gene_mapping.drop_duplicates(subset="ENSEMBL_ID")
-    gene_mapping.set_index("ENSEMBL_ID", inplace=True)
-    
-   # subclass_colors = make_stable_colors(rename_cells_df)
+    gene_mapping.set_index("ENSEMBL_ID", inplace=True) 
+
+ 
 
     # Load query and reference datasets
     study_name = os.path.basename(query_path).replace(".h5ad", "")
     assigned_celltypes = pd.read_csv(assigned_celltypes_path, sep="\t", header=0)
     sample_meta = pd.read_csv(sample_meta, sep="\t", header=0)
-   # markers = pd.read_csv(markers_table, sep="\t", header=0)
+   # markers = pd.read_csv(markers_file, sep="\t", header=0)
     os.makedirs(study_name, exist_ok=True)
+    
+    df = pd.read_csv(markers_file, sep="\t", header=0)
+    #write to mqc file
+    df.to_csv(f"{study_name}/cell_type_markers_mqc.tsv", sep="\t", index=False)
 
     query = read_query(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
     query.obs.index = query.obs["index"]
@@ -278,8 +282,8 @@ def main():
     query.raw = query.copy()
     query = process_query(query)
     
-    #plot_markers(query, markers_table, organism=organism)
-    make_celltype_matrices(query, markers_table, organism=organism, study_name=study_name)
+    #plot_markers(query, markers_file, organism=organism)
+    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name)
     
     
     query_subsets = {}
