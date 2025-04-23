@@ -166,7 +166,7 @@ process getMeta {
 
     script:
     """
-    python $projectDir/bin/get_gemma_meta.py --study_name ${study_name}
+    python $projectDir/bin/get_gemma_meta.py --study_name ${study_name} --gemma_username ${params.GEMMA_USERNAME} --gemma_password ${params.GEMMA_PASSWORD}
     """
 }
 
@@ -192,7 +192,8 @@ process plotQC {
         --gene_mapping ${params.gene_mapping} \\
         --rename_file ${params.rename_file} \\
         --nmads ${params.nmads} \\
-        --sample_meta ${sample_meta}
+        --sample_meta ${sample_meta} \\
+        --organism ${params.organism}
     """ 
 }
 
