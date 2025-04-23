@@ -60,11 +60,5 @@ sp:
     fn: "*_celltype_markers_mqc.tsv"
 
 
-custom_data:
-  order:
-    - celltype_composition
-    - outlier_composition
-    - cell_type_markers
-    - markers_table
 
 
