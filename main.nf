@@ -193,7 +193,8 @@ process plotQC {
         --rename_file ${params.rename_file} \\
         --nmads ${params.nmads} \\
         --sample_meta ${sample_meta} \\
-        --organism ${params.organism}
+        --organism ${params.organism} \\
+        --markers_file ${params.markers_file}
     """ 
 }
 

@@ -162,8 +162,12 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 
 ## Workflow Description
 
-![Workflow DAG](./dag.png)
+![Workflow DAG](./images/dag.png)
 
+
+## QR code
+
+![QR code](./images/sc-annotation-pipeline-pavlab-1024.png.png)
 
    
 ## References
