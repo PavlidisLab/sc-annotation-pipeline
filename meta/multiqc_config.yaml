@@ -40,7 +40,7 @@ custom_data:
 
 sp:
   cell_type_markers:
-    fn: "*_heatmap_mqc.tsv"
+    fn: "*heatmap_mqc.tsv"
 
   outlier_composition:
     fn: "*_outlier_counts_mqc.tsv"
