@@ -17,7 +17,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from pathlib import Path
 import subprocess
-
+from scipy.stats import median_abs_deviation
 
 def setup(organism="homo_sapiens", version="2024-07-01"):
     organism=organism.replace(" ", "_") 
@@ -54,11 +54,13 @@ def setup(organism="homo_sapiens", version="2024-07-01"):
 
 def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv"):
     # change to handle author_cell_type as first column name of rename df (distinguishes between author and cellxgene annotations)
-    rename_df = pd.read_csv(rename_file, sep="\t")
+    rename_df = pd.read_csv(rename_file, sep=None)
     rename_key = rename_df.columns[0]
 
     # Filter cells to keep only those with valid new cell types
     # this replaces the "restricted cell types" command line argument
+    # not working for "glutamatergic neuron" in human
+    
     obs = obs[obs[rename_key].isin(rename_df[rename_key])]
  
     # Create mapping dictionaries
@@ -66,7 +68,7 @@ def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotatio
     ontology_mapping = dict(zip(rename_df['new_cell_type'], rename_df['cell_type_ontology_term_id']))
     
     # Apply renaming
-    obs['cell_type'] = obs[rename_key].replace(rename_mapping)            
+    obs['cell_type'] = obs[rename_key].replace(rename_mapping)  
     obs["cell_type_ontology_term_id"] = obs["cell_type"].map(ontology_mapping)
     
     return obs
@@ -117,13 +119,13 @@ def replace_ambiguous_cells(refs, ambiguous_celltypes):
 
 def get_original_celltypes(columns_file="/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/meta/author_cell_annotations/original_celltype_columns.tsv", 
                            author_annotations_path="/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/meta/author_cell_annotations"):
-    original_celltype_columns = pd.read_csv(columns_file, sep="\t", low_memory=False)
+    original_celltype_columns = pd.read_csv(columns_file, sep=None, low_memory=False)
 
     original_celltypes = {}
     for file in os.listdir(author_annotations_path):
         if "obs.tsv" in file:
             dataset_title = file.split(".")[0]
-            og_obs = pd.read_csv(os.path.join(author_annotations_path, file), sep="\t", low_memory=False)
+            og_obs = pd.read_csv(os.path.join(author_annotations_path, file), sep=None, low_memory=False)
             # check if all observation_joinid are unique
             assert og_obs["observation_joinid"].nunique() == og_obs.shape[0]
             og_column = original_celltype_columns[original_celltype_columns["dataset_title"] == dataset_title]["author_cell_type"].values[0]
@@ -143,7 +145,7 @@ def get_original_celltypes(columns_file="/space/grp/rschwartz/rschwartz/nextflow
    
     return aggregate_obs
 
-def relabel(adata, relabel_path, join_key="", sep="\t"):
+def relabel(adata, relabel_path, join_key="", sep=None):
     # Read the relabel table from the file
     relabel_df = pd.read_csv(relabel_path, sep=sep)  # Adjust the separator as needed
     # Take the first column as the join key
@@ -234,8 +236,8 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         cellxgene_obs_filtered = cellxgene_obs_filtered[cellxgene_obs_filtered["assay"].isin(assay)]
     if tissue:
         cellxgene_obs_filtered = cellxgene_obs_filtered[cellxgene_obs_filtered["tissue"].isin(tissue)]
-    obs = cellxgene_obs_filtered[["cell_type","cell_type_ontology_term_id","collection_name","dataset_title"]].value_counts().reset_index() 
-    obs.to_csv(f"{organism}_ref_cell_info.tsv",sep='\t',index=False)
+    #obs = cellxgene_obs_filtered[["cell_type","cell_type_ontology_term_id","collection_name","dataset_title"]].value_counts().reset_index() 
+    #obs.to_csv(f"{organism}_ref_cell_info.tsv",sep='\t',index=False)
     
     # Adjust organism naming for compatibility
     organism_name_mapping = {
@@ -263,15 +265,19 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         cell_columns=cell_columns, dataset_info=dataset_info, seed = seed,
         original_celltypes=original_celltypes
     )
-    adata.obs=rename_cells(adata.obs, rename_file=rename_file) 
-    
+    new_obs=rename_cells(adata.obs, rename_file=rename_file)
+    new_adata = adata[adata.obs["soma_joinid"].isin(new_obs["soma_joinid"])].copy()
+    new_obs = new_obs.set_index("soma_joinid")
+    new_adata.obs = new_adata.obs.set_index("soma_joinid")
+    new_adata.obs = new_adata.obs.loc[new_obs.index].copy()
+    new_adata.obs = new_obs
      
    # for name, ref in refs.items(): 
-    for col in adata.obs.columns:
-        if adata.obs[col].dtype.name =='category':
-            adata.obs[col] = pd.Categorical(adata.obs[col].cat.remove_unused_categories())
+    for col in new_adata.obs.columns:
+        if new_adata.obs[col].dtype.name =='category':
+            new_adata.obs[col] = pd.Categorical(new_adata.obs[col].cat.remove_unused_categories())
     
-    return adata 
+    return new_adata 
 
 
 
@@ -1018,3 +1024,206 @@ def split_anndata_by_obs(adata, obs_key="dataset_title"):
     return split_data
 
 
+# functions for QC plotting 
+
+def read_query(query_path, gene_mapping, new_meta, sample_meta):
+    query = sc.read_h5ad(query_path)
+    # filter query for cells and genes
+    #sc.pp.filter_cells(query, min_counts=3)
+    # sc.pp.filter_cells(query, min_genes =200)
+    if "feature_name" not in query.var.columns:
+        query.var = query.var.merge(gene_mapping["OFFICIAL_SYMBOL"], left_index=True, right_index=True, how="left")
+        query.var.rename(columns={"OFFICIAL_SYMBOL": "feature_name"}, inplace=True)
+        # make symbol the index
+       # query.var.set_index("OFFICIAL_SYMBOL", inplace=True)
+        #drop nan values
+    else:
+        query.var.set_index("feature_name", inplace=True)
+    
+    query.obs=query.obs.reset_index()
+    query.obs["full_barcode"] = query.obs["sample_id"].astype(str) + "_" + query.obs["cell_id"].astype(str)
+    new_meta["full_barcode"] = new_meta["sample_id"].astype(str) + "_" + new_meta["cell_id"].astype(str)
+    
+    query.obs = query.obs.merge(new_meta, left_on="full_barcode", right_on="full_barcode", how="left", suffixes=("", "_y"))
+   
+   
+   
+    sample_meta["sample_id"] = sample_meta["sample_id"].astype(str)
+    query.obs = query.obs.merge(sample_meta, left_on="sample_id", right_on="sample_id", how="left", suffixes=("", "_y"))
+    
+    
+    columns_to_drop = [col for col in query.obs.columns if col.endswith("_y")]
+    query.obs.drop(columns=columns_to_drop, inplace=True)
+    return query
+
+
+def is_outlier(query, metric: str, nmads=3):
+    M = query.obs[metric]
+    outlier = (M < np.median(M) - nmads * median_abs_deviation(M)) | (
+        np.median(M) + nmads * median_abs_deviation(M) < M
+    )
+    return outlier
+
+
+def qc_preprocess(query):
+    sc.pp.scrublet(query, batch_key="sample_id")
+    # log normalize, comput neighbors and umap
+    sc.pp.normalize_total(query, target_sum=1e4)
+    sc.pp.log1p(query)
+    sc.pp.highly_variable_genes(query, n_top_genes=2000, subset=False)
+    sc.pp.pca(query)
+    sc.pp.neighbors(query, n_neighbors=10, n_pcs=30)
+    sc.tl.umap(query)
+    sc.tl.leiden(query)
+    
+    return query
+
+def get_qc_metrics(query, nmads):
+    query.var["mito"] = query.var["feature_name"].str.startswith(("MT", "mt", "Mt"))
+    query.var["ribo"] = query.var["feature_name"].str.startswith(("RP", "Rp", "rp"))
+    query.var["hb"] = query.var["feature_name"].str.startswith(("HB", "Hb","hb"))
+    # fill NaN values with False
+    query.var["mito"].fillna(False, inplace=True)
+    query.var["ribo"].fillna(False, inplace=True)
+    query.var["hb"].fillna(False, inplace=True) 
+
+    sc.pp.calculate_qc_metrics(query, qc_vars=["mito", "ribo", "hb"], log1p=True, inplace=True, percent_top=[20], use_raw=False)
+
+    metrics = {
+        "log1p_total_counts": "outlier_total_counts",
+        "log1p_n_genes_by_counts": "outlier_n_genes_by_counts",
+        "pct_counts_mito": "outlier_mito",
+        "pct_counts_ribo": "outlier_ribo",
+        "pct_counts_hb": "outlier_hb",
+        "pct_counts_in_top_20_genes": "outlier_top_20_genes",
+    }
+    
+    for metric, col_name in metrics.items():
+        query.obs[col_name] = is_outlier(query, metric, nmads)
+
+
+    query.obs["counts_outlier"] = query.obs["outlier_total_counts"] | query.obs["outlier_n_genes_by_counts"]
+
+    query.obs["total_outlier"] = (
+        is_outlier(query, "log1p_total_counts", nmads) |
+        is_outlier(query, "log1p_n_genes_by_counts", nmads) |
+        is_outlier(query, "pct_counts_mito", nmads) |
+        is_outlier(query, "pct_counts_ribo", nmads) |
+        is_outlier(query, "pct_counts_hb", nmads) # |
+        #is_outlier(query, "pct_counts_in_top_20_genes", nmads)
+    )
+
+    return query
+
+    
+def plot_jointplots(query, study_name, sample_name):
+    os.makedirs(study_name, exist_ok=True)
+    # Save query.obs to CSV
+    query.obs.to_csv(f"{study_name}/{sample_name}_obs.tsv", sep="\t", index=False)
+    tsv_path = os.path.abspath(f"{study_name}/{sample_name}_obs.tsv")
+
+    # get path to Rscript
+    rscript_path = os.path.join(os.path.dirname(__file__), "plot_jointplots.R")
+    subprocess.run([
+        "Rscript", rscript_path,
+        tsv_path, study_name, sample_name
+    ])
+
+        
+
+def plot_umap_qc(query, study_name, sample_name):
+    colors = ["outlier_hb", "outlier_ribo", "outlier_mito","predicted_doublet","counts_outlier","total_outlier"]
+
+    output_dir = os.path.join(study_name, sample_name)
+    os.makedirs(output_dir, exist_ok=True)
+
+    sc.pl.umap(
+        query,
+        color=colors,
+        use_raw=False,
+        save=None,
+        show=False,
+       # title=f"Sample {sample_name}",
+        ncols=2)
+        # Manually save the plot
+    plt.savefig(os.path.join(output_dir, "umap_mqc.png"), dpi=150, bbox_inches='tight')
+    plt.close()
+            
+
+def read_markers(markers_file, organism):
+    df = pd.read_csv(markers_file, sep=None, header=0)
+    
+    # Split markers column into list
+    df['markers'] = df['markers'].str.split(',\s*', regex=True)
+
+    # Build nested dict: family > class > cell_type
+    nested_dict = defaultdict(lambda: defaultdict(dict))
+    
+    for _, row in df.iterrows():
+        fam = row['family']
+        cls = row['class']
+        cell = row['cell_type']
+        markers = row['markers']
+        nested_dict[fam][cls][cell] = markers
+    
+    if organism == "mus_musculus":
+        for fam in nested_dict:
+            for cls in nested_dict[fam]:
+                for cell in nested_dict[fam][cls]:
+                    nested_dict[fam][cls][cell] = [
+                        x.lower().capitalize() for x in nested_dict[fam][cls][cell]
+                    ]
+
+    return nested_dict
+
+    
+def map_celltype_hierarchy(query, markers_file):
+    # Load the markers table
+    df = pd.read_csv(markers_file, sep=None, header=0)
+    df.drop(columns="markers", inplace=True)
+    query.obs = query.obs.merge(df, left_on="cell_type", right_on="cell_type", how="left", suffixes=("", "_y"))
+    return query
+
+
+def make_stable_colors(color_mapping_df):
+    
+    all_subclasses = sorted(color_mapping_df["new_cell_type"])
+    # i need to hardcode a separate color palette based on the mmus mapping file
+    # Generate unique colors for each subclass
+    color_palette = sns.color_palette("husl", n_colors=len(all_subclasses))
+    subclass_colors = dict(zip(all_subclasses, color_palette))
+    return subclass_colors 
+
+def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_name=""):
+    # Drop vars with NaN feature names
+    query = query[:, ~query.var["feature_name"].isnull()]
+    query.var_names = query.var["feature_name"]
+    
+    # Map cell type hierarchy
+    query = map_celltype_hierarchy(query, markers_file=markers_file)
+
+    # Read marker genes
+    nested_dict = read_markers(markers_file, organism)
+
+    # Collect all unique markers across all families/classes/cell types
+    all_markers = set()
+    for fam in nested_dict.values():
+        for cls in fam.values():
+            for cell_type in cls.values():
+                all_markers.update(cell_type)
+    all_markers = list(all_markers)
+    valid_markers = [gene for gene in all_markers if gene in query.var_names]
+
+    # Expression matrix
+    expr_matrix = pd.DataFrame(query.X.toarray(), index=query.obs.index, columns=query.var_names)
+    avg_expr = expr_matrix.groupby(query.obs["cell_type"]).mean()
+    avg_expr = avg_expr.loc[:, valid_markers]
+    # Scale expression
+    scaled_expr = (avg_expr - avg_expr.mean()) / avg_expr.std()
+    scaled_expr = scaled_expr.loc[:, valid_markers]
+    scaled_expr.fillna(0, inplace=True)
+    # Save matrix
+    os.makedirs(study_name, exist_ok=True)
+    scaled_expr.to_csv(f"{study_name}/heatmap_mqc.tsv", sep="\t")
+
+ 

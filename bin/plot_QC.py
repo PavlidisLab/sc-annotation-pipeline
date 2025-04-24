@@ -24,227 +24,24 @@ import subprocess
 import seaborn as sns
 import scipy.spatial.distance as dist
 import scipy.cluster.hierarchy as hierarchy
+import adata_functions
+from adata_functions import *
 
 # Function to parse command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
     parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
-  #  parser.add_argument('--census_version', type=str, default='2024-07-01', help='Census version (e.g., 2024-07-01)')
     parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mmus/2a/69d63b6c1090d6f10a71cc5662301c/GSE152715.1.h5ad")
     parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mmus/2a/69d63b6c1090d6f10a71cc5662301c/GSE152715.1_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
-    parser.add_argument('--rename_file', type=str, default = "/space/grp/Pipelines/sc-annotation-pipeline/meta/rename_cells_mmus.tsv")
-    parser.add_argument('--nmads', type=int, default="5")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
+    parser.add_argument('--nmads',type=int, default=5)
     parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mmus/2a/69d63b6c1090d6f10a71cc5662301c/GSE152715.1_sample_meta.tsv")
-    parser.add_argument('--gemma_username', type=str, default="raschwar")
-    parser.add_argument('--gemma_password', type=str, default="7nddtt")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
 
-
     
-def read_query(query_path, gene_mapping, new_meta, sample_meta):
-    query = sc.read_h5ad(query_path)
-    # filter query for cells and genes
-    #sc.pp.filter_cells(query, min_counts=3)
-    # sc.pp.filter_cells(query, min_genes =200)
-    if "feature_name" not in query.var.columns:
-        query.var = query.var.merge(gene_mapping["OFFICIAL_SYMBOL"], left_index=True, right_index=True, how="left")
-        query.var.rename(columns={"OFFICIAL_SYMBOL": "feature_name"}, inplace=True)
-        # make symbol the index
-       # query.var.set_index("OFFICIAL_SYMBOL", inplace=True)
-        #drop nan values
-    else:
-        query.var.set_index("feature_name", inplace=True)
-    
-    query.obs=query.obs.reset_index()
-    query.obs["full_barcode"] = query.obs["sample_id"].astype(str) + "_" + query.obs["cell_id"].astype(str)
-    new_meta["full_barcode"] = new_meta["sample_id"].astype(str) + "_" + new_meta["cell_id"].astype(str)
-    
-    query.obs = query.obs.merge(new_meta, left_on="full_barcode", right_on="full_barcode", how="left", suffixes=("", "_y"))
-   
-   
-   
-    sample_meta["sample_id"] = sample_meta["sample_id"].astype(str)
-    query.obs = query.obs.merge(sample_meta, left_on="sample_id", right_on="sample_id", how="left", suffixes=("", "_y"))
-    
-    
-    columns_to_drop = [col for col in query.obs.columns if col.endswith("_y")]
-    query.obs.drop(columns=columns_to_drop, inplace=True)
-    return query
-
-
-def is_outlier(query, metric: str, nmads=3):
-    M = query.obs[metric]
-    outlier = (M < np.median(M) - nmads * median_abs_deviation(M)) | (
-        np.median(M) + nmads * median_abs_deviation(M) < M
-    )
-    return outlier
-
-
-def process_query(query):
-    # log normalize, comput neighbors and umap
-    sc.pp.normalize_total(query, target_sum=1e4)
-    sc.pp.log1p(query)
-    sc.pp.highly_variable_genes(query, n_top_genes=2000, subset=False)
-    sc.pp.pca(query)
-    sc.pp.neighbors(query, n_neighbors=10, n_pcs=30)
-    sc.tl.umap(query)
-    sc.tl.leiden(query)
-    
-    return query
-
-def get_qc_metrics(query, nmads):
-    query.var["mito"] = query.var["feature_name"].str.startswith(("MT", "mt", "Mt"))
-    query.var["ribo"] = query.var["feature_name"].str.startswith(("RP", "Rp", "rp"))
-    query.var["hb"] = query.var["feature_name"].str.startswith(("HB", "Hb","hb"))
-    # fill NaN values with False
-    query.var["mito"].fillna(False, inplace=True)
-    query.var["ribo"].fillna(False, inplace=True)
-    query.var["hb"].fillna(False, inplace=True) 
-
-    sc.pp.calculate_qc_metrics(query, qc_vars=["mito", "ribo", "hb"], log1p=True, inplace=True, percent_top=[20], use_raw=False)
-
-    metrics = {
-        "log1p_total_counts": "outlier_total_counts",
-        "log1p_n_genes_by_counts": "outlier_n_genes_by_counts",
-        "pct_counts_mito": "outlier_mito",
-        "pct_counts_ribo": "outlier_ribo",
-        "pct_counts_hb": "outlier_hb",
-        "pct_counts_in_top_20_genes": "outlier_top_20_genes",
-    }
-    
-    for metric, col_name in metrics.items():
-        query.obs[col_name] = is_outlier(query, metric, nmads)
-
-
-    query.obs["counts_outlier"] = query.obs["outlier_total_counts"] | query.obs["outlier_n_genes_by_counts"]
-
-    query.obs["total_outlier"] = (
-        is_outlier(query, "log1p_total_counts", nmads) |
-        is_outlier(query, "log1p_n_genes_by_counts", nmads) |
-        is_outlier(query, "pct_counts_mito", nmads) |
-        is_outlier(query, "pct_counts_ribo", nmads) |
-        is_outlier(query, "pct_counts_hb", nmads) # |
-        #is_outlier(query, "pct_counts_in_top_20_genes", nmads)
-    )
-
-    return query
-
-    
-def plot_jointplots(query, study_name, sample_name):
-    os.makedirs(study_name, exist_ok=True)
-    # Save query.obs to CSV
-    query.obs.to_csv(f"{study_name}/{sample_name}_obs.tsv", sep="\t", index=False)
-    tsv_path = os.path.abspath(f"{study_name}/{sample_name}_obs.tsv")
-
-    # get path to Rscript
-    rscript_path = os.path.join(os.path.dirname(__file__), "plot_jointplots.R")
-    subprocess.run([
-        "Rscript", rscript_path,
-        tsv_path, study_name, sample_name
-    ])
-
-        
-
-def plot_umap_qc(query, study_name, sample_name):
-    colors = ["outlier_hb", "outlier_ribo", "outlier_mito","predicted_doublet","counts_outlier","total_outlier"]
-
-    output_dir = os.path.join(study_name, sample_name)
-    os.makedirs(output_dir, exist_ok=True)
-
-    sc.pl.umap(
-        query,
-        color=colors,
-        use_raw=False,
-        save=None,
-        show=False,
-       # title=f"Sample {sample_name}",
-        ncols=2)
-        # Manually save the plot
-    plt.savefig(os.path.join(output_dir, "umap_mqc.png"), dpi=150, bbox_inches='tight')
-    plt.close()
-            
-
-def read_markers(markers_file, organism):
-    df = pd.read_csv(markers_file, sep="\t", header=0)
-    
-    # Split markers column into list
-    df['markers'] = df['markers'].str.split(',\s*', regex=True)
-
-    # Build nested dict: family > class > cell_type
-    nested_dict = defaultdict(lambda: defaultdict(dict))
-    
-    for _, row in df.iterrows():
-        fam = row['family']
-        cls = row['class']
-        cell = row['cell_type']
-        markers = row['markers']
-        nested_dict[fam][cls][cell] = markers
-    
-    if organism == "mus_musculus":
-        for fam in nested_dict:
-            for cls in nested_dict[fam]:
-                for cell in nested_dict[fam][cls]:
-                    nested_dict[fam][cls][cell] = [
-                        x.lower().capitalize() for x in nested_dict[fam][cls][cell]
-                    ]
-
-    return nested_dict
-
-    
-def map_celltype_hierarchy(query, markers_file):
-    # Load the markers table
-    df = pd.read_csv(markers_file, sep="\t", header=0)
-    df.drop(columns="markers", inplace=True)
-    query.obs = query.obs.merge(df, left_on="cell_type", right_on="cell_type", how="left", suffixes=("", "_y"))
-    return query
-
-
-def make_stable_colors(color_mapping_df):
-    
-    all_subclasses = sorted(color_mapping_df["new_cell_type"])
-    # i need to hardcode a separate color palette based on the mmus mapping file
-    # Generate unique colors for each subclass
-    color_palette = sns.color_palette("husl", n_colors=len(all_subclasses))
-    subclass_colors = dict(zip(all_subclasses, color_palette))
-    return subclass_colors 
-
-def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_name=""):
-    # Drop vars with NaN feature names
-    query = query[:, ~query.var["feature_name"].isnull()]
-    query.var_names = query.var["feature_name"]
-    
-    # Map cell type hierarchy
-    query = map_celltype_hierarchy(query, markers_file=markers_file)
-
-    # Read marker genes
-    nested_dict = read_markers(markers_file, organism)
-
-    # Collect all unique markers across all families/classes/cell types
-    all_markers = set()
-    for fam in nested_dict.values():
-        for cls in fam.values():
-            for cell_type in cls.values():
-                all_markers.update(cell_type)
-    all_markers = list(all_markers)
-    valid_markers = [gene for gene in all_markers if gene in query.var_names]
-
-    # Expression matrix
-    expr_matrix = pd.DataFrame(query.X.toarray(), index=query.obs.index, columns=query.var_names)
-    avg_expr = expr_matrix.groupby(query.obs["cell_type"]).mean()
-    avg_expr = avg_expr.loc[:, valid_markers]
-    # Scale expression
-    scaled_expr = (avg_expr - avg_expr.mean()) / avg_expr.std()
-    scaled_expr = scaled_expr.loc[:, valid_markers]
-    scaled_expr.fillna(0, inplace=True)
-    # Save matrix
-    os.makedirs(study_name, exist_ok=True)
-    scaled_expr.to_csv(f"{study_name}/heatmap_mqc.tsv", sep="\t")
-
- 
 def main():
     # Parse command line arguments
     args = parse_arguments()
@@ -256,7 +53,7 @@ def main():
     gene_mapping_path = args.gene_mapping 
     organism = args.organism
     
-    gene_mapping = pd.read_csv(gene_mapping_path, sep="\t", header=0)
+    gene_mapping = pd.read_csv(gene_mapping_path, sep=None, header=0)
     # Drop rows with missing values in the relevant columns
     gene_mapping = gene_mapping.dropna(subset=["ENSEMBL_ID", "OFFICIAL_SYMBOL"])
     # Set the index of gene_mapping to "ENSEMBL_ID" and ensure it's unique
@@ -267,20 +64,19 @@ def main():
 
     # Load query and reference datasets
     study_name = os.path.basename(query_path).replace(".h5ad", "")
-    assigned_celltypes = pd.read_csv(assigned_celltypes_path, sep="\t", header=0)
-    sample_meta = pd.read_csv(sample_meta, sep="\t", header=0)
-   # markers = pd.read_csv(markers_file, sep="\t", header=0)
+    assigned_celltypes = pd.read_csv(assigned_celltypes_path, sep=None, header=0)
+    sample_meta = pd.read_csv(sample_meta, sep=None, header=0)
+   # markers = pd.read_csv(markers_file, sep=None, header=0)
     os.makedirs(study_name, exist_ok=True)
     
-    df = pd.read_csv(markers_file, sep="\t", header=0)
+    df = pd.read_csv(markers_file, sep=None, header=0)
     #write to mqc file
-    df.to_csv(f"{study_name}/cell_type_markers_mqc.tsv", sep="\t", index=False)
+    df.to_csv(f"{study_name}/cell_type_markers_mqc.tsv", sep="\t", index=True)
 
     query = read_query(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
     query.obs.index = query.obs["index"]
-    sc.pp.scrublet(query, batch_key="sample_id")
     query.raw = query.copy()
-    query = process_query(query)
+    query = qc_preprocess(query)
     
     #plot_markers(query, markers_file, organism=organism)
     make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name)
