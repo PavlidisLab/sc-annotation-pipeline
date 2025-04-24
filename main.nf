@@ -226,9 +226,21 @@ workflow {
         file.readLines().collect { it.trim() }
     }
 
-    downloadStudies(study_names)
-    downloadStudies.out.study_channel.set { study_channel }
+    if (params.run_download) {
+        downloadStudies(study_names)
+        downloadStudies.out.study_channel.set { study_channel }
 
+    } else {
+        study_channel = Channel.fromPath(params.studies_path).flatMap { path ->
+        // get subdirectories
+        def results = []
+        path.eachDir { dir ->
+            results << [dir.name, dir]
+            }
+        return results
+        }
+    }
+    study_channel.view()
     // Call the setup process to download the model
     model_path = runSetup(params.organism, params.census_version)
 
@@ -236,8 +248,7 @@ workflow {
     processed_queries_adata = processQuery(model_path, study_channel) 
      
     // Get collection names to pull from census
-    ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ')
-    
+    ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ') 
 
     // Get reference data and save to files
     getCensusAdata(ref_collections)
@@ -255,7 +266,6 @@ workflow {
 
     getMeta(study_channel)
     meta_channel = getMeta.out.meta_channel
-    meta_channel.view()
 
     qc_channel.join(meta_channel, by: 0)
     .set { qc_channel_with_meta }
