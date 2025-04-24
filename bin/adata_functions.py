@@ -55,7 +55,6 @@ def setup(organism="homo_sapiens", version="2024-07-01"):
 def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv"):
     # change to handle author_cell_type as first column name of rename df (distinguishes between author and cellxgene annotations)
     rename_df = pd.read_csv(rename_file, sep="\t")
-    
     rename_key = rename_df.columns[0]
 
     # Filter cells to keep only those with valid new cell types
@@ -67,14 +66,7 @@ def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotatio
     ontology_mapping = dict(zip(rename_df['new_cell_type'], rename_df['cell_type_ontology_term_id']))
     
     # Apply renaming
-    obs['cell_type'] = obs[rename_key].replace(rename_mapping)
-    # this doesn't work with empty ontologies, skip
-    #if pd.api.types.is_categorical_dtype(obs['cell_type_ontology_term_id']):
-        ## Add any new categories to 'cell_type_ontology_term_id'
-        #new_categories = list(set(ontology_mapping.values()) - set(obs['cell_type_ontology_term_id'].cat.categories))
-        #if new_categories:
-            #obs['cell_type_ontology_term_id'] = obs['cell_type_ontology_term_id'].cat.add_categories(new_categories)
-            
+    obs['cell_type'] = obs[rename_key].replace(rename_mapping)            
     obs["cell_type_ontology_term_id"] = obs["cell_type"].map(ontology_mapping)
     
     return obs

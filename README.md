@@ -167,7 +167,7 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 
 ## QR code
 
-![QR code](./images/sc-annotation-pipeline-pavlab-1024.png.png)
+![QR code](./images/sc-annotation-pipeline-pavlab-1024.png)
 
    
 ## References

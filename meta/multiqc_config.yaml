@@ -12,53 +12,48 @@ custom_data:
         section_name: 'Sample cell type composition'
         description: 'test'
         file_format: 'tsv'
-        plot_type: 'table'
-        pconfig:
-            id: 'celltype_composition_plot'
-            title: 'Sample cell type composition'
-            namespace: 'Sample cell type composition'
+        plot_type: 'barplot'
+
             
     outlier_composition:
         section_name: 'Sample outlier composition'
         description: 'test'
         file_format: 'tsv'
-        plot_type: 'table'
-        pconfig:
-            id: 'outlier_composition_plot'
-            title: 'Sample outlier composition'
-            namespace: 'Sample outlier composition'
+        plot_type: 'barplot'
+
 
     markers_heatmap:
         section_name: 'Cell type markers'
         description: 'test'
         file_format: 'tsv'
         plot_type: 'heatmap'
-        pconfig:
-            id: 'markers_heatmap_plot'
-            title: 'Cell type markers'
+
 
     markers_table:
         section_name: 'Cell type markers table'
         description: 'test'
         file_format: 'tsv'
         plot_type: 'table'
-        pconfig:
-            id: 'markers_table_plot'
-            title: 'Cell type markers table'
+ 
 
 sp:
   markers_heatmap:
     fn: "*heatmap_mqc.tsv"
 
   outlier_composition:
-    fn: "*_outlier_counts_mqc.tsv"
+    fn: "*outlier_counts_mqc.tsv"
 
   celltype_composition:
-    fn: "*_celltype_counts_mqc.tsv"
+    fn: "*celltype_counts_mqc.tsv"
   
   markers_table:
-    fn: "*_celltype_markers_mqc.tsv"
+    fn: "*cell_type_markers_mqc.tsv"
 
 
 
-
+custom_content:
+  order:
+    - outlier_composition 
+    - celltype_composition
+    - markers_heatmap
+    - markers_table
