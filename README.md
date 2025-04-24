@@ -19,6 +19,7 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 - Processes query datasets using SCVI models.
 - Pulls reference datasets from CellxGene census data given an oranism and colletion name.
 - Performs cell type classification of query datasets using a random forest model.
+- Summarizes QC metrics per-sample in a custome MutliQC report.
 - Saves runtime parameters and outputs in a specified directory.
 
 ---
@@ -41,7 +42,22 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 
 ## Usage 
 
-The pipeline can be run with the following options:
+
+To run re-annotation with from a list of study names with default parameters:
+
+```
+nextflow run main.nf -profile conda -params-file params.mm.json --study_names <file with study names> --run_download true # mouse
+nextflow run main.nf -profile conda -params-file params.hs.json --study_names <file with study names> --run_download true # human 
+```
+
+To run with pre-downloaded MEX files:
+
+```
+nextflow run main.nf -profile conda -params-file params.mm.json --studies_path <path to parent directory with all MEX files> --run_download false # mouse
+nextflow run main.nf -profile conda -params-file params.hs.json --studies_path <path to parent directory with all MEX files> --run_download false # human
+```
+
+Running with all parameters specified:
 
 ```
 nextflow main.nf -profile conda \
@@ -53,9 +69,14 @@ nextflow main.nf -profile conda \
   --seed <random_seed> \
   --cutoff <classification_probability_cutoff> \
   --organ <organ> \
-  --rename_file <renaming_file> \
+  --rename_file <cell type renaming TSV or CSV> \
+  --markers_file <cell type marker TSV or CSV>
+  --original_celltype_columns <TSV> \\
+  --author_annotations_path <path to directory> \\
+  --gene_mapping <gemma NCBI to ENSEMBL/HGNC mapping> \\
+  --multiqc_config <multiqc configuration YAML> \\
   -params-file <params.json> \
-  -work-dir my_work_dir \
+  -work-dir my_work_dir 
 
 ```
 
@@ -66,7 +87,28 @@ The `params.json` file can be passed instead of all command-line parameters. Ins
 Task hashes are stored by default in `.nextflow/cache`. Intermediate files for each pipeline run stored by default in the `work` directory. Both of these are necessary to resume your pipeline run with `-resume`. You can read more about caching and resuming with Nextflow [here](https://www.nextflow.io/docs/latest/cache-and-resume.html#work-directory).
 `work-dir` is an optional parameter to keep the working directory for your pipeline runs separate. It's a good idea to delete your working directory when you're finished.
 
-Default parameters for mouse are as follows:
+### Parameters
+
+
+Parameters are configured in order of priority:
+1. Command line arguments 
+2. `params.json`
+3. `nextflow.config`
+
+So, 1 will override 2 and 2 will override 3.
+
+Nextflow parameters begin with `-` (e.g. `-profile`; pipeline-specific parameters can be changed on the CLI with `--`).
+
+To resume from the last completed step after an error, run:
+
+```
+nextflow run main.nf -profile conda -resume -params-file <params file> -work-dir <working directory>
+```
+
+
+#### Defaults
+
+Default parameters for mouse are as follows. You don't need to worry about the majority of these parameters; they have been defined for you in the appropriate `params.json` file (for human and mouse) or in the `nextflow.config` defaults. For reference: 
 
 ```
 nextflow run main.nf -profile conda \
@@ -86,28 +128,15 @@ nextflow run main.nf -profile conda \
   --seed 42 \
   --cutoff 0 \
   --organ brain \
-  --rename_file meta/rename_cells_mmus.tsv
-```
+  --rename_file meta/rename_cells_mmus.tsv \
+  --markers_file meta/cell_type_markers.tsv  \
+  --author_annotations_path /space/grp/Pipelines/sc-annotation-pipelinecell_annotation_cortex.nf/meta/author_cell_annotations \
+  --original_celltype_columns /space/grp/Pipelines/sc-annotation-pipelinecell_annotation_cortex.nf/meta/author_cell_annotations/original_celltype_columns.tsv \
+  --gene_mapping /space/grp/Pipelines/sc-annotation-pipelinecell_annotation_cortex.nf/meta/gemma_genes.tsv \
+  --multiqc_config /space/grp/Pipelines/sc-annotation-pipelinecell_annotation_cortex.nf/meta/multiqc_config.yaml \
+  --version 1.1.0
+  --
 
-To run with defaults, simply run:
-
-```
-nextflow run main.nf -profile conda -params-file params.mm.json
-```
-
-Parameters are configured in order of priority:
-1. Command line arguments 
-2. `params.json`
-3. `nextflow.config`
-
-So, 1 will override 2 and 2 will override 3.
-
-Nextflow parameters begin with `-` (e.g. `-profile`; pipeline-specific parameters can be changed on the CLI with `--`).
-
-To resume from the last completed step after an error, run:
-
-```
-nextflow run main.nf -profile conda -resume
 ```
 
 ## Input
@@ -119,19 +148,27 @@ As of right now, experimental factors such as tissue or batch are not incorporat
 
 ### Parameters
 
+| Parameter                     | Description                                                                                                  |
+|------------------------------|---------------------------------------------------------------------------------------------------------------|
+| `--organism`                 | The species being analyzed (one of `homo_sapiens`, `mus_musculus`).                                           |
+| `--census_version`           | The version of the single-cell census to use (do not change from default).                                    |
+| `--outdir`                   | Directory where output files will be saved.                                                                   |
+| `--study_names`              | Path to a file listing study names to include in the analysis. See `study_names_mouse.txt` for example.       |
+| `--subsample_ref`            | Number of cells per cell type to subsample from the reference dataset.                                        |
+| `--ref_collections`          | A space-separated list of quoted reference collection names to use for annotation.                            |
+| `--seed`                     | Random seed for reproducibility of subsampling and processing.                                                |
+| `--organ`                    | Organ to sample from CELLxGENE Census. Defaults to brain.                                                     |
+| `--tissue`                   | Optional filter for brain region/tissue within organ. Defaults to None.                                       |
+| `--rename_file`              | Tab- or comma-delimited file for renaming or selecting specific cell types.                                   |
+| `--cutoff`                   | Minimum classification probability to assign a label to a cell (default = 0).                                 |
+| `--markers_file`             | TSV or CSV file containing marker genes for cell types for QC plotting.                                       |
+| `--original_celltype_columns`| Optional TSV file specifying original cell type columns to extract from author annotations.                   |
+| `--author_annotations_path`  | Optional directory containing author-provided annotations for each study (provided by Rachel).                |
+| `--gene_mapping`             | File mapping NCBI gene IDs to ENSEMBL or HGNC symbols using Gemma platform IDs.                               |
+| `--multiqc_config`           | YAML configuration file to customize MultiQC output.                                                          |
+| `-params-file`               | JSON file specifying pipeline parameters.                                                                     |
+| `-work-dir`                  | Directory for Nextflow to use as a working directory for intermediate files.                                  |
 
-| Parameter          | Description                                                                                  
-|--------------------|----------------------------------------------------------------------------------------------
-| `organism`         | The species being analyzed (one of `homo_sapiens`, `mus_musculus`).                                         
-| `census_version`   | The version of the single-cell census to use (do not change from default)                                                
-| `outdir`           | Directory where output files will be saved.                                                  
-| `study_names`      | See study_names_mouse.txt for exampl.                    
-| `subsample_ref`    | Number of cells per cell type to subsample in reference.                                     
-| `ref_collections`  | A space-separated list of quoted reference collection names to use for annotation.                  
-| `seed`             | Random seed for reproducibility of subsampling and processing.                                
-| `organ`            | Organ to sample from CELLxGENE Census. Defaults to brain.
-| `rename_file`      | Tab-delimited file defining cell types to sub-sample and any renaming of ontologies (if applicable). See `meta/rename_cells_mmus.tsv`.
-| `cutoff`           | Minimum confidence score for assigning a cell type during classification (default = 0).                     
 
 See [Usage](#usage) for for default parameters. 
 

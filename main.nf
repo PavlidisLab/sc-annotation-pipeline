@@ -19,6 +19,17 @@ process save_params_to_file {
     echo "study_names: ${params.study_names}" >> params.txt
     echo "subsample ref: ${params.subsample_ref}" >> params.txt
     echo "ref collections: ${params.ref_collections}" >> params.txt
+    echo "rename file: ${params.rename_file}" >> params.txt
+    echo "original celltype columns: ${params.original_celltype_columns}" >> params.txt
+    echo "author annotations path: ${params.author_annotations_path}" >> params.txt
+    echo "seed: ${params.seed}" >> params.txt
+    echo "gene mapping: ${params.gene_mapping}" >> params.txt
+    echo "markers file: ${params.markers_file}" >> params.txt
+    echo "nmads: ${params.nmads}" >> params.txt
+    echo "cutoff: ${params.cutoff}" >> params.txt
+    echo "multiqc config: ${params.multiqc_config}" >> params.txt
+    echo "version: ${params.version}" >> params.txt
+
     """
 }
 
@@ -89,7 +100,7 @@ process getCensusAdata {
 
     output:
     path "refs/*.h5ad", emit: ref_paths_adata
-    path "**ref_cell_info.tsv"
+    //path "**ref_cell_info.tsv"
 
     script:
     """
@@ -102,8 +113,9 @@ process getCensusAdata {
         --ref_collections ${ref_collections} \\
         --rename_file ${params.rename_file} \\
         --seed ${params.seed} \\
-        --original_celltype_columns ${params.original_celltype_columns} \\
-        --author_annotations_path ${params.author_annotations_path}
+        ${params.original_celltype_columns ? "--original_celltype_columns ${params.original_celltype_columns}" : ''} \\
+        ${params.author_annotations_path ? "--author_annotations_path ${params.author_annotations_path}" : ''}
+        
 
     # After running the python script, all .h5ad files will be saved in the refs/ directory inside a work directory
     """
@@ -220,17 +232,18 @@ process runMultiQC {
 // Workflow definition
 workflow {
 
-    // Get query names from file (including region)
-    study_names = Channel.fromPath(params.study_names).flatMap { file ->
-        // Read the file, split by lines, and trim any extra spaces
-        file.readLines().collect { it.trim() }
-    }
 
-    if (params.run_download) {
+    if (params.study_names) {
+
+        // Get query names from file (including region)
+        study_names = Channel.fromPath(params.study_names).flatMap { file ->
+            // Read the file, split by lines, and trim any extra spaces
+            file.readLines().collect { it.trim() }
+        }
         downloadStudies(study_names)
         downloadStudies.out.study_channel.set { study_channel }
 
-    } else {
+    } else if (params.studies_path) {
         study_channel = Channel.fromPath(params.studies_path).flatMap { path ->
         // get subdirectories
         def results = []
@@ -239,8 +252,9 @@ workflow {
             }
         return results
         }
+    } else {
+        exit 1, "Error: You must provide either 'study_names' or 'studies_path'."
     }
-    study_channel.view()
     // Call the setup process to download the model
     model_path = runSetup(params.organism, params.census_version)
 

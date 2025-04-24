@@ -43,7 +43,7 @@ def main():
     sample_meta_combined = pd.concat(sample_meta_updated2)
     sample_meta_combined.drop_duplicates(subset=["sample_id", "category"], inplace=True)
     sample_meta_df = sample_meta_combined.pivot(index=["sample_id","sample_name","organism"], columns="category",values="value").reset_index()
-    sample_meta_df.to_csv(f"{study_name}_sample_meta.tsv", index=False, sep="\t")
+    sample_meta_df.to_csv(f"{study_name}_sample_meta.tsv", index=False, sep='\t')
     
 
     

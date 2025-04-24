@@ -4,7 +4,6 @@ oligodendrocyte	oligodendrocyte	CL:0000128
 pvalb GABAergic cortical interneuron	pvalb GABAergic cortical interneuron	CL:4023018
 vip GABAergic cortical interneuron	vip GABAergic cortical interneuron	CL:4023016
 sst GABAergic cortical interneuron	sst GABAergic cortical interneuron	CL:4023017
-astrocyte of the cerebral cortex	astrocyte	CL:0000127
 lamp5 GABAergic cortical interneuron	lamp5 GABAergic cortical interneuron	CL:4023011
 microglial cell	microglial cell	CL:0000129
 oligodendrocyte precursor cell	oligodendrocyte precursor cell	CL:0002453
@@ -17,7 +16,8 @@ caudal ganglionic eminence derived GABAergic cortical interneuron	caudal ganglio
 L5 extratelencephalic projecting glutamatergic cortical neuron	L5 extratelencephalic projecting glutamatergic cortical neuron	CL:4023041
 L6 corticothalamic-projecting glutamatergic cortical neuron	L6 corticothalamic-projecting glutamatergic cortical neuron	CL:4023042
 vascular leptomeningeal cell	vascular leptomeningeal cell	CL:4023051
-cerebral cortex endothelial cell	endothelial cell	CL:0000115
 astrocyte	astrocyte	CL:0000127
+astrocyte of the cerebral cortex	astrocyte	CL:0000127
 endothelial cell	endothelial cell	CL:0000115
+cerebral cortex endothelial cell	endothelial cell	CL:0000115
 pericyte	pericyte	CL:0000669
