@@ -8,9 +8,7 @@ import numpy as np
 import pandas as pd
 import anndata as ad
 import re
-from scipy.sparse import csr_matrix
 import warnings
-from matplotlib.patches import Patch
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -19,13 +17,9 @@ import argparse
 import os
 import json
 from types import SimpleNamespace
-from scipy.stats import median_abs_deviation
-import subprocess
-import seaborn as sns
-import scipy.spatial.distance as dist
-import scipy.cluster.hierarchy as hierarchy
 import adata_functions
 from adata_functions import *
+
 
 # Function to parse command line arguments
 def parse_arguments():
@@ -87,6 +81,7 @@ def main():
         query_subset = query[query.obs["sample_name"] == sample_name]
         
         query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
+        
         query_subsets[sample_name] = query_subset
         
         plot_umap_qc(query_subset, study_name=study_name, sample_name=sample_name)
@@ -107,7 +102,7 @@ def main():
     ## make a table of counts by outliers
     outlier_counts = (
         query_combined.obs
-        .groupby(["sample_name", "total_outlier"])
+        .groupby(["sample_name", "counts_outlier","outlier_mito","outlier_ribo","outlier_hb"])
         .size()                             # count cells per (sample, cell_type)
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_id a column
