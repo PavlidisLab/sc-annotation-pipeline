@@ -18,6 +18,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import subprocess
 from scipy.stats import median_abs_deviation
+from statsmodels.formula.api import ols
+
 
 def setup(organism="homo_sapiens", version="2024-07-01"):
     organism=organism.replace(" ", "_") 
@@ -1078,6 +1080,33 @@ def qc_preprocess(query):
     
     return query
 
+
+
+def mad(var, scale='normal'):
+    """Median Absolute Deviation. Set scale='normal' for consistency with R's default."""
+    med = np.median(var)
+    mad = np.median(np.abs(var - med))
+    if scale == 'normal':
+        return mad * 1.4826  # for normally distributed data
+    return mad
+
+
+def get_lm(query, nmads=5, scale="normal"):
+    # Assume dataset is an AnnData object
+    # Fit linear model: log10(n_genes_per_cell) ~ log10(counts_per_cell)
+    lm_model = ols(formula='log1p_n_genes_by_counts ~ log1p_total_counts', data=query.obs).fit()
+    # Calculate residuals
+    residuals = lm_model.resid
+    # If data is normally distributed, this is similar to std 
+    mad_residuals = mad(residuals, scale=scale)
+    # Intercept adjustment
+    intercept_adjustment = np.median(residuals) - nmads * mad_residuals
+    return {
+        "model": lm_model,
+        "intercept_adjustment": intercept_adjustment
+    }
+    
+    
 def get_qc_metrics(query, nmads):
     query.var["mito"] = query.var["feature_name"].str.startswith(("MT", "mt", "Mt"))
     query.var["ribo"] = query.var["feature_name"].str.startswith(("RP", "Rp", "rp"))
@@ -1087,7 +1116,7 @@ def get_qc_metrics(query, nmads):
     query.var["ribo"].fillna(False, inplace=True)
     query.var["hb"].fillna(False, inplace=True) 
 
-    sc.pp.calculate_qc_metrics(query, qc_vars=["mito", "ribo", "hb"], log1p=True, inplace=True, percent_top=[20], use_raw=False)
+    sc.pp.calculate_qc_metrics(query, qc_vars=["mito", "ribo", "hb"], log1p=True, inplace=True, percent_top=[20], use_raw=True)
 
     metrics = {
         "log1p_total_counts": "outlier_total_counts",
@@ -1101,15 +1130,25 @@ def get_qc_metrics(query, nmads):
     for metric, col_name in metrics.items():
         query.obs[col_name] = is_outlier(query, metric, nmads)
 
-
-    query.obs["counts_outlier"] = query.obs["outlier_total_counts"] | query.obs["outlier_n_genes_by_counts"]
-
+    lm_dict = get_lm(query, nmads=nmads)
+    intercept = lm_dict["model"].params[0]
+    slope = lm_dict["model"].params[1]
+    
+    
+    query.obs["valid_counts"] = (
+        query.obs["log1p_n_genes_by_counts"] < (query.obs["log1p_total_counts"] * slope + (intercept - lm_dict["intercept_adjustment"]))
+        ) & (
+        query.obs["log1p_n_genes_by_counts"] > (query.obs["log1p_total_counts"] * slope + (intercept + lm_dict["intercept_adjustment"]))
+        )
+    # invert the outlier values
+    query.obs["counts_outlier"] = ~query.obs["valid_counts"]
+    
+    
     query.obs["total_outlier"] = (
-        is_outlier(query, "log1p_total_counts", nmads) |
-        is_outlier(query, "log1p_n_genes_by_counts", nmads) |
         is_outlier(query, "pct_counts_mito", nmads) |
         is_outlier(query, "pct_counts_ribo", nmads) |
-        is_outlier(query, "pct_counts_hb", nmads) # |
+        is_outlier(query, "pct_counts_hb", nmads)  |
+        query.obs["counts_outlier"] 
         #is_outlier(query, "pct_counts_in_top_20_genes", nmads)
     )
 
