@@ -25,12 +25,12 @@ from adata_functions import *
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
     parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mmus/2a/69d63b6c1090d6f10a71cc5662301c/GSE152715.1.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mmus/2a/69d63b6c1090d6f10a71cc5662301c/GSE152715.1_predicted_celltype.tsv")
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/hsap/cf/cb945a34d0ceec9c49b910a9346a7d/GSE175814.h5ad")
+    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/hsap/b3/ddda92153cde51d7770152618c068f/GSE175814/GSE175814_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/mmus/2a/69d63b6c1090d6f10a71cc5662301c/GSE152715.1_sample_meta.tsv")
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/results/homo_sapiens_subsample_ref_500_2025-04-25_12-32-41/GSE175814/GSE175814_sample_meta.tsv")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -53,8 +53,6 @@ def main():
     # Set the index of gene_mapping to "ENSEMBL_ID" and ensure it's unique
     gene_mapping = gene_mapping.drop_duplicates(subset="ENSEMBL_ID")
     gene_mapping.set_index("ENSEMBL_ID", inplace=True) 
-
- 
 
     # Load query and reference datasets
     study_name = os.path.basename(query_path).replace(".h5ad", "")
@@ -100,17 +98,25 @@ def main():
     #combine query subsets
     query_combined = ad.concat(query_subsets.values(), axis=0) 
     ## make a table of counts by outliers
+    # Count all combinations + non-outliers
     outlier_counts = (
         query_combined.obs
-        .groupby(["sample_name", "counts_outlier","outlier_mito","outlier_ribo","outlier_hb"])
-        .size()                             # count cells per (sample, cell_type)
-        .unstack(fill_value=0)              # pivot cell types into columns
-        .reset_index()                      # make sample_id a column
+        .groupby("sample_name")[["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "non_outlier"]]
+        .sum()
+        .astype(int)
     )
-    outlier_counts.to_csv(os.path.join(study_name,"outlier_counts_mqc.tsv"), sep="\t", index=False)
 
+    # cluster stats
+    cluster_outlier_counts = (
+        query_combined.obs
+        .groupby("leiden")[["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "non_outlier"]]
+        .sum()
+        .astype(int)
+    )
     
-    
+    # Save both versions
+    outlier_counts.to_csv(os.path.join(study_name, "outlier_counts_long.tsv"), sep="\t", index=False)
+
     
 if __name__ == "__main__":
     main()
