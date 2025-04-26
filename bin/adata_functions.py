@@ -423,7 +423,7 @@ def qc_preprocess(query):
     sc.pp.pca(query)
     sc.pp.neighbors(query, n_neighbors=10, n_pcs=30)
     sc.tl.umap(query)
-    sc.tl.leiden(query)
+    sc.tl.leiden(query, resolution=0.3)
     
     return query
 
@@ -445,8 +445,8 @@ def get_lm(query, nmads=5, scale="normal"):
     # Calculate residuals
     residuals = lm_model.resid
     # If data is normally distributed, this is similar to std 
-    mad_residuals = mad(residuals, scale=scale)
-    # Intercept adjustment (upper bound)
+    mad_residuals = median_abs_deviation(residuals, scale=scale)
+    # Intercept adjustment (add for upper bound, subtract for lower bound)
     intercept_adjustment = np.median(residuals) + nmads * mad_residuals
     return {
         "model": lm_model,
@@ -466,6 +466,8 @@ def get_qc_metrics(query, nmads):
     sc.pp.calculate_qc_metrics(query, qc_vars=["mito", "ribo", "hb"], log1p=True, inplace=True, percent_top=[20], use_raw=True)
 
     metrics = {
+        "log1p_total_counts": "umi_outlier",
+        "log1p_n_genes_by_counts": "genes_outlier",
         "pct_counts_mito": "outlier_mito",
         "pct_counts_ribo": "outlier_ribo",
         "pct_counts_hb": "outlier_hb",
@@ -483,7 +485,9 @@ def get_qc_metrics(query, nmads):
         query.obs["log1p_n_genes_by_counts"] < (query.obs["log1p_total_counts"] * slope + (intercept - lm_dict["intercept_adjustment"]))
         ) | (
         query.obs["log1p_n_genes_by_counts"] > (query.obs["log1p_total_counts"] * slope + (intercept + lm_dict["intercept_adjustment"]))
-        )
+        ) | (
+        query.obs["umi_outlier"] ) | (query.obs["genes_outlier"])
+        
 
     query.obs["total_outlier"] = (
         query.obs["counts_outlier"] | query.obs["outlier_mito"] | query.obs["outlier_ribo"] | query.obs["outlier_hb"] | query.obs["predicted_doublet"]
