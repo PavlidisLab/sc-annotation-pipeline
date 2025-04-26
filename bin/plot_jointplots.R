@@ -44,6 +44,5 @@ sample_name <- args[3]
 
 # Read the TSV
 query_df <- read.delim(query_file, header = TRUE, sep = "\t")
-
 # Run the plotting
 plot_jointplots(query_df, study_name, sample_name)

@@ -16,11 +16,16 @@ custom_data:
 
             
     outlier_composition:
-        section_name: 'Sample outlier composition'
+        section_name: 'Sample Outlier Composition (outliers)'
         description: 'test'
         file_format: 'tsv'
         plot_type: 'barplot'
 
+    cluster_composition_outliers:
+        section_name: 'Leiden Cluster Composition (outliers)'
+        description: 'test'
+        file_format: 'tsv'
+        plot_type: 'barplot'
 
     markers_heatmap:
         section_name: 'Cell type markers'
@@ -34,6 +39,12 @@ custom_data:
         description: 'test'
         file_format: 'tsv'
         plot_type: 'table'
+
+    cluster_composition_cells:
+        section_name: 'Leiden cluster composition (cell types)'
+        description: 'test'
+        file_format: 'tsv'
+        plot_type: 'barplot'
  
 
 sp:
@@ -42,6 +53,12 @@ sp:
 
   outlier_composition:
     fn: "*outlier_counts_mqc.tsv"
+
+  cluster_composition_outliers:
+    fn: "*cluster_counts_mqc.tsv"
+  
+  cluster_composition_cells:
+    fn: "*cluster_celltypes_mqc.tsv"
 
   celltype_composition:
     fn: "*celltype_counts_mqc.tsv"
@@ -55,5 +72,7 @@ custom_content:
   order:
     - outlier_composition 
     - celltype_composition
+    - cluster_composition_outliers
+    - cluster_composition_cells
     - markers_heatmap
     - markers_table
