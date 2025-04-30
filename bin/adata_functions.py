@@ -113,13 +113,13 @@ def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo s
 
 def get_original_celltypes(columns_file="/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/meta/author_cell_annotations/original_celltype_columns.tsv", 
                            author_annotations_path="/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/meta/author_cell_annotations"):
-    original_celltype_columns = pd.read_csv(columns_file, sep=None, low_memory=False)
+    original_celltype_columns = pd.read_csv(columns_file, sep=None)
 
     original_celltypes = {}
     for file in os.listdir(author_annotations_path):
         if "obs.tsv" in file:
             dataset_title = file.split(".")[0]
-            og_obs = pd.read_csv(os.path.join(author_annotations_path, file), sep=None, low_memory=False)
+            og_obs = pd.read_csv(os.path.join(author_annotations_path, file), sep=None)
             # check if all observation_joinid are unique
             assert og_obs["observation_joinid"].nunique() == og_obs.shape[0]
             og_column = original_celltype_columns[original_celltype_columns["dataset_title"] == dataset_title]["author_cell_type"].values[0]
