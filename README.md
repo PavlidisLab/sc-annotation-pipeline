@@ -164,6 +164,7 @@ For each run, an output directory with the following structure will be written:
      ├── ExperimentName_predicted_celltype.tsv
      └── message.txt
     ├── params.txt
+    ├── multiqc 
 ```
 
 one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE154208).
@@ -176,7 +177,7 @@ The pipeline will generate a custome MultiQC report for each experiment. This is
 ```
 # poor performance, according to authors these should all be Oligodendrocytes (GSE180670) 
 
-# high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf) (PTSD Brainomics)
+[PTSD Brainomics](./results/homo_sapiens_subsample_ref_500_2025-04-29_15-32-32/PTSDBrainomics) # high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
 ```
 
 ## Workflow Description
