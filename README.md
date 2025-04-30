@@ -47,15 +47,15 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 To run re-annotation with from a list of study names with default parameters:
 
 ```
-nextflow run main.nf -profile conda -params-file params.mm.json --study_names <file with study names> --run_download true # mouse
-nextflow run main.nf -profile conda -params-file params.hs.json --study_names <file with study names> --run_download true # human 
+nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --study_names <file with study names> --run_download true # mouse
+nextflow run sc-annotate.nf -profile conda -params-file params.hs.json --study_names <file with study names> --run_download true # human 
 ```
 
 To run with pre-downloaded MEX files, provide a path to a parent directory with all MEX files. If you only have one study, make sure to place it in a parent directory, or each sample will be trated as a separate Gemma experiment:
 
 ```
-nextflow run main.nf -profile conda -params-file params.mm.json --studies_path <path to parent directory with all MEX files> --run_download false # mouse
-nextflow run main.nf -profile conda -params-file params.hs.json --studies_path <path to parent directory with all MEX files> --run_download false # human
+nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --studies_path <path to parent directory with all MEX files> --run_download false # mouse
+nextflow run sc-annotate.nf -profile conda -params-file params.hs.json --studies_path <path to parent directory with all MEX files> --run_download false # human
 ```
 
 The `params.json` file can be passed instead of all command-line parameters. Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line (see [Input](#input) section for details). Examples of the params file can be found in `params.hs.json` and `params.mm.json`. 
@@ -79,7 +79,7 @@ Nextflow parameters begin with `-` (e.g. `-profile`; pipeline-specific parameter
 To resume from the last completed step after an error, run:
 
 ```
-nextflow run main.nf -profile conda -resume -params-file <params file> -work-dir <working directory>
+nextflow run sc-annotate.nf -profile conda -resume -params-file <params file> -work-dir <working directory>
 ```
 
 #### Defaults
@@ -87,7 +87,7 @@ nextflow run main.nf -profile conda -resume -params-file <params file> -work-dir
 Default parameters for mouse are as follows. You don't need to worry about the majority of these parameters; they have been defined for you in the appropriate `params.json` file (for human and mouse) or in the `nextflow.config` defaults. For reference: 
 
 ```
-nextflow run main.nf -profile conda \
+nextflow run sc-annotate.nf -profile conda \
   --organism mus_musculus \
   --census_version 2024-07-01 \
   --subsample_ref 500 \
