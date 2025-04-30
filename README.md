@@ -7,6 +7,7 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Parameters](#parameters)
 - [Input](#input)
 - [Output](#output)
 - [Workflow Description](#workflow_description)
@@ -17,7 +18,7 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 
 - Downloads SCVI models based on organism and census version.
 - Processes query datasets using SCVI models.
-- Pulls reference datasets from CellxGene census data given an oranism and colletion name.
+- Pulls reference datasets from CellxGene census data given an oranism and collection name.
 - Performs cell type classification of query datasets using a random forest model.
 - Summarizes QC metrics per-sample in a custome MutliQC report.
 - Saves runtime parameters and outputs in a specified directory.
@@ -50,34 +51,11 @@ nextflow run main.nf -profile conda -params-file params.mm.json --study_names <f
 nextflow run main.nf -profile conda -params-file params.hs.json --study_names <file with study names> --run_download true # human 
 ```
 
-To run with pre-downloaded MEX files:
+To run with pre-downloaded MEX files, provide a path to a parent directory with all MEX files. If you only have one study, make sure to place it in a parent directory, or each sample will be trated as a separate Gemma experiment:
 
 ```
 nextflow run main.nf -profile conda -params-file params.mm.json --studies_path <path to parent directory with all MEX files> --run_download false # mouse
 nextflow run main.nf -profile conda -params-file params.hs.json --studies_path <path to parent directory with all MEX files> --run_download false # human
-```
-
-Running with all parameters specified:
-
-```
-nextflow main.nf -profile conda \
-  --organism <organism_name> \
-  --census_version <version> \
-  --outdir <output_directory> \
-  --study_names <study_names_file> \
-  --subsample_ref <subsample_per_cell_type> \
-  --seed <random_seed> \
-  --cutoff <classification_probability_cutoff> \
-  --organ <organ> \
-  --rename_file <cell type renaming TSV or CSV> \
-  --markers_file <cell type marker TSV or CSV>
-  --original_celltype_columns <TSV> \\
-  --author_annotations_path <path to directory> \\
-  --gene_mapping <gemma NCBI to ENSEMBL/HGNC mapping> \\
-  --multiqc_config <multiqc configuration YAML> \\
-  -params-file <params.json> \
-  -work-dir my_work_dir 
-
 ```
 
 The `params.json` file can be passed instead of all command-line parameters. Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line (see [Input](#input) section for details). Examples of the params file can be found in `params.hs.json` and `params.mm.json`. 
@@ -88,7 +66,6 @@ Task hashes are stored by default in `.nextflow/cache`. Intermediate files for e
 `work-dir` is an optional parameter to keep the working directory for your pipeline runs separate. It's a good idea to delete your working directory when you're finished.
 
 ### Parameters
-
 
 Parameters are configured in order of priority:
 1. Command line arguments 
@@ -105,7 +82,6 @@ To resume from the last completed step after an error, run:
 nextflow run main.nf -profile conda -resume -params-file <params file> -work-dir <working directory>
 ```
 
-
 #### Defaults
 
 Default parameters for mouse are as follows. You don't need to worry about the majority of these parameters; they have been defined for you in the appropriate `params.json` file (for human and mouse) or in the `nextflow.config` defaults. For reference: 
@@ -114,9 +90,8 @@ Default parameters for mouse are as follows. You don't need to worry about the m
 nextflow run main.nf -profile conda \
   --organism mus_musculus \
   --census_version 2024-07-01 \
-  --outdir mus_musculus \
   --subsample_ref 500 \
-  --study_names "study_names_mouse.txt" \
+  --studies_path test_mouse/ \
   --subsample_ref 500 \
   --ref_collections [
         "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
@@ -135,16 +110,12 @@ nextflow run main.nf -profile conda \
   --gene_mapping /space/grp/Pipelines/sc-annotation-pipelinecell_annotation_cortex.nf/meta/gemma_genes.tsv \
   --multiqc_config /space/grp/Pipelines/sc-annotation-pipelinecell_annotation_cortex.nf/meta/multiqc_config.yaml \
   --version 1.1.0
-  --
 
 ```
 
 ## Input
 
-A text file with the names of studies to be downloaded, annotated, and uploaded back to Gemma. Names are separated by newline. See `study_names_mouse.txt` for example.
-
-As of right now, experimental factors such as tissue or batch are not incorporated into the label transfer. The sample accession (i.e. each set of .mex files) is taken as the `batch_key` for the `scvi` forward pass.
-
+A text file with the names of studies to be downloaded, annotated, and uploaded back to Gemma. Names are separated by newline. See `study_names_mouse.txt` for example. Alternatively, the path to a parent directory where sub-directories are experiments downloaded in MEX format from Gemma.
 
 ### Parameters
 
@@ -170,7 +141,8 @@ As of right now, experimental factors such as tissue or batch are not incorporat
 | `-work-dir`                  | Directory for Nextflow to use as a working directory for intermediate files.                                  |
 
 
-See [Usage](#usage) for for default parameters. 
+As of right now, experimental factors such as tissue or batch are not incorporated into the label transfer. The sample accession (i.e. each set of .mex files) is taken as the `batch_key` for the `scvi` forward pass.
+See [Defaults](#defaults) for for default parameters. 
 
 Please note that to change the organism to `homo_sapiens`, you should also change `--ref_collections` in `params.json` to:
 
@@ -181,7 +153,7 @@ Please note that to change the organism to `homo_sapiens`, you should also chang
     ]
 ```
 
-I have provided two `params.json` files as examples (`params.hs.json` and `params.mm.json`). Please do not change these files or `nextflow.config`; instead please make a copy of the `.json` and pass it via the command line. Parameters can also be passed via command line arguments, which will override `params.json`. However, as nextflow has trouble with parameter values which contain spaces, it's best to pass `ref_collections` via your `params.json`.
+I have provided two `params.json` files to make this easier (`params.hs.json` and `params.mm.json`). Please do not change these files or `nextflow.config`; instead make a copy of the `.json` and pass it via the command line. Parameters can also be passed via command line arguments, which will override `params.json` (see [Parameters](#parameters)). However, as nextflow has trouble with parameter values which contain spaces, it's best to pass `ref_collections` via your `params.json`.
 
 ## Output
 
@@ -189,13 +161,23 @@ For each run, an output directory with the following structure will be written:
 
 ```
 └── mus_musculus_subsample_ref_50_2025-01-15_17-51-37
-     ├── GSE152715.1_predicted_celltype.tsv
+     ├── ExperimentName_predicted_celltype.tsv
      └── message.txt
     ├── params.txt
 ```
 
 one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE154208).
-`message.txt` is the output of `'oadSingleCellData` command which uploaded `predicted_celltypes.tsv` to Gemma.
+`message.txt` is the output of `'loadSingleCellData` command which uploaded `predicted_celltypes.tsv` to Gemma.
+
+### MultiQC report
+
+The pipeline will generate a custome MultiQC report for each experiment. This is a beta feature which may be expanded to flagging cells as outliers. See the following examples of experiments with high and low concordance between author cell type annotations and pipeline predictions:
+
+```
+# poor performance, according to authors these should all be Oligodendrocytes (GSE180670) 
+
+# high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf) (PTSD Brainomics)
+```
 
 ## Workflow Description
 
