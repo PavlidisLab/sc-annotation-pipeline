@@ -175,7 +175,7 @@ The pipeline will generate a custome MultiQC report for each experiment. This is
 ```
 [GSE180670]() # poor performance, according to authors these should all be Oligodendrocytes
 
-[PTSD Brainomics](./images/multiqc_report.html) # high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
+[PTSD Brainomics](images/PTSDBrainomics/multiqc_report.html) # high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
 ```
 
 ## Workflow Description
