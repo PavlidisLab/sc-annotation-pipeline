@@ -45,7 +45,8 @@ custom_data:
         description: 'test'
         file_format: 'tsv'
         plot_type: 'barplot'
- 
+
+    
 
 sp:
   markers_heatmap:
@@ -67,7 +68,6 @@ sp:
     fn: "*cell_type_markers_mqc.tsv"
 
 
-
 custom_content:
   order:
     - outlier_composition 
@@ -76,3 +76,4 @@ custom_content:
     - cluster_composition_cells
     - markers_heatmap
     - markers_table
+
