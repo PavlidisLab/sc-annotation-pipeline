@@ -47,15 +47,13 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 To run re-annotation with from a list of study names with default parameters:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --study_names <file with study names> --run_download true # mouse
-nextflow run sc-annotate.nf -profile conda -params-file params.hs.json --study_names <file with study names> --run_download true # human 
+nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --study_names <study_names_file.txt> 
 ```
 
 To run with pre-downloaded MEX files, provide a path to a parent directory with all MEX files. If you only have one study, make sure to place it in a parent directory, or each sample will be trated as a separate Gemma experiment:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --studies_path <path to parent directory with all MEX files> --run_download false # mouse
-nextflow run sc-annotate.nf -profile conda -params-file params.hs.json --studies_path <path to parent directory with all MEX files> --run_download false # human
+nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --studies_path <path_to_gemma_experiments>
 ```
 
 The `params.json` file can be passed instead of all command-line parameters. Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line (see [Input](#input) section for details). Examples of the params file can be found in `params.hs.json` and `params.mm.json`. 
@@ -119,7 +117,7 @@ A text file with the names of studies to be downloaded, annotated, and uploaded 
 
 ### Parameters
 
-| Parameter                     | Description                                                                                                  |
+| Parameter                    | Description                                                                                                  |
 |------------------------------|---------------------------------------------------------------------------------------------------------------|
 | `--organism`                 | The species being analyzed (one of `homo_sapiens`, `mus_musculus`).                                           |
 | `--census_version`           | The version of the single-cell census to use (do not change from default).                                    |
@@ -175,9 +173,9 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 The pipeline will generate a custome MultiQC report for each experiment. This is a beta feature which may be expanded to flagging cells as outliers. See the following examples of experiments with high and low concordance between author cell type annotations and pipeline predictions:
 
 ```
-# poor performance, according to authors these should all be Oligodendrocytes (GSE180670) 
+[GSE180670]() # poor performance, according to authors these should all be Oligodendrocytes
 
-[PTSD Brainomics](./results/homo_sapiens_subsample_ref_500_2025-04-29_15-32-32/PTSDBrainomics) # high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
+[PTSD Brainomics](./images/multiqc_report.html) # high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
 ```
 
 ## Workflow Description
