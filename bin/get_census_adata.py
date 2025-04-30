@@ -1,5 +1,7 @@
 #!/user/bin/python3
 
+import warnings
+warnings.filterwarnings("ignore")
 from pathlib import Path
 import random
 import os

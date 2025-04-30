@@ -20,7 +20,7 @@ dentate gyrus hippocampal neuron	Hippocampal	Glutamatergic	CALB1
 subiculum hippocampal neuron	Hippocampal	Glutamatergic	GRM2
 L2/3 IT neuron	L2/3-6 IT	Glutamatergic	CUX1
 L4/5 IT neuron	L2/3-6 IT	Glutamatergic	RORB
-L6 Car3 neuron	L2/3-6 IT	Glutamatergic	CAR3
+L6 IT Car3 neuron	L2/3-6 IT	Glutamatergic	CAR3
 neural stem cell	Neuroglioblast	Neuroglioblast	SOX2
 neuroepithelial stem cell	Neuroglioblast	Neuroglioblast	PAX6
 CNS macrophage	CNS macrophage	Non-neuron	CD68

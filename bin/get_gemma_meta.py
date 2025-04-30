@@ -1,5 +1,6 @@
 #!/bin/python
-
+import warnings
+warnings.filterwarnings("ignore")
 import pandas as pd
 import anndata as ad
 from scipy.sparse import csr_matrix
