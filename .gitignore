@@ -13,10 +13,12 @@ envs/
 mmus/
 meta/author_cell_annotations/
 hsap/
+test_human/
+test_mouse/
 .vscode/
 # C extensions
 *.so
-
+process_markers.py
 # Distribution / packaging
 .Python
 build/

@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings("ignore")
 import pandas as pd
 import numpy as np
 import scanpy as sc
@@ -415,7 +417,13 @@ def is_outlier(query, metric: str, nmads=3):
 
 
 def qc_preprocess(query):
-    sc.pp.scrublet(query, batch_key="sample_id")
+    # check if any sample_id has fewer than 30 associated cwells
+    sample_counts = query.obs["sample_id"].value_counts()
+    if (sample_counts < 30).any():
+        batch_key=None
+    else:
+        batch_key="sample_id"
+    sc.pp.scrublet(query, batch_key=batch_key)
     # log normalize, comput neighbors and umap
     sc.pp.normalize_total(query, target_sum=1e4)
     sc.pp.log1p(query)
@@ -513,10 +521,12 @@ def plot_jointplots(query, study_name, sample_name):
 
         
 
-def plot_umap_qc(query, study_name, sample_name):
+def plot_umap_qc(query, study_name=None, sample_name=None):
     colors = ["outlier_hb", "outlier_ribo", "outlier_mito","predicted_doublet","counts_outlier","total_outlier"]
 
-    output_dir = os.path.join(study_name, sample_name)
+    # change study name and sample name to strings
+    
+    output_dir = os.path.join(str(study_name), str(sample_name))
     os.makedirs(output_dir, exist_ok=True)
 
     sc.pl.umap(
