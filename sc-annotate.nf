@@ -186,9 +186,9 @@ process getMeta {
 process plotQC {
    // conda '/home/rschwartz/anaconda3/envs/scanpyenv'
     
-    publishDir (
-        "${params.outdir}/${study_name}/qc_results", mode: 'copy'
-    )
+    //publishDir (
+        //"${params.outdir}/${study_name}/qc_results", mode: 'copy'
+    //)
 
     input:
         tuple val(study_name), path(predicted_meta), path(study_path), path(sample_meta)
