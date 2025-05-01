@@ -132,11 +132,7 @@ def main():
     sample_meta = pd.read_csv(sample_meta, sep=None, header=0)
    # markers = pd.read_csv(markers_file, sep=None, header=0)
     os.makedirs(study_name, exist_ok=True)
-    
-    df = pd.read_csv(markers_file, sep=None, header=0)
-    #write to mqc file
-    df.to_csv(f"{study_name}/cell_type_markers_mqc.tsv", sep="\t", index=True)
-
+     
     query = read_query(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
     query.obs.index = query.obs["index"]
     query.raw = query.copy()
