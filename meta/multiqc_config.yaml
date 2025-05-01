@@ -46,7 +46,12 @@ custom_data:
         file_format: 'tsv'
         plot_type: 'barplot'
 
-    
+    # cell type outlier composition
+    celltype_composition_outliers:
+        section_name: 'Cell type outlier composition'
+        description: 'test'
+        file_format: 'tsv'
+        plot_type: 'barplot'
 
 sp:
   markers_heatmap:
@@ -67,6 +72,9 @@ sp:
   markers_table:
     fn: "*cell_type_markers_mqc.tsv"
 
+  celltype_composition_outliers:
+    fn: "*celltype_outlier_counts_mqc.tsv"
+
 
 custom_content:
   order:
@@ -74,6 +82,7 @@ custom_content:
     - celltype_composition
     - cluster_composition_outliers
     - cluster_composition_cells
+    - celltype_composition_outliers
     - markers_heatmap
     - markers_table
 

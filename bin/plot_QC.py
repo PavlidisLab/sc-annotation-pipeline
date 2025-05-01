@@ -195,7 +195,17 @@ def main():
     )
     cluster_celltypes.to_csv(os.path.join(study_name,"cluster_celltypes_mqc.tsv"), sep="\t", index=False)
 
-
+    # cell type by outlier composition
+    
+    celltype_outlier_counts = (
+        query_combined.obs
+        .groupby(["cell_type"])[["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "non_outlier"]]
+        .sum()
+        .astype(int)
+    )
+    celltype_outlier_counts.to_csv(os.path.join(study_name,"celltype_outlier_counts_mqc.tsv"), sep="\t", index=True)
+    
+    
 if __name__ == "__main__":
     main()
  
