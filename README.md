@@ -175,9 +175,9 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 The pipeline will generate a custome MultiQC report for each experiment. This is a beta feature which may be expanded to flagging cells as outliers. See the following examples of experiments with high and low concordance between author cell type annotations and pipeline predictions:
 
 
-[GSE180670](./images/GSE180670) # poor performance, according to authors these should all be Oligodendrocytes
+1. [GSE180670](./images/GSE180670) -- poor performance, according to authors these should all be Oligodendrocytes
 
-[PTSD Brainomics](./images/PTSDBrainomics/multiqc_report.html) # high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
+2. [PTSD Brainomics](./images/PTSDBrainomics/multiqc_report.html) -- high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
 
 
 ## Workflow Description

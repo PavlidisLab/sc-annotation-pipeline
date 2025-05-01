@@ -96,6 +96,7 @@ def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo s
 
     obs = rename_cells(obs, rename_file=rename_file)
     celltypes = obs["cell_type"].unique()
+    print(obs["cell_type"].value_counts().reset_index())
     final_idx = []
     for celltype in celltypes:
         celltype_ids = obs[obs["cell_type"] == celltype]['soma_joinid'].values
@@ -175,7 +176,7 @@ def map_author_labels(obs, original_celltypes):
     return obs
 
 def extract_data(cellxgene_obs_filtered, filtered_ids, subsample=10, organism=None, census=None, 
-    obs_filter=None, cell_columns=None, dataset_info=None, dims=50, 
+    obs_filter=None, cell_columns=None, dataset_info=None, 
     original_celltypes=None, seed=42):
      
     brain_cell_subsampled_ids = subsample_cells(cellxgene_obs_filtered, filtered_ids, subsample, seed=seed, organism=organism)
@@ -230,9 +231,7 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         cellxgene_obs_filtered = cellxgene_obs_filtered[cellxgene_obs_filtered["assay"].isin(assay)]
     if tissue:
         cellxgene_obs_filtered = cellxgene_obs_filtered[cellxgene_obs_filtered["tissue"].isin(tissue)]
-    #obs = cellxgene_obs_filtered[["cell_type","cell_type_ontology_term_id","collection_name","dataset_title"]].value_counts().reset_index() 
-    #obs.to_csv(f"{organism}_ref_cell_info.tsv",sep='\t',index=False)
-    
+         
     # Adjust organism naming for compatibility
     organism_name_mapping = {
         "homo_sapiens": "Homo sapiens",
@@ -614,6 +613,22 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
     scaled_expr = (avg_expr - avg_expr.mean()) / avg_expr.std()
     scaled_expr = scaled_expr.loc[:, valid_markers]
     scaled_expr.fillna(0, inplace=True)
+    
+    # Build a gene -> cell type label map from the nested dict
+    gene_to_celltype = {}
+    for fam in nested_dict.values():
+        for cls in fam.values():
+            for cell_type, genes in cls.items():
+                for gene in genes:
+                    if gene in valid_markers:  # Only keep genes in the expression matrix
+                        gene_to_celltype[gene] = cell_type
+
+    # Rename columns: gene -> gene (celltype)
+    renamed_columns = {
+        gene: f"{gene}_{gene_to_celltype[gene]}" for gene in scaled_expr.columns if gene in gene_to_celltype
+    }
+    scaled_expr.rename(columns=renamed_columns, inplace=True)
+
     # Save matrix
     os.makedirs(study_name, exist_ok=True)
     scaled_expr.to_csv(f"{study_name}/heatmap_mqc.tsv", sep="\t")
