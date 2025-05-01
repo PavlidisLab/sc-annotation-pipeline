@@ -89,6 +89,7 @@ nextflow run sc-annotate.nf -profile conda \
   --organism mus_musculus \
   --census_version 2024-07-01 \
   --subsample_ref 500 \
+  --nmads 5 \
   --studies_path test_mouse/ \
   --subsample_ref 500 \
   --ref_collections [
@@ -135,6 +136,7 @@ A text file with the names of studies to be downloaded, annotated, and uploaded 
 | `--author_annotations_path`  | Optional directory containing author-provided annotations for each study (provided by Rachel).                |
 | `--gene_mapping`             | File mapping NCBI gene IDs to ENSEMBL or HGNC symbols using Gemma platform IDs.                               |
 | `--multiqc_config`           | YAML configuration file to customize MultiQC output.                                                          |
+| `--nmads`                    | Number of MADs for calling outliers in multiQC report.                                                        |
 | `-params-file`               | JSON file specifying pipeline parameters.                                                                     |
 | `-work-dir`                  | Directory for Nextflow to use as a working directory for intermediate files.                                  |
 
