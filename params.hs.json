@@ -4,7 +4,7 @@
     "cutoff": 0,
     "seed": 42,
     "subsample_ref": 500,
-    "studies_path": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/test_human",
+    "study_names": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/study_names_human.txt",
     "ref_collections": [
         "Transcriptomic cytoarchitecture reveals principles of human neocortex organization",
         "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"
