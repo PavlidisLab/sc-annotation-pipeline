@@ -88,15 +88,17 @@ def plot_joint_umap(query, study_name, sample_name):
         umap_buf.seek(0)
         images.append(Image.open(umap_buf))
     
-   # Assume all images are the same size
-    img_width, img_height = images[0].size
-    grid_cols = 2
-    grid_rows = math.ceil(len(images) / grid_cols)
+    scale = 0.5  # Resize to 50%
+    resized_images = [img.resize((int(img.width * scale), int(img.height * scale))) for img in images]
 
-    # Create new image
+    # Use resized dimensions
+    img_width, img_height = resized_images[0].size
+    grid_cols = 2
+    grid_rows = math.ceil(len(resized_images) / grid_cols)
+
     combined_img = Image.new("RGB", (grid_cols * img_width, grid_rows * img_height), "white")
 
-    for idx, img in enumerate(images):
+    for idx, img in enumerate(resized_images):
         row = idx // grid_cols
         col = idx % grid_cols
         x_offset = col * img_width
