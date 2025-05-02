@@ -221,7 +221,7 @@ process runMultiQC {
         tuple val(study_name), path(qc_dir)
 
     output:
-        path "**html"
+        tuple val(study_name), path("multiqc_report.html"), emit: multiqc_html
 
     script:
     """
@@ -229,6 +229,22 @@ process runMultiQC {
     """
 }
 
+process publishMultiQC {
+    publishDir (
+        "${params.outdir}/multiqc/${study_name}", mode: 'copy'
+    )
+
+    input:
+        tuple val(study_name), path(multiqc_html)
+
+    output:
+        path "**message.txt"
+
+    script:
+    """
+    gemma-cli-sc addMetadataFile -e ${study_name} --file-type MUTLQC_REPORT ${multiqc_html} -f --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
+    """
+}
 
 // Workflow definition
 workflow {
@@ -291,6 +307,11 @@ workflow {
     runMultiQC(multiqc_channel)
 
     loadResults(celltype_files)
+
+    multiqc_channel = runMultiQC.out.multiqc_html
+
+    publishMultiQC(multiqc_channel)
+
     save_params_to_file()
 }
 
