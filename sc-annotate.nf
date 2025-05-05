@@ -242,7 +242,7 @@ process publishMultiQC {
 
     script:
     """
-    gemma-cli-sc addMetadataFile -e ${study_name} --file-type MUTLQC_REPORT ${multiqc_html} --force --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
+    gemma-cli-sc addMetadataFile -e ${study_name} --file-type MUTLIQC_REPORT ${multiqc_html} --force --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
     """
 }
 
