@@ -179,6 +179,7 @@ The pipeline will generate a custome MultiQC report for each experiment. This is
 
 2. [PTSD Brainomics](https://github.com/PavlidisLab/sc-annotation-pipeline/tree/development/images/multiqc/PTSDBrainomics) -- high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
 
+For more info on multiQC report, see 
 
 ## Workflow Description
 
