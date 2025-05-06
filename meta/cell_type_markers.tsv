@@ -34,5 +34,5 @@ NK T cell	Immune	Non-neuron	CD45RB
 T cell	Immune	Non-neuron	CD3
 Pericyte	Mural	Non-neuron	PDGFRB, RGS5
 Smooth muscle cell	Mural	Non-neuron	ACTA2
-Leptomeningeal cell	Stromal	Non-neuron	DCN, LUM, COL1A1, COL5A1
+VLMC	Stromal	Non-neuron	DCN, LUM, COL1A1, COL5A1
 Endothelial	Vascular	Non-neuron	FLT1
