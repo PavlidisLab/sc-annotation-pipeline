@@ -4,7 +4,8 @@
     "cutoff": 0,
     "seed": 42,
     "subsample_ref": 500,
-    "study_names": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/study_names_mouse.txt",
+    "study_names": null,
+    "studies_path": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/test_mmus",
     "ref_collections": [
         "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
         "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
@@ -13,7 +14,7 @@
         "Single-cell transcriptomics characterization of oligodendrocytes and microglia in white matter aging"
     ],
     "organ": "brain",
-    "rename_file": "meta/author_cell_annotations/rename_cells_mmus_author.tsv",
+    "rename_file": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/author_cell_annotations/rename_cells_mmus_author.tsv",
     "nmads": 5,
     "author_annotations_path": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/author_cell_annotations",
     "original_celltype_columns": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/author_cell_annotations/original_celltype_columns.tsv"
