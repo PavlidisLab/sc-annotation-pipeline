@@ -606,7 +606,7 @@ def get_gene_to_celltype_map(markers_file, organism="mus_musculus"):
 
     # Join multiple cell types into one label if needed
     gene_ct_dict = {
-        gene: f"{gene}_{'_'.join(set(celltypes))})"
+        gene: f"{gene}_{'_'.join(set(celltypes))}"
         for gene, celltypes in gene_to_celltype.items()
     }
     return gene_ct_dict
