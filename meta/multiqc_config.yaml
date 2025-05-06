@@ -10,20 +10,26 @@ run_modules:
 custom_data:
     celltype_composition:
         section_name: 'Sample cell type composition'
-        description: 'test'
+        description: 'Compoistion per-sample of predicted cell types'
         file_format: 'tsv'
         plot_type: 'barplot'
 
             
     outlier_composition:
         section_name: 'Sample Outlier Composition (outliers)'
-        description: 'test'
+        description: 'Compoistion per-sample of predicted outliers:
+                      outlier_mito = mitochondrial outliers, 
+                      outlier_ribo = ribosomal outliers,
+                      outlier_hb = hemoglobin outliers,
+                      counts_outlier = outlier of log1p_genes ~ log1p_counts,
+                      predicted_doublet = doublets predicted by sc.pp.scrublet,
         file_format: 'tsv'
         plot_type: 'barplot'
 
     cluster_composition_outliers:
         section_name: 'Leiden Cluster Composition (outliers)'
-        description: 'test'
+        description: 'Leiden clustering performed on log-transformed data with top 2000 variable genes,
+                      10 PCs, 30 neighbors, resolution = 0.3'
         file_format: 'tsv'
         plot_type: 'barplot'
 
@@ -42,14 +48,20 @@ custom_data:
 
     cluster_composition_cells:
         section_name: 'Leiden cluster composition (cell types)'
-        description: 'test'
+        description: 'Leiden clustering performed on log-transformed data with top 2000 variable genes,
+                      10 PCs, 30 neighbors, resolution = 0.3'
         file_format: 'tsv'
         plot_type: 'barplot'
 
     # cell type outlier composition
     celltype_composition_outliers:
         section_name: 'Cell type outlier composition'
-        description: 'test'
+        description: 'Compoistion per predicted cell types of outliers:
+                      outlier_mito = mitochondrial outliers, 
+                      outlier_ribo = ribosomal outliers,
+                      outlier_hb = hemoglobin outliers,
+                      counts_outlier = outlier of log1p_genes ~ log1p_counts,
+                      predicted_doublet = doublets predicted by sc.pp.scrublet'
         file_format: 'tsv'
         plot_type: 'barplot'
 
