@@ -18,11 +18,11 @@ custom_data:
     section_name: 'Sample Outlier Composition (outliers)'
     description: >
       Composition per sample of predicted outliers:
-      - outlier_mito = mitochondrial outliers
-      - outlier_ribo = ribosomal outliers
-      - outlier_hb = hemoglobin outliers
-      - counts_outlier = outlier of log1p_genes ~ log1p_counts
-      - predicted_doublet = doublets predicted by sc.pp.scrublet
+      outlier_mito = mitochondrial outliers;
+      outlier_ribo = ribosomal outliers;
+      outlier_hb = hemoglobin outliers;
+      counts_outlier = outlier of log1p_n_genes ~ log1p_n_counts;
+      predicted_doublet = doublets predicted by sc.pp.scrublet;
     file_format: 'tsv'
     plot_type: 'barplot'
 
@@ -36,15 +36,9 @@ custom_data:
 
   markers_heatmap:
     section_name: 'Cell type markers'
-    description: 'Cell type marker expression across clusters'
+    description: 'Expression of select markers. Count are averaged across cell-type labels and z-score normalized across genes.'
     file_format: 'tsv'
     plot_type: 'heatmap'
-
-  markers_table:
-    section_name: 'Cell type markers table'
-    description: 'Table of cell type markers and associated statistics'
-    file_format: 'tsv'
-    plot_type: 'table'
 
   cluster_composition_cells:
     section_name: 'Leiden cluster composition (cell types)'
@@ -57,12 +51,12 @@ custom_data:
   celltype_composition_outliers:
     section_name: 'Cell type outlier composition'
     description: >
-      Composition per predicted cell types of outliers:
-      - outlier_mito = mitochondrial outliers
-      - outlier_ribo = ribosomal outliers
-      - outlier_hb = hemoglobin outliers
-      - counts_outlier = outlier of log1p_genes ~ log1p_counts
-      - predicted_doublet = doublets predicted by sc.pp.scrublet
+    Composition per sample of predicted outliers:
+      outlier_mito = mitochondrial outliers;
+      outlier_ribo = ribosomal outliers;
+      outlier_hb = hemoglobin outliers;
+      counts_outlier = outlier of log1p_n_genes ~ log1p_n_counts;
+      predicted_doublet = doublets predicted by sc.pp.scrublet;
     file_format: 'tsv'
     plot_type: 'barplot'
 

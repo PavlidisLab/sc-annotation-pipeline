@@ -617,21 +617,26 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
     query = query[:, ~query.var["feature_name"].isnull()]
     query.var_names = query.var["feature_name"]
     
+    #Make raw index match processed var index
+    query.raw.var.index = query.raw.var["feature_name"]
+    
     # Map cell type hierarchy
     query = map_celltype_hierarchy(query, markers_file=markers_file)
 
     # Read marker genes
- #   nested_dict = read_markers(markers_file, organism)
     gene_ct_dict = get_gene_to_celltype_map(markers_file, organism=organism)
     # Collect all unique markers across all families/classes/cell types
     all_markers = list(gene_ct_dict.keys())
     valid_markers = [gene for gene in all_markers if gene in query.var_names]
 
-    # Expression matrix
-    expr_matrix = pd.DataFrame(query.X.toarray(), index=query.obs.index, columns=query.var_names)
+    # Filter raw expression matrix to match query.var_names
+    expr_matrix = query.raw.X.toarray()
+    expr_matrix = pd.DataFrame(expr_matrix, index=query.obs.index, columns=query.raw.var.index)
+    
     avg_expr = expr_matrix.groupby(query.obs["cell_type"]).mean()
     avg_expr = avg_expr.loc[:, valid_markers]
-    # Scale expression
+    
+    # Scale expression across genes
     scaled_expr = (avg_expr - avg_expr.mean()) / avg_expr.std()
     scaled_expr = scaled_expr.loc[:, valid_markers]
     scaled_expr.fillna(0, inplace=True)
