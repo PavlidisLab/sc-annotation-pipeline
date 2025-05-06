@@ -1,38 +1,38 @@
-cell_type	class	family	marker
-glutamatergic neuron	Glutamatergic	Glutamatergic	SLC17A7
-GABAergic neuron	GABAergic	GABAergic	GAD1
-caudal ganglionic eminence derived GABAergic cortical interneuron	CGE	GABAergic	PROX1, NTNG1
-lamp5 GABAergic cortical interneuron	CGE	GABAergic	LAMP5
-sncg GABAergic cortical interneuron	CGE	GABAergic	SNCG
-vip GABAergic cortical interneuron	CGE	GABAergic	VIP
-chandelier pvalb GABAergic cortical interneuron	MGE	GABAergic	PVALB, VIPR2, UNC5B
-pvalb GABAergic cortical interneuron	MGE	GABAergic	PVALB
-sst chodl GABAergic cortical interneuron	MGE	GABAergic	CHODL
-sst GABAergic cortical interneuron	MGE	GABAergic	SST
+cell_type	class	family	markers
+Glutamatergic	Glutamatergic	Glutamatergic	SLC17A7
+GABAergic	GABAergic	GABAergic	GAD1
+CGE	CGE	GABAergic	PROX1, NTNG1
+LAMP5	CGE	GABAergic	LAMP5
+SNCG	CGE	GABAergic	SNCG
+VIP	CGE	GABAergic	VIP
+Chandelier	MGE	GABAergic	PVALB, VIPR2, UNC5B
+PVALB	MGE	GABAergic	PVALB
+SST	MGE	GABAergic	CHODL
+SST	MGE	GABAergic	SST
 Cajal-Retzius cell	Cajal-Retzius cell	Glutamatergic	RELN
-corticothalamic-projecting glutamatergic cortical neuron	deep layer non-IT	Glutamatergic	FOXP2, TLE4, SEMA3E
-L5 ET neuron	deep layer non-IT	Glutamatergic	FEZF2, POU3F1, BCL6, ETV1, BCL11V
-near-projecting glutamatergic neuron	deep layer non-IT	Glutamatergic	FOXP2, TLE4
-L6b neuron	deep layer non-IT	Glutamatergic	CPLX3
-CA1-prosubiculum hippocampal neuron	Hippocampal	Glutamatergic	SATB2, GLIPR, DLK1, DCN
-CA2-IG-FC hippocampal neuron	Hippocampal	Glutamatergic	AMIGO2, RAMP3
-CA3 hippocampal neuron	Hippocampal	Glutamatergic	BOK, FXYDZ
-dentate gyrus hippocampal neuron	Hippocampal	Glutamatergic	PROX1
-subiculum hippocampal neuron	Hippocampal	Glutamatergic	FN1
-L2/3 IT neuron	L2/3-6 IT	Glutamatergic	CUX2, LHX2
-L4/5 IT neuron	L2/3-6 IT	Glutamatergic	RORB
-L6 Car3 neuron	L2/3-6 IT	Glutamatergic	CAR3
-neural stem cell	Neuroglioblast	Neuroglioblast	HES5, NES, SOX2, DLX2
+CT	deep layer non-IT	Glutamatergic	FOXP2, TLE4, SEMA3E
+L5 ET	deep layer non-IT	Glutamatergic	FEZF2, POU3F1, BCL6, ETV1, BCL11V
+NP	deep layer non-IT	Glutamatergic	FOXP2, TLE4
+L6b	deep layer non-IT	Glutamatergic	CPLX3
+CA1-ProS	Hippocampal	Glutamatergic	SATB2, GLIPR, DLK1, DCN
+CA2-IG-FC	Hippocampal	Glutamatergic	AMIGO2, RAMP3
+CA3	Hippocampal	Glutamatergic	BOK, FXYDZ
+DG	Hippocampal	Glutamatergic	PROX1
+Subiculum	Hippocampal	Glutamatergic	FN1
+L2/3 IT	L2/3-6 IT	Glutamatergic	CUX2, LHX2
+L4/5 IT	L2/3-6 IT	Glutamatergic	RORB
+L6 Car3	L2/3-6 IT	Glutamatergic	CAR3
+Neural stem cell	Neuroglioblast	Neuroglioblast	HES5, NES, SOX2, DLX2
 CNS macrophage	CNS macrophage	Non-neuron	CD45, CD44
-microglial cell	CNS macrophage	Non-neuron	TMEM119, P2RY12, P2Y12
-astrocyte	Glia	Non-neuron	GFAP, AQP4
-ependymal cell	Glia	Non-neuron	TUBA1A, FOXJ1
-oligodendrocyte	Glia	Non-neuron	MOG
+Microglia	CNS macrophage	Non-neuron	TMEM119, P2RY12, P2Y12
+Astrocyte	Glia	Non-neuron	GFAP, AQP4
+Ependymal	Glia	Non-neuron	TUBA1A, FOXJ1
+Oligodendrocyte	Glia	Non-neuron	MOG
 OPC	Glia	Non-neuron	PDGFRA
 CD8+ T cell	Immune	Non-neuron	CD8A
 NK T cell	Immune	Non-neuron	CD45RB
 T cell	Immune	Non-neuron	CD3
-pericyte	Mural	Non-neuron	PDGFRB, RGS5
-smooth muscle cell	Mural	Non-neuron	ACTA2
+Pericyte	Mural	Non-neuron	PDGFRB, RGS5
+Smooth muscle cell	Mural	Non-neuron	ACTA2
 leptomeningeal cell	Stromal	Non-neuron	DCN, LUM, COL1A1, COL5A1
-endothelial cell	Vascular	Non-neuron	FLT1
+Endothelial	Vascular	Non-neuron	FLT1

@@ -585,6 +585,33 @@ def make_stable_colors(color_mapping_df):
     subclass_colors = dict(zip(all_subclasses, color_palette))
     return subclass_colors 
 
+
+
+def get_gene_to_celltype_map(markers_file, organism="mus_musculus"):
+    # Read the marker file
+    df = pd.read_csv(markers_file, sep="\t")
+    df = df[df["markers"].notnull()]
+    gene_to_celltype = {}
+
+    for _, row in df.iterrows():
+        cell_type = row["cell_type"]
+        genes = [gene.strip() for gene in row["markers"].split(",")]
+        for gene in genes:
+            if organism == "mus_musculus":
+                gene = gene.lower().capitalize()
+                # Handle multiple cell types mapping to the same gene
+            if gene not in gene_to_celltype:
+                gene_to_celltype[gene] = []
+            gene_to_celltype[gene].append(cell_type)
+
+    # Join multiple cell types into one label if needed
+    gene_ct_dict = {
+        gene: f"{gene}_{'_'.join(set(celltypes))})"
+        for gene, celltypes in gene_to_celltype.items()
+    }
+    return gene_ct_dict
+
+
 def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_name=""):
     # Drop vars with NaN feature names
     query = query[:, ~query.var["feature_name"].isnull()]
@@ -594,15 +621,10 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
     query = map_celltype_hierarchy(query, markers_file=markers_file)
 
     # Read marker genes
-    nested_dict = read_markers(markers_file, organism)
-
+ #   nested_dict = read_markers(markers_file, organism)
+    gene_ct_dict = get_gene_to_celltype_map(markers_file, organism=organism)
     # Collect all unique markers across all families/classes/cell types
-    all_markers = set()
-    for fam in nested_dict.values():
-        for cls in fam.values():
-            for cell_type in cls.values():
-                all_markers.update(cell_type)
-    all_markers = list(all_markers)
+    all_markers = list(gene_ct_dict.keys())
     valid_markers = [gene for gene in all_markers if gene in query.var_names]
 
     # Expression matrix
@@ -613,21 +635,9 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
     scaled_expr = (avg_expr - avg_expr.mean()) / avg_expr.std()
     scaled_expr = scaled_expr.loc[:, valid_markers]
     scaled_expr.fillna(0, inplace=True)
-    
-    # Build a gene -> cell type label map from the nested dict
-    gene_to_celltype = {}
-    for fam in nested_dict.values():
-        for cls in fam.values():
-            for cell_type, genes in cls.items():
-                for gene in genes:
-                    if gene in valid_markers:  # Only keep genes in the expression matrix
-                        gene_to_celltype[gene] = cell_type
 
     # Rename columns: gene -> gene (celltype)
-    renamed_columns = {
-        gene: f"{gene}_{gene_to_celltype[gene]}" for gene in scaled_expr.columns if gene in gene_to_celltype
-    }
-    scaled_expr.rename(columns=renamed_columns, inplace=True)
+    scaled_expr.rename(columns=gene_ct_dict, inplace=True)
 
     # Save matrix
     os.makedirs(study_name, exist_ok=True)
