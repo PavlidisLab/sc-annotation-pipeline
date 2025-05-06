@@ -24,7 +24,7 @@ DG	Hippocampal	Glutamatergic	PROX1
 Subiculum	Hippocampal	Glutamatergic	FN1
 Neural stem cell	Neuroglioblast	Neuroglioblast	HES5, NES, SOX2, DLX2
 CNS macrophage	CNS macrophage	Non-neuron	CD45, CD44
-Microglia	CNS macrophage	Non-neuron	TMEM119, P2RY12, P2Y12
+Microglia	CNS macrophage	Non-neuron	TMEM119, P2RY12, P2Y12, HEXB
 Astrocyte	Glia	Non-neuron	GFAP, AQP4
 Ependymal	Glia	Non-neuron	TUBA1A, FOXJ1
 Oligodendrocyte	Glia	Non-neuron	MOG
