@@ -16,10 +16,11 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 
 ## Features
 
-- Downloads SCVI models based on organism and census version.
-- Processes query datasets using SCVI models.
+- Downloads SCVI model based on provided organism and CELLxGENE census version.
+- Processes query datasets using pre-trained SCVI model.
 - Pulls reference datasets from CellxGene census data given an oranism and collection name.
 - Performs cell type classification of query datasets using a random forest model.
+- Uploads re-annotated cell types to [gemma.msl.ubc.ca](https://gemma.msl.ubc.ca/home.html)
 - Summarizes QC metrics per-sample in a custome MutliQC report.
 - Saves runtime parameters and outputs in a specified directory.
 
