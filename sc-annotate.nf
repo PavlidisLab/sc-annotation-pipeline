@@ -161,7 +161,8 @@ process loadResults {
 
     gemma-cli-sc loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} -preferredCta \\
-               -ctaName "sc-pipeline-${params.version}" 2> "message.txt"
+               -ctaName "sc-pipeline-${params.version}" \\
+               -ctaProtocol "sc-pipeline-${params.version}" 2> "message.txt"
     """
 }
 
