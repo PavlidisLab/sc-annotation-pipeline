@@ -504,70 +504,7 @@ def get_qc_metrics(query, nmads):
 
     return query
 
-    
-def plot_jointplots(query, study_name, sample_name):
-    os.makedirs(study_name, exist_ok=True)
-    # Save query.obs to CSV
-    query.obs.to_csv(f"{study_name}/{sample_name}_obs.tsv", sep="\t", index=False)
-    tsv_path = os.path.abspath(f"{study_name}/{sample_name}_obs.tsv")
-
-    # get path to Rscript
-    rscript_path = os.path.join(os.path.dirname(__file__), "plot_jointplots.R")
-    subprocess.run([
-        "Rscript", rscript_path,
-        tsv_path, study_name, sample_name
-    ])
-
-        
-
-def plot_umap_qc(query, study_name=None, sample_name=None):
-    colors = ["outlier_hb", "outlier_ribo", "outlier_mito","predicted_doublet","counts_outlier","total_outlier"]
-
-    # change study name and sample name to strings
-    
-    output_dir = os.path.join(str(study_name), str(sample_name))
-    os.makedirs(output_dir, exist_ok=True)
-
-    sc.pl.umap(
-        query,
-        color=colors,
-        use_raw=False,
-        save=None,
-        show=False,
-       # title=f"Sample {sample_name}",
-        ncols=2)
-        # Manually save the plot
-    plt.savefig(os.path.join(output_dir, "umap_mqc.png"), dpi=150, bbox_inches='tight')
-    plt.close()
             
-
-def read_markers(markers_file, organism):
-    df = pd.read_csv(markers_file, sep=None, header=0)
-    
-    # Split markers column into list
-    df['markers'] = df['markers'].str.split(',\s*', regex=True)
-
-    # Build nested dict: family > class > cell_type
-    nested_dict = defaultdict(lambda: defaultdict(dict))
-    
-    for _, row in df.iterrows():
-        fam = row['family']
-        cls = row['class']
-        cell = row['cell_type']
-        markers = row['markers']
-        nested_dict[fam][cls][cell] = markers
-    
-    if organism == "mus_musculus":
-        for fam in nested_dict:
-            for cls in nested_dict[fam]:
-                for cell in nested_dict[fam][cls]:
-                    nested_dict[fam][cls][cell] = [
-                        x.lower().capitalize() for x in nested_dict[fam][cls][cell]
-                    ]
-
-    return nested_dict
-
-    
 def map_celltype_hierarchy(query, markers_file):
     # Load the markers table
     df = pd.read_csv(markers_file, sep=None, header=0)
@@ -584,7 +521,6 @@ def make_stable_colors(color_mapping_df):
     color_palette = sns.color_palette("husl", n_colors=len(all_subclasses))
     subclass_colors = dict(zip(all_subclasses, color_palette))
     return subclass_colors 
-
 
 
 def get_gene_to_celltype_map(markers_file, organism="mus_musculus"):
