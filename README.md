@@ -124,6 +124,7 @@ A text file with the names of studies to be downloaded, annotated, and uploaded 
 | `--census_version`           | The version of the single-cell census to use (do not change from default).                                    |
 | `--outdir`                   | Directory where output files will be saved.                                                                   |
 | `--study_names`              | Path to a file listing study names to include in the analysis. See `study_names_mouse.txt` for example.       |
+| `--studies_path`             | Path to a parent directory containing sub-directories of individual experiments                               |
 | `--subsample_ref`            | Number of cells per cell type to subsample from the reference dataset.                                        |
 | `--ref_collections`          | A space-separated list of quoted reference collection names to use for annotation.                            |
 | `--seed`                     | Random seed for reproducibility of subsampling and processing.                                                |
