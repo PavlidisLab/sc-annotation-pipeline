@@ -1,11 +1,12 @@
 Using Gemma CLI sc from /space/opt/gemma-cli/refs/sc
-2025-05-07 14:53:35,119 [33mWARN[m [35m2774254[m [main] [36mu.g.c.c.SettingsConfig.warnIfReadableByOthers(270)[m | Gemma.properties may contain credentials and is readable by others. Adjust the permissions by running 'chmod o-r /home/rschwartz/Gemma.properties' to remove this warning.
-2025-05-07 14:53:35,832 [32mINFO[m [35m2774254[m [main] [36mu.g.c.c.SpringContextUtils.prepareContext(140)[m | Loading Gemma 1.32.0-SNAPSHOT built on May 7, 2025, 12:06:36 PM from c217b9fba4a4dc0f4ea3eb230586c94038c0d7a9 (active profiles: production, cli), hold on!
-2025-05-07 14:53:38,520 [32mINFO[m [35m2774254[m [main] [36mu.g.c.c.SpringContextUtils.getApplicationContext(73)[m | Got Gemma context in 4281 ms.
+2025-05-07 17:45:23,826 [33mWARN[m [35m1074686[m [main] [36mu.g.c.c.SettingsConfig.warnIfReadableByOthers(270)[m | Gemma.properties may contain credentials and is readable by others. Adjust the permissions by running 'chmod o-r /home/rschwartz/Gemma.properties' to remove this warning.
+2025-05-07 17:45:23,873 [32mINFO[m [35m1074686[m [main] [36mu.g.c.c.SpringContextUtils.prepareContext(140)[m | Loading Gemma 1.32.0-SNAPSHOT built on May 7, 2025, 12:06:36 PM from c217b9fba4a4dc0f4ea3eb230586c94038c0d7a9 (active profiles: production, cli), hold on!
+2025-05-07 17:45:25,484 [32mINFO[m [35m1074686[m [main] [36mu.g.c.c.SpringContextUtils.getApplicationContext(73)[m | Got Gemma context in 1698 ms.
 ========= Gemma CLI invocation of addMetadataFile ============
 Options: -e PTSDBrainomics --file-type MULTIQC_REPORT multiqc_report.html --force --changelog-entry 'sc-pipeline-1.1.1 --nmads 5'
-2025-05-07 14:53:46,784 [32mINFO[m [35m2774254[m [main] [36mu.g.c.u.AbstractAuthenticatedCLI.authenticate(138)[m | Logged in as raschwar
-2025-05-07 14:53:46,909 [32mINFO[m [35m2774254[m [main] [36mu.g.a.ExpressionExperimentManipulatingCLI.doAuthenticatedWork(338)[m | Final dataset: ExpressionExperiment Id=51186 Name=Systems biology dissection of PTSD and MDD across brain regions, cell types, and blood  Short Name=PTSDBrainomics https://dev.gemma.msl.ubc.ca/expressionExperiment/showExpressionExperiment.html?id=51186
-2025-05-07 14:53:46,979 [32mINFO[m [35m2774254[m [main] [36mu.g.c.a.s.ExpressionDataFileServiceImpl.copyMetadataFileInternal(372)[m | Copying metadata file: multiqc_report.html to /space/gemmaData/metadata/PTSDBrainomics/MultiQCReports/multiqc_report.html.
-2025-05-07 14:53:47,245 [32mINFO[m [35m2774254[m [main] [36mu.g.c.a.s.ExpressionMetadataChangelogFileServiceImpl.addChangelogEntry(72)[m | Added an entry to the changelog for PTSDBrainomics.
-========= Gemma CLI run of addMetadataFile complete in 8 seconds ============
+2025-05-07 17:45:27,454 [33mWARN[m [35m1074686[m [main] [36mu.g.p.s.AbstractFilteringVoEnabledDao.afterPropertiesSet(80)[m | Done configuring for ubic.gemma.model.expression.experiment.ExpressionExperiment. 139 properties were registered in 131 ms.
+2025-05-07 17:45:29,371 [32mINFO[m [35m1074686[m [main] [36mu.g.c.u.AbstractAuthenticatedCLI.authenticate(138)[m | Logged in as raschwar
+2025-05-07 17:45:29,398 [32mINFO[m [35m1074686[m [main] [36mu.g.a.ExpressionExperimentManipulatingCLI.doAuthenticatedWork(338)[m | Final dataset: ExpressionExperiment Id=51186 Name=Systems biology dissection of PTSD and MDD across brain regions, cell types, and blood  Short Name=PTSDBrainomics https://dev.gemma.msl.ubc.ca/expressionExperiment/showExpressionExperiment.html?id=51186
+2025-05-07 17:45:29,408 [32mINFO[m [35m1074686[m [main] [36mu.g.c.a.s.ExpressionDataFileServiceImpl.copyMetadataFileInternal(372)[m | Copying metadata file: multiqc_report.html to /space/gemmaData/metadata/PTSDBrainomics/MultiQCReports/multiqc_report.html.
+2025-05-07 17:45:29,560 [32mINFO[m [35m1074686[m [main] [36mu.g.c.a.s.ExpressionMetadataChangelogFileServiceImpl.addChangelogEntry(72)[m | Added an entry to the changelog for PTSDBrainomics.
+========= Gemma CLI run of addMetadataFile complete in 3 seconds ============
