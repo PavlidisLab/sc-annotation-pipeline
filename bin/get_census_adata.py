@@ -1,5 +1,7 @@
 #!/user/bin/python3
 
+import warnings
+warnings.filterwarnings("ignore")
 from pathlib import Path
 import random
 import os
@@ -14,7 +16,6 @@ from scipy.sparse import csr_matrix
 import warnings
 import cellxgene_census
 import cellxgene_census.experimental
-import scvi
 from sklearn.ensemble import RandomForestClassifier
 import adata_functions
 from adata_functions import *
@@ -35,14 +36,23 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Download model file based on organism, census version, and tree file.")
     parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
     parser.add_argument('--census_version', type=str, default='2024-07-01', help='Census version (e.g., 2024-07-01)')
-    parser.add_argument('--ref_collections', type=str, nargs = '+', default = ["A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation"]) 
+    parser.add_argument('--ref_collections', type=str, nargs = '+', default = [
+        "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
+        "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
+        "Adult mouse cortical cell taxonomy revealed by single cell transcriptomics",
+        "Tabula Muris Senis",
+        "Single-cell transcriptomics characterization of oligodendrocytes and microglia in white matter aging"
+    ]) 
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--organ', type=str, default="brain")
     parser.add_argument('--assay', type=str, nargs = "+", help="Assays to subset from referenc (unnecessary)", default=None)
     parser.add_argument('--tissue', type=str, nargs="+", default = None, help = "tissues to pull from (different from organ, this can select for more specific brain regions)")
-    parser.add_argument('--subsample', type=str, help="Number of cells per cell type to subsample from reference", default=500)
-    parser.add_argument('--rename_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv")
+    parser.add_argument('--subsample', type=int, help="Number of cells per cell type to subsample from reference", default=50)
+    parser.add_argument('--rename_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/author_cell_annotations/rename_cells_mmus_author.tsv")
     parser.add_argument('--ref_name', type=str, default="whole_cortex", help="Prefix of temporary reference file created")
+    parser.add_argument('--original_celltype_columns', type=str, default=None)
+    parser.add_argument('--author_annotations_path', type=str, default=None)
+    
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -61,10 +71,20 @@ def main():
    subsample = args.subsample
    tissue = args.tissue
    organ=args.organ
-   rename_file=args.rename_file   
+   rename_file=args.rename_file
+   original_celltype_columns = args.original_celltype_columns
+   author_annotations_path = args.author_annotations_path
+   
+   #f organism == "mus_musculus":
+   if original_celltype_columns is not None:
+      original_celltypes = get_original_celltypes(columns_file=original_celltype_columns,
+                                          author_annotations_path=author_annotations_path) 
+   else:
+      original_celltypes = None
+  
    ref=get_census(organism=organism, 
                      subsample=subsample, census_version=census_version, organ=organ,
-                        ref_collections=ref_collections, assay=assay, tissue=tissue, rename_file=rename_file, seed=SEED)
+                        ref_collections=ref_collections, assay=assay, tissue=tissue, rename_file=rename_file, seed=SEED, original_celltypes=original_celltypes)
 
    print("finished fetching anndata")
    outdir="refs"

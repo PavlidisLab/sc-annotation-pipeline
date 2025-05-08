@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings("ignore")
 import pandas as pd
 import numpy as np
 import scanpy as sc
@@ -17,6 +19,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from pathlib import Path
 import subprocess
+from scipy.stats import median_abs_deviation
+from statsmodels.formula.api import ols
 
 
 def setup(organism="homo_sapiens", version="2024-07-01"):
@@ -53,49 +57,23 @@ def setup(organism="homo_sapiens", version="2024-07-01"):
 #clean up cellxgene ontologies
 
 def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv"):
-    """
-    Rename cell types and map them to ontology terms.
-    obs : pd.DataFrame
-        The input DataFrame containing cell annotations. 
-        Must include the columns: 'cell_type' and 'cell_type_ontology_term_id'.
-    
-    rename_file : str, optional (default: "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv")
-        Path to the TSV file containing the renaming information.
-        The file must contain the columns:
-        - 'cell_type': Original cell type names.
-        - 'new_cell_type': New cell type names.
-        - 'cell_type_ontology_term_id': Corresponding ontology terms.
-    
-    Returns:
-        - Cells filtered to only include those in `new_cell_type`.
-        - Updated cell type names.
-        - Mapped ontology terms.
-    """
-    rename_df = pd.read_csv(rename_file, sep="\t")
-    
-    # Ensure expected columns exist
-    if not {'cell_type', 'new_cell_type', 'cell_type_ontology_term_id'}.issubset(rename_df.columns):
-        raise ValueError("Rename file must contain 'cell_type', 'new_cell_type', and 'cell_type_ontology_term_id' columns.")
-   
+    # change to handle author_cell_type as first column name of rename df (distinguishes between author and cellxgene annotations)
+    rename_df = pd.read_csv(rename_file, sep=None)
+    rename_key = rename_df.columns[0]
+
     # Filter cells to keep only those with valid new cell types
     # this replaces the "restricted cell types" command line argument
-    obs = obs[obs['cell_type'].isin(rename_df['new_cell_type'])]
+    # not working for "glutamatergic neuron" in human
+    
+    obs = obs[obs[rename_key].isin(rename_df[rename_key])]
  
     # Create mapping dictionaries
-    rename_mapping = dict(zip(rename_df['cell_type'], rename_df['new_cell_type']))
+    rename_mapping = dict(zip(rename_df[rename_key], rename_df['new_cell_type']))
     ontology_mapping = dict(zip(rename_df['new_cell_type'], rename_df['cell_type_ontology_term_id']))
     
     # Apply renaming
-    obs['cell_type'] = obs['cell_type'].replace(rename_mapping)
-    if pd.api.types.is_categorical_dtype(obs['cell_type_ontology_term_id']):
-        # Add any new categories to 'cell_type_ontology_term_id'
-        new_categories = list(set(ontology_mapping.values()) - set(obs['cell_type_ontology_term_id'].cat.categories))
-        if new_categories:
-            obs['cell_type_ontology_term_id'] = obs['cell_type_ontology_term_id'].cat.add_categories(new_categories)
-            
+    obs['cell_type'] = obs[rename_key].replace(rename_mapping)  
     obs["cell_type_ontology_term_id"] = obs["cell_type"].map(ontology_mapping)
-    
-    # remove NAs
     
     return obs
 
@@ -117,8 +95,8 @@ def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo s
     obs = data[data['soma_joinid'].isin(filtered_ids)]
 
     obs = rename_cells(obs, rename_file=rename_file)
- 
     celltypes = obs["cell_type"].unique()
+    print(obs["cell_type"].value_counts().reset_index())
     final_idx = []
     for celltype in celltypes:
         celltype_ids = obs[obs["cell_type"] == celltype]['soma_joinid'].values
@@ -133,7 +111,36 @@ def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo s
     # Return final indices
     return final_idx
 
-def relabel(adata, relabel_path, join_key="", sep="\t"):
+
+def get_original_celltypes(columns_file="/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/meta/author_cell_annotations/original_celltype_columns.tsv", 
+                           author_annotations_path="/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/meta/author_cell_annotations"):
+    original_celltype_columns = pd.read_csv(columns_file, sep=None)
+
+    original_celltypes = {}
+    for file in os.listdir(author_annotations_path):
+        if "obs.tsv" in file:
+            dataset_title = file.split(".")[0]
+            og_obs = pd.read_csv(os.path.join(author_annotations_path, file), sep=None)
+            # check if all observation_joinid are unique
+            assert og_obs["observation_joinid"].nunique() == og_obs.shape[0]
+            og_column = original_celltype_columns[original_celltype_columns["dataset_title"] == dataset_title]["author_cell_type"].values[0]
+            og_obs["author_cell_type"] = og_obs[og_column]
+            original_celltypes[dataset_title] = og_obs
+
+    for dataset_title, obs in original_celltypes.items():
+        #original_celltypes[dataset_title]["new_dataset_title"] = dataset_title
+        original_celltypes[dataset_title]["new_observation_joinid"] = original_celltypes[dataset_title]["observation_joinid"].apply(lambda x: f"{dataset_title}_{x}")
+    
+        # concat all original_celltypes
+    aggregate_obs = pd.concat([original_celltypes[ref_name] for ref_name in original_celltypes.keys()])
+    # find duplicate observation_joinid in aggregate_obs
+    duplicate_observation_joinid = aggregate_obs[aggregate_obs["new_observation_joinid"].duplicated()]
+    duplicate_observation_joinid.columns
+    assert aggregate_obs["new_observation_joinid"].nunique() == aggregate_obs.shape[0]
+   
+    return aggregate_obs
+
+def relabel(adata, relabel_path, join_key="", sep=None):
     # Read the relabel table from the file
     relabel_df = pd.read_csv(relabel_path, sep=sep)  # Adjust the separator as needed
     # Take the first column as the join key
@@ -150,11 +157,29 @@ def relabel(adata, relabel_path, join_key="", sep="\t"):
     adata.obs.drop(columns=columns_to_drop, inplace=True)
     return adata
 
+def map_author_labels(obs, original_celltypes):
+    obs["new_dataset_title"] = obs["dataset_title"].apply(lambda x: x.replace(" ", "_")
+                                                                .replace("\\/", "_")
+                                                                .replace("(", "")
+                                                                .replace(")", "")
+                                                                .replace("\\", "")
+                                                                .replace("'", "")
+                                                                .replace(":", "")
+                                                                .replace(";", "")
+                                                                .replace("&", ""))
 
-def extract_data(data, filtered_ids, subsample=10, organism=None, census=None, 
-    obs_filter=None, cell_columns=None, dataset_info=None, seed=42):
+    obs["new_observation_joinid"] = obs["new_dataset_title"].astype(str) + "_" + obs["observation_joinid"].astype(str)
     
-    brain_cell_subsampled_ids = subsample_cells(data, filtered_ids, subsample, seed=seed, organism=organism)
+    mapping = dict(zip(original_celltypes["new_observation_joinid"], original_celltypes["author_cell_type"]))
+    obs["author_cell_type"] = obs["new_observation_joinid"].map(mapping)
+
+    return obs
+
+def extract_data(cellxgene_obs_filtered, filtered_ids, subsample=10, organism=None, census=None, 
+    obs_filter=None, cell_columns=None, dataset_info=None, 
+    original_celltypes=None, seed=42):
+     
+    brain_cell_subsampled_ids = subsample_cells(cellxgene_obs_filtered, filtered_ids, subsample, seed=seed, organism=organism)
     # Assuming get_seurat is defined to return an AnnData object
     adata = cellxgene_census.get_anndata(
         census=census,
@@ -164,39 +189,20 @@ def extract_data(data, filtered_ids, subsample=10, organism=None, census=None,
         obs_coords=brain_cell_subsampled_ids,
         var_value_filter = "nnz > 10",
         obs_embeddings=["scvi"])
+    
     sc.pp.filter_genes(adata, min_cells=3)
+    sc.pp.filter_genes(adata, min_counts=200)
+    
     print("Subsampling successful.")
     newmeta = adata.obs.merge(dataset_info, on="dataset_id", suffixes=(None,"y"))
     adata.obs = newmeta
+    
+    if isinstance(original_celltypes, pd.DataFrame) and not original_celltypes.empty:
+        adata.obs = map_author_labels(adata.obs, original_celltypes)
     # Assuming relabel_wrapper is defined
     # Convert all columns in adata.obs to factors (categorical type in pandas)
     return adata
 
-def split_and_extract_data(data, split_column, subsample=500, organism=None, census=None, 
-                           cell_columns=None, dataset_info=None, dims=20, relabel_path="/biof501_proj/meta/relabel/census_map_human.tsv", seed=42):
-    # Get unique split values from the specified column
-    unique_values = data[split_column].unique()
-    refs = {}
-
-    for split_value in unique_values:
-        # Filter the brain observations based on the split value
-        filtered_ids = data[data[split_column] == split_value]['soma_joinid'].values
-        obs_filter = f"{split_column} == '{split_value}'"
-        
-        adata = extract_data(data, filtered_ids, subsample, organism, census, obs_filter, 
-                             cell_columns, dataset_info, dims=dims, relabel_path=relabel_path, seed=seed)
-        dataset_titles = adata.obs['dataset_title'].unique()
-
-        if split_column == "tissue": 
-            name_to_use = split_value
-        elif split_column == "dataset_id":
-            name_to_use = dataset_titles[0]
-        else:
-            name_to_use = split_value
-
-        refs[name_to_use] = adata
-
-    return refs
 
 def get_cellxgene_obs(census, organism, organ="brain", primary_data=True, disease="normal"):
     value_filter = (
@@ -209,6 +215,7 @@ def get_cellxgene_obs(census, organism, organ="brain", primary_data=True, diseas
 
 def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5, assay=None, tissue=None, organ="brain",
                ref_collections=["Transcriptomic cytoarchitecture reveals principles of human neocortex organization"," SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"], 
+               original_celltypes = None,
                rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv",seed=42):
 
     census = cellxgene_census.open_soma(census_version=census_version)
@@ -224,9 +231,7 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         cellxgene_obs_filtered = cellxgene_obs_filtered[cellxgene_obs_filtered["assay"].isin(assay)]
     if tissue:
         cellxgene_obs_filtered = cellxgene_obs_filtered[cellxgene_obs_filtered["tissue"].isin(tissue)]
-    obs = cellxgene_obs_filtered[["cell_type","cell_type_ontology_term_id","collection_name","dataset_title"]].value_counts().reset_index() 
-    obs.to_csv(f"{organism}_ref_cell_info.tsv",sep='\t',index=False)
-    
+         
     # Adjust organism naming for compatibility
     organism_name_mapping = {
         "homo_sapiens": "Homo sapiens",
@@ -241,27 +246,31 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         "soma_joinid", "observation_joinid"
     ]
     
-    refs = {}
-    
+    if isinstance(original_celltypes, pd.DataFrame) and not original_celltypes.empty:
+       cellxgene_obs_filtered = map_author_labels(cellxgene_obs_filtered, original_celltypes)
+        
     # Get embeddings for all data together
     filtered_ids = cellxgene_obs_filtered['soma_joinid'].values
     adata = extract_data(
         cellxgene_obs_filtered, filtered_ids,
         subsample=subsample, organism=organism,
         census=census, obs_filter=None,
-        cell_columns=cell_columns, dataset_info=dataset_info, seed = seed
+        cell_columns=cell_columns, dataset_info=dataset_info, seed = seed,
+        original_celltypes=original_celltypes
     )
-    adata.obs=rename_cells(adata.obs, rename_file=rename_file) 
-    
-    
-
-    
+    new_obs=rename_cells(adata.obs, rename_file=rename_file)
+    new_adata = adata[adata.obs["soma_joinid"].isin(new_obs["soma_joinid"])].copy()
+    new_obs = new_obs.set_index("soma_joinid")
+    new_adata.obs = new_adata.obs.set_index("soma_joinid")
+    new_adata.obs = new_adata.obs.loc[new_obs.index].copy()
+    new_adata.obs = new_obs
+     
    # for name, ref in refs.items(): 
-    for col in adata.obs.columns:
-        if adata.obs[col].dtype.name =='category':
-            adata.obs[col] = pd.Categorical(adata.obs[col].cat.remove_unused_categories())
+    for col in new_adata.obs.columns:
+        if new_adata.obs[col].dtype.name =='category':
+            new_adata.obs[col] = pd.Categorical(new_adata.obs[col].cat.remove_unused_categories())
     
-    return adata 
+    return new_adata 
 
 
 
@@ -292,100 +301,6 @@ def process_query(query, model_file_path, batch_key="sample"):
     query.obsm["scvi"] = latent
 
     return query
-
-
-# Function to find a node's parent in the tree
-def find_parent_label(tree, target_label, current_path=None):
-    if current_path is None:
-        current_path = []
-    for key, value in tree.items():
-        # Add the current node to the path
-        current_path.append(key)
-        # If we found the target, return the parent label if it exists
-        if key == target_label:
-            if len(current_path) > 1:
-                return current_path[-2]  # Return the parent label
-            else:
-                return None  # No parent if we're at the root
-        # Recurse into nested dictionaries if present
-        if isinstance(value, dict):
-       #     print(value)
-            result = find_parent_label(value, target_label, current_path)
-           # print(result)
-            if result:
-                return result
-        # Remove the current node from the path after processing
-        current_path.pop()
-    return None
-
-# Recursive function to get the closest valid label
-def get_valid_label(original_label, query_labels, tree):
-    # Base case: if the label exists in query, return it
-    if original_label in query_labels:
-        return original_label
-    # Find the parent label in the tree
-    parent_label = find_parent_label(tree, original_label)
-    # Recursively check the parent label if it exists
-    if parent_label:
-        return get_valid_label(parent_label, query_labels, tree)
-    else:
-        return None  # Return None if no valid parent found
-
-# Example usage
-
-def map_valid_labels(query, ref_keys, mapping_df):
-    # deal with differing levels of granularity
-    for key in ref_keys:
-        original=query[key].unique()
-        for og in original:
-            if og not in mapping_df[key].unique():
-                level = mapping_df.columns[mapping_df.apply(lambda col: og in col.values, axis=0)] # get level of original label in hierarchy
-                if level.empty: # handle cases where original label is not in mapping file- should only be "unknown"
-                    # this doesn't handle individual references-
-                    # if a reference is missing a label that is present in other references, it will have 0 predictions
-                    # this will therefore penalize references with missing labels
-                    continue
-                og_index = query.index[query[key] == og]
-                # Replace the value in "predicted_" column with corresponding predicted value at `level`
-                for idx in og_index:
-                    # Find the replacement value from `mapping_df` for this level
-                    replacement = query.loc[idx, "predicted_" + level]
-                    # replace predicted id with appropriate level
-                    query["predicted_" + key] = query["predicted_" + key].astype("object")
-                    query.loc[idx, "predicted_" + key] = replacement.iloc[0]
-                    query["predicted_" + key] = query["predicted_" + key].astype("category")
-
-    return query            
-
-
-
-
-def find_node(tree, target_key):
-    """
-    Recursively search the tree for the target_key and return the corresponding node. 
-    """
-    for key, value in tree.items():
-        if isinstance(value, dict):
-            if key == target_key:  # If we've found the class at this level
-                return value  # Return the current node
-            else:
-                # Recurse deeper into the tree
-                result = find_node(value, target_key)
-                if result:
-                    return result
-    return None  # Return None if the target key is not found
-
-
-# Helper function to recursively gather all subclasses under a given level
-def get_subclasses(node, colname):
-    subclasses = []
-    if isinstance(node, dict):
-        for key, value in node.items():
-            if isinstance(value, dict) and value.get("colname") == colname:
-                subclasses.append(key)
-            else:
-                subclasses.extend(get_subclasses(value, colname))
-    return subclasses
 
 
 def rfc_pred(ref, query, ref_keys, seed):
@@ -424,190 +339,6 @@ def rfc_pred(ref, query, ref_keys, seed):
     return probabilities
 
 
-def roc_analysis(probabilities, query, key):
-    optimal_thresholds = {}
-    metrics={}
-  #  for key in ref_keys:
-       # print(key) 
-    #probs = probabilities[key]["probabilities"]
-    probs = np.array(probabilities)
-    class_labels = probabilities.columns.values
-    optimal_thresholds[key] = {}
-        
-    # Binarize the class labels for multiclass ROC computation
-    true_labels = label_binarize(query[key].values, classes=class_labels)
-        
-    # Find the optimal threshold for each class
-    metrics[key] = {}
-    for i, class_label in enumerate(class_labels):
-        optimal_thresholds[key][class_label] = {}
-        # check for positive samples
-        # usually positive samples are 0 when a ref label is
-        # replaced with a parent label
-        # since it is not in the original query labels
-        # but it is being annotated during the label transfer
-        # these should not be evaluated ?
-        # incorrect classifications will be reflected in the AUC and F1 of the og label
-        # eg. ET is not in query so it is changed to "deep layer non-IT"
-        # but these cells are CT or NP in the ref, so they're still incorrect
-        # not entirely sure how to deal with this
-        positive_samples = np.sum(true_labels[:, i] == 1)
-        if positive_samples == 0:
-            print(f"Warning: No positive samples for class {class_label}, skipping eval and setting threshold to 0.5")
-            optimal_thresholds[key][class_label] = 0.5
-        elif positive_samples > 0:
-            metrics[key][class_label]={}
-            # True label one hot encoding at class label index = 
-            # vector of all cells which are either 1 = label or 0 = not label
-            # probs = probability vector for all cells given class label
-            fpr, tpr, thresholds = roc_curve(true_labels[:, i], probs[:, i])
-            roc_auc = auc(fpr, tpr) # change to roc_auc_score, ovo, average= macro, labels               
-            optimal_idx = np.argmax(tpr - fpr)
-            optimal_threshold = thresholds[optimal_idx]
-            if optimal_threshold == float('inf'):
-                optimal_threshold = 0 
-            optimal_thresholds[key][class_label]=optimal_threshold
-            metrics[key][class_label]["tpr"] = tpr
-            metrics[key][class_label]["fpr"] = fpr
-            metrics[key][class_label]["auc"] = roc_auc
-            metrics[key][class_label]["optimal_threshold"] = optimal_threshold
-    return metrics
-
-
-def process_all_rocs(rocs, queries): 
-    # Populate the list with threshold data
-    data = []
-
-    for query_name, query_dict in rocs.items():
-        for ref_name, ref_data in query_dict.items():
-            for key, roc in ref_data.items():
-                if roc:
-                    for class_label, class_data in roc.items():
-                        if class_data:
-                            data.append({
-                                "ref": ref_name,
-                                "query": query_name,
-                                "key": key, 
-                                "label": class_label, 
-                                "auc": class_data["auc"],
-                                "optimal_threshold": class_data["optimal_threshold"]
-                              #   f'{var}': class_data[var]
-                            })
-
-    # Create DataFrame from the collected data
-    df = pd.DataFrame(data)
-    return df
-
-
-def process_roc(rocs, ref_name, query_name):
-    data=[]
-    for key, roc in rocs.items():
-        if roc:
-            for class_label, class_data in roc.items():
-                if class_data:
-                        data.append({
-                                "ref": ref_name,
-                                "query": query_name,
-                                "key": key, 
-                                "label": class_label, 
-                                "auc": class_data["auc"],
-                                "optimal threshold": class_data["optimal_threshold"]
-                              #   f'{var}': class_data[var]
-                            })
-
-    # Create DataFrame from the collected data
-    roc_df = pd.DataFrame(data)
-    return roc_df 
-
-def plot_distribution(df, var, outdir, split="label", facet=None):
-    # Set up the figure size
-    plt.figure(figsize=(17, 6))
-    
-    # Create the violin plot with faceting by the 'query' column
-    sns.violinplot(data=df, y=var, x=split, palette="Set2", hue=facet, split=False, dodge=True)
-    
-    means = df.groupby([split] + ([facet] if facet else []))[var].mean().reset_index()
-    ax = plt.gca()
-
-# Annotate the means on the plot
-    for i, split_value in enumerate(df[split].unique()):
-        for j, facet_value in enumerate(df[facet].unique() if facet else [None]):
-            # Select the mean value for this group
-            if facet:
-                mean_value = means[(means[split] == split_value) & (means[facet] == facet_value)][var].values[0]
-            else:
-                mean_value = means[means[split] == split_value][var].values[0]
-
-            # Adjust the x position for each facet group (left, center, right)
-            if facet:
-                # Left, center, and right positions for the facet groups
-                x_pos = i + (j - 1) * 0.3  # j-1 to shift positions: -0.2, 0, +0.2
-            else:
-                # Only one position (center) when there's no facet
-                x_pos = i 
-
-            # Adjust y_pos based on mean value to place the text inside or above the violin plot
-            y_pos = mean_value  # You can adjust this as needed for better placement
-
-            # Add mean text at the appropriate location
-            ax.text(
-            x_pos, 
-            y_pos, 
-            f"{mean_value:.2f}", 
-            horizontalalignment='center', 
-            fontsize=8, 
-            color='red', 
-           # fontweight='bold',
-            bbox=dict(facecolor='yellow', alpha=0.5, boxstyle='round,pad=0.2')  # Highlighted background
-        )
-
-    # Set the labels and title
-    plt.xlabel('Key', fontsize=14)
-    plt.ylabel(f"{var}", fontsize=14)
-    plt.title(f'Distribution of {var} across {split}', fontsize=20)
-    # Rotate x-axis labels for better readability
-    plt.xticks(rotation=45, ha="right")
-    # Move the legend outside the plot
-    plt.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0)
-    # Adjust layout to ensure everything fits
-    plt.tight_layout()
-    
-    # Save the plot as a PNG file
-    os.makedirs(outdir, exist_ok=True)
-    var = var.replace(" ", "_")
-    save_path = os.path.join(outdir, f"{var}_{split}_{facet}_distribution.png")
-    plt.savefig(save_path, bbox_inches="tight")  # Use bbox_inches="tight" to ensure the legend is included
-    plt.close()
-
-
-def check_column_ties(probabilities, class_labels):
-    """
-    Checks for column ties (multiple columns with the same maximum value) in each row.
-
-    Parameters:
-    - probabilities (numpy.ndarray): 2D array where rows represent samples and columns represent classes.
-    - class_labels (list): List of class labels corresponding to the columns.
-
-    Returns:
-    - tie_rows (list): List of row indices where ties occur.
-    - tie_columns (dict): Dictionary where the key is the row index and the value is a list of tied column indices and their class labels.
-    """
-    # Find the maximum probability for each row
-    max_probs = np.max(probabilities, axis=1)
-
-    # Check if there are ties (multiple columns with the maximum value in the row)
-    ties = np.sum(probabilities == max_probs[:, None], axis=1) > 1
-
-    # Get the indices of rows with ties
-    tie_rows = np.where(ties)[0]
-
-    # Find the columns where the tie occurs and associated class labels
-    tie_columns = {}
-    for row in tie_rows:
-        tied_columns = np.where(probabilities[row] == max_probs[row])[0]
-        tie_columns[row] = [(col, class_labels[col]) for col in tied_columns]
-    
-    return tie_rows, tie_columns
 
 def classify_cells(query, cutoff, probabilities):
     class_metrics = {}
@@ -640,371 +371,217 @@ def classify_cells(query, cutoff, probabilities):
     query.obs[key] = predicted_classes
     #query["confidence"] = np.max(class_probs, axis=1)  # Store max probability as confidence
     
-    # Aggregate predictions (you can keep this logic as needed)
-    #query = aggregate_preds(query, ref_keys, tree)
+    return query
+
+
+# functions for QC plotting --------------------------
+
+def read_query(query_path, gene_mapping, new_meta, sample_meta):
+    query = sc.read_h5ad(query_path)
+    # filter query for cells and genes
+    #sc.pp.filter_cells(query, min_counts=3)
+    # sc.pp.filter_cells(query, min_genes =200)
+    if "feature_name" not in query.var.columns:
+        query.var = query.var.merge(gene_mapping["OFFICIAL_SYMBOL"], left_index=True, right_index=True, how="left")
+        query.var.rename(columns={"OFFICIAL_SYMBOL": "feature_name"}, inplace=True)
+        # make symbol the index
+       # query.var.set_index("OFFICIAL_SYMBOL", inplace=True)
+        #drop nan values
+    else:
+        query.var.set_index("feature_name", inplace=True)
+    
+    query.obs=query.obs.reset_index()
+    query.obs["full_barcode"] = query.obs["sample_id"].astype(str) + "_" + query.obs["cell_id"].astype(str)
+    new_meta["full_barcode"] = new_meta["sample_id"].astype(str) + "_" + new_meta["cell_id"].astype(str)
+    
+    query.obs = query.obs.merge(new_meta, left_on="full_barcode", right_on="full_barcode", how="left", suffixes=("", "_y"))
+   
+   
+   
+    sample_meta["sample_id"] = sample_meta["sample_id"].astype(str)
+    query.obs = query.obs.merge(sample_meta, left_on="sample_id", right_on="sample_id", how="left", suffixes=("", "_y"))
+    
+    
+    columns_to_drop = [col for col in query.obs.columns if col.endswith("_y")]
+    query.obs.drop(columns=columns_to_drop, inplace=True)
+    return query
+
+
+def is_outlier(query, metric: str, nmads=3):
+    M = query.obs[metric]
+    outlier = (M < np.median(M) - nmads * median_abs_deviation(M)) | (
+        np.median(M) + nmads * median_abs_deviation(M) < M
+    )
+    return outlier
+
+
+def qc_preprocess(query):
+    # check if any sample_id has fewer than 30 associated cwells
+    sample_counts = query.obs["sample_id"].value_counts()
+    if (sample_counts < 30).any():
+        batch_key=None
+    else:
+        batch_key="sample_id"
+    sc.pp.scrublet(query, batch_key=batch_key)
+    # log normalize, comput neighbors and umap
+    sc.pp.normalize_total(query, target_sum=1e4)
+    sc.pp.log1p(query)
+    sc.pp.highly_variable_genes(query, n_top_genes=2000, subset=False)
+    sc.pp.pca(query)
+    sc.pp.neighbors(query, n_neighbors=10, n_pcs=30)
+    sc.tl.umap(query)
+    sc.tl.leiden(query, resolution=0.3)
     
     return query
 
 
-def aggregate_preds(query, ref_keys, tree):
-    
-    preds = np.array(query["predicted_" + ref_keys[0]])
-    query.index = query.index.astype(int)
-    # add something here to re-order ref keys based on tree?
-    # colname attribute of tree stores this information
-    for higher_level_key in ref_keys[1:]: # requires ref keys to be ordered from most granular to highest level 
-        query["predicted_" + higher_level_key] = "unknown"  # Initialize to account for unknowns preds
-        # Skip the first (granular) level
-        ## Get all possible classes for this level (e.g. "GABAergic", "Glutamatergic", "Non-neuron")
-        subclasses = get_subclasses(tree, higher_level_key) 
-        
-        for higher_class in subclasses: # eg "GABAergic"
-            node = find_node(tree, higher_class) # find position in tree dict
-            valid = get_subclasses(node, ref_keys[0]) # get all granular labels falling under this class
-            ## eg all GABAergic subclasses
-            if not valid:
-                print("no valid subclasses")
-                continue  # Skip if no subclasses found   
 
-            # Get the indices of cells in `preds` that match any of the valid subclasses
-            cells_to_agg = np.where(np.isin(preds, valid))[0]
-            cells_to_agg = [int(cell) for cell in cells_to_agg] # Ensure cells_to_agg is in integers (if not already)
-
-            # Assign the higher-level class label to the identified cells
-            query.loc[cells_to_agg, "predicted_" + higher_level_key] = higher_class
-
-    return query
-
-def eval(query, ref_keys, mapping_df):
-    class_metrics = defaultdict(lambda: defaultdict(dict))
-    for key in ref_keys:
-        
-       #threshold = kwargs.get('threshold', True)  # Or some other default value    
-        query = map_valid_labels(query, ref_keys, mapping_df)  
-        class_labels = query[key].unique()
-        pred_classes = query[f"predicted_{key}"].unique()
-        true_labels= query[key]
-        predicted_labels = query["predicted_" + key]
-        labels = list(set(class_labels).union(set(pred_classes)))
-
-    # Calculate accuracy and confusion matrix after removing "unknown" labels
-        accuracy = accuracy_score(true_labels, predicted_labels)
-        conf_matrix = confusion_matrix(
-            true_labels, predicted_labels, 
-            labels=labels
-        )
-        class_metrics[key]["confusion"] = {
-            "matrix": conf_matrix,
-            "labels": labels
-            #"accuracy": accuracy
-        }
-        # Classification report for predictions
-        class_metrics[key]["classification_report"] = classification_report(true_labels, predicted_labels, 
-                        labels=labels, output_dict=True, zero_division=np.nan)
-        # Add accuracy to classification report
-        #class_metrics[key]["accuracy"] = accuracy
-        
-        ## Calculate accuracy for each label
-        #label_accuracies = {}
-        #for label in labels:
-            #label_mask = true_labels == label
-            #label_accuracy = accuracy_score(true_labels[label_mask], predicted_labels[label_mask])
-            #label_accuracies[label] = label_accuracy
-        
-        #class_metrics[key]["label_accuracies"] = label_accuracies
-
-    return class_metrics
-
-def update_classification_report(class_metrics, ref_keys):
-    #for query_name, query in class_metrics.items():
-       # for ref_name, ref in query.items():
-    for key in ref_keys:
-        for key, val in class_metrics[key]["classification_report"].items():
-            if isinstance(val, dict):
-                if val['support'] == 0.0: 
-                    val['f1-score'] = "nan" 
-    return class_metrics
-
-def plot_confusion_matrix(query_name, ref_name, key, confusion_data, output_dir):
-
-    os.makedirs(output_dir, exist_ok=True) 
-    # Extract confusion matrix and labels from the confusion data
-    conf_matrix = confusion_data["matrix"]
-    labels = confusion_data["labels"]
-
-    # Plot the confusion matrix
-    plt.figure(figsize=(28, 12))
-    sns.heatmap(conf_matrix, annot=True, fmt='g', cmap='Reds', xticklabels=labels, yticklabels=labels, annot_kws={"size": 20})
-    plt.xlabel('Predicted', fontsize =20)
-    plt.ylabel('True', fontsize= 20)
-    plt.title(f'Confusion Matrix: {query_name} vs {ref_name} - {key}', fontsize=17)
-    # Adjust tick parameters for both axes
-    #plt.tick_params(axis='both', which='major', labelsize=15, width=1)  # Increase tick label size and make ticks thicker
-
-    # Rotate both x and y tick labels by 90 degrees
-    plt.xticks(rotation=45, fontsize=15)  # Rotate x-axis labels by 90 degrees
-    plt.yticks(rotation=45, fontsize=15)  # Rotate y-axis labels by 90 degrees
-
-    # Save the plot
-   # output_dir = os.path.join(projPath, 'results', 'confusion')
-    
-    #os.makedirs(os.path.join(output_dir, new_query_name, new_ref_name), exist_ok=True)  # Create the directory if it doesn't exist
-    plt.savefig(os.path.join(output_dir,f"{key}_confusion.png"))
-    plt.close() 
-
-def plot_roc_curves(metrics, title="ROC Curves for All Keys and Classes", save_path=None):
-    """
-    Plots ROC curves for each class at each key level from the metrics dictionary on the same figure.
-    
-    Parameters:
-    metrics (dict): A dictionary with structure metrics[key][class_label] = {tpr, fpr, auc, optimal_threshold}.
-    title (str): The title of the plot.
-    save_path (str, optional): The file path to save the plot. If None, the plot is not saved.
-    """
-    fig, ax = plt.subplots(figsize=(10, 8))  # Create a figure and axis
-
-    # Create a subplot for each key
-    for key in metrics:
-        for class_label in metrics[key]:
-
-            if isinstance(metrics[key][class_label], dict):
-                if all(k in metrics[key][class_label] for k in ["tpr", "fpr", "auc"]):
-                    tpr = metrics[key][class_label]["tpr"]
-                    fpr = metrics[key][class_label]["fpr"]
-                    roc_auc = metrics[key][class_label]["auc"]
-
-                    # Find the index of the optimal threshold
-                    optimal_idx = np.argmax(tpr - fpr)
-                    optimal_fpr = fpr[optimal_idx]
-                    optimal_tpr = tpr[optimal_idx]
-
-                    # Plot the ROC curve for the current class
-                    #plt.plot(fpr, tpr, lw=2, label=f"Class {class_label} (AUC = {roc_auc:.3f})")
-                 #   curve = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name=class_label) #drop_intermediate=False)
-                   # curve.plot(ax=ax)  # Add to the shared axis
-                    
-                    ax.step(fpr, tpr, where='post', lw=2, label=f"{key}: {class_label} (AUC = {roc_auc:.3f})")
-
-                    # Plot the optimal threshold as a point
-                    ax.scatter(optimal_fpr, optimal_tpr, color='red', marker='o') 
-                          #  label=f"Optimal Threshold (Class {class_label})")
-                    
-    # Plot the reference line (random classifier)
-    ax.plot([0, 1], [0, 1], 'k--', lw=2, label="Random Classifier")
-
-    # Add title, labels, legend, and grid
-    ax.set_title(title, fontsize=16)
-    ax.set_xlabel('False Positive Rate', fontsize = 15)
-    ax.set_ylabel('True Positive Rate', fontsize = 15)
-    ax.legend(loc='lower right', bbox_to_anchor=(1.05, 0), fontsize='medium', borderaxespad=0)
-    ax.grid(True)
-
-    # Adjust layout and save the plot if a path is provided
-    plt.tight_layout()
-    if save_path:
-        plt.savefig(save_path, bbox_inches='tight')
-        print(f"Plot saved to {save_path}")
-        plt.close()
-    
-    
-def combine_f1_scores(class_metrics, ref_keys):
-   # metrics = class_metrics
-    # Dictionary to store DataFrames for each key
-    all_f1_scores = {}
-    #cutoff = class_metrics["cutoff"]
-    # Iterate over each key in ref_keys
-    for key in ref_keys:
-        # Create a list to store F1 scores for each query-ref combo
-        f1_data = [] 
-        # Iterate over all query-ref combinations
-        for query_name in class_metrics:
-            for ref_name in class_metrics[query_name]:
-                # Extract the classification report for the current query-ref-key combination
-                classification_report = class_metrics[query_name][ref_name][key]["classification_report"]
-                # Extract F1 scores for each label
-                if classification_report:
-                    for label, metrics in classification_report.items():
-                        if label not in ["macro avg","micro avg","weighted avg","accuracy"]:
-                         #   if isinstance(metrics, dict) and 'f1-score' in metrics:
-                                f1_data.append({
-                                    'query': query_name,
-                                    'reference': ref_name,
-                                    'label': label,
-                                    'f1_score': metrics['f1-score'],                         
-                                    'macro_f1': classification_report.get('macro avg', {}).get('f1-score', None),
-                                    'micro_f1': classification_report.get('micro avg', {}).get('f1-score', None),
-                                    'weighted_f1': classification_report.get('weighted avg', {}).get('f1-score', None), #,
-                                    'precision': metrics['precision'],
-                                    'recall': metrics['recall']        
-                                })
-
-        # Create DataFrame for the current key
-        df = pd.DataFrame(f1_data)
-
-        # Store the DataFrame in the dictionary for the current key
-        all_f1_scores[key] = df
-
-    return all_f1_scores
+def mad(var, scale='normal'):
+    """Median Absolute Deviation. Set scale='normal' for consistency with R's default."""
+    med = np.median(var)
+    mad = np.median(np.abs(var - med))
+    if scale == 'normal':
+        return mad * 1.4826  # for normally distributed data
+    return mad
 
 
-
-def plot_label_f1_heatmaps(all_f1_scores, threshold, outpath, widths=[1,0.8,0.5]):
-    """
-    Plot horizontally stacked heatmaps for label-level F1 scores for each query across multiple keys with variable widths,
-    shared y-axis labels, a shared color bar, and a title for the query.
-
-    Parameters:
-        all_f1_scores (dict): Dictionary with keys as reference names and values as DataFrames containing F1 scores.
-        threshold (float): Threshold value to display in plot titles.
-        outpath (str): Directory to save the generated heatmaps.
-        widths (list of float): Proportional widths for subplots. If None, defaults to equal widths.
-    """
-    sns.set(style="whitegrid")
-    os.makedirs(outpath, exist_ok=True)
-
-    # Determine global F1 score range
-    all_scores = pd.concat([df['f1_score'] for df in all_f1_scores.values()])
-    vmin, vmax = all_scores.min(), all_scores.max()
-    
-    # Initialize an empty set to store unique queries
-    queries = set() 
-    keys = list(all_f1_scores.keys()) # get levels of hierarchy
-    for key, df in all_f1_scores.items():
-        queries.update(df['query'].unique())  # add unique queries to the set
-    queries = sorted(queries) # sort queries
-
-    if widths is None:
-        widths = [1] * len(keys)  # Equal widths by default for each level
-
-    for query in queries:
-        # Create a figure with variable subplot widths
-        fig, axes = plt.subplots(
-            nrows=1,
-            ncols=len(keys),
-            figsize=(sum(widths) * 10, 8),
-            gridspec_kw={'width_ratios': widths},
-            constrained_layout=True
-        )
-
-        # Add a figure title for the query
-        fig.suptitle(f'Class-level F1 for Query: {query}\nThreshold = {threshold:.2f}', fontsize=20, y=1.1)
-
-        if len(keys) == 1:
-            axes = [axes]  # Ensure axes is always iterable
-
-        for i, key in enumerate(keys):
-            if key not in all_f1_scores:
-                continue
-            
-            df = all_f1_scores[key]
-            query_df = df[df['query'] == query]
-
-            # Pivot DataFrame to create the heatmap
-            pivot_df = query_df.pivot_table(index='reference', columns='label', values='f1_score')
-            mask = pivot_df.isnull() | (pivot_df == "nan")
-
-            sns.heatmap(
-                pivot_df,
-                annot=True,
-                cmap='YlOrRd',
-                cbar=i == len(keys) - 1,  # Add cbar only for the last subplot
-                cbar_kws={'label': 'F1 Score'} if i == len(keys) - 1 else None,
-                mask=mask,
-                ax=axes[i],
-                linewidths=0.5,
-                annot_kws={"size": 8},
-                vmin=vmin,  # Use global vmin
-                vmax=vmax   # Use global vmax
-            )
-
-            axes[i].set_title(f'{key}', fontsize=15)
-            axes[i].set_xticklabels(axes[i].get_xticklabels(), rotation=90, fontsize=14)
-
-            # Only add y-axis labels to the leftmost subplot
-            if i == 0:
-                axes[i].set_ylabel('Reference', fontsize=10)
-                axes[i].set_yticklabels(axes[i].get_yticklabels(), fontsize=14)
-            else:
-                axes[i].set_ylabel("", fontsize=11)
-                axes[i].set_yticks([])  # Remove y-axis labels for other subplots
-
-        # Save the figure
-        plt.savefig(os.path.join(outpath, f'f1_heatmaps_{query}_threshold_{threshold:.2f}.png'), bbox_inches='tight')
-        plt.close()
-
-
-def plot_f1_heatmaps_by_level(weighted_f1_data, threshold, outpath, ref_keys):
-    """
-    Plot one heatmap for each level of the hierarchy with references as rows and queries as columns.
-
-    Parameters:
-        weighted_f1_data (pd.DataFrame): DataFrame containing F1 scores with columns:
-                                         'level', 'reference', 'query', 'weighted_f1'.
-        threshold (float): Threshold value to display in plot titles.
-        outpath (str): Directory to save the heatmaps.
-        levels (list): List of levels to plot (e.g., ['Rachel_class', 'Rachel_subclass', 'Rachel_family']).
-        ref_keys (list): List of reference keys to ensure consistent ordering of rows.
-    """
-    sns.set(style="whitegrid")
-    os.makedirs(outpath, exist_ok=True)
-
-    for level in ref_keys:
-        # Filter data for the current level
-        level_data = weighted_f1_data[weighted_f1_data['key'] == level]
-
-        # Pivot the data for heatmap
-        pivot_f1 = level_data.pivot_table(
-            index='reference',
-            columns='query',
-            values='weighted_f1'
-        )
-
-        # Define color map limits
-        vmin = weighted_f1_data['weighted_f1'].min()
-        vmax = weighted_f1_data['weighted_f1'].max()
-
-        # Create the heatmap
-        plt.figure(figsize=(20, 15))
-        sns.heatmap(
-            pivot_f1,
-            annot=True,
-            cmap='YlOrRd',
-            cbar_kws={'label': 'Weighted F1 Score'},
-            fmt='.3f',
-            annot_kws={"size": 15},
-            vmin=vmin,
-            vmax=vmax
-        )
-
-        # Add title and axis labels
-        plt.title(f'Weighted F1 Scores for {level}\nThreshold = {threshold:.2f}', fontsize=16)
-        plt.ylabel('Reference', fontsize=15)
-        plt.xlabel('Query', fontsize=15)
-
-        plt.tight_layout()
-        # Save the heatmap
-        plt.savefig(os.path.join(outpath, f'{level}_weighted_f1_heatmap_threshold_{threshold:.2f}.png'))
-        plt.close()
-
-    
- 
-def split_anndata_by_obs(adata, obs_key="dataset_title"):
-    """
-    Split an AnnData object into multiple AnnData objects based on unique values in an obs key.
-
-    Parameters:
-    - adata: AnnData object to split.
-    - obs_key: Key in `adata.obs` on which to split the data.
-
-    Returns:
-    - A dictionary where keys are unique values in `obs_key` and values are corresponding AnnData subsets.
-    """
-    # Dictionary comprehension to create a separate AnnData for each unique value in obs_key
-    split_data = {
-        value: adata[adata.obs[obs_key] == value].copy() 
-        for value in adata.obs[obs_key].unique()
+def get_lm(query, nmads=5, scale="normal"):
+    # Assume dataset is an AnnData object
+    # Fit linear model: log10(n_genes_per_cell) ~ log10(counts_per_cell)
+    lm_model = ols(formula='log1p_n_genes_by_counts ~ log1p_total_counts', data=query.obs).fit()
+    # Calculate residuals
+    residuals = lm_model.resid
+    # If data is normally distributed, this is similar to std 
+    mad_residuals = median_abs_deviation(residuals, scale=scale)
+    # Intercept adjustment (add for upper bound, subtract for lower bound)
+    intercept_adjustment = np.median(residuals) + nmads * mad_residuals
+    return {
+        "model": lm_model,
+        "intercept_adjustment": intercept_adjustment
     }
     
-    return split_data
+    
+def get_qc_metrics(query, nmads):
+    query.var["mito"] = query.var["feature_name"].str.startswith(("MT", "mt", "Mt"))
+    query.var["ribo"] = query.var["feature_name"].str.startswith(("RP", "Rp", "rp"))
+    query.var["hb"] = query.var["feature_name"].str.startswith(("HB", "Hb","hb"))
+    # fill NaN values with False
+    query.var["mito"].fillna(False, inplace=True)
+    query.var["ribo"].fillna(False, inplace=True)
+    query.var["hb"].fillna(False, inplace=True) 
+
+    sc.pp.calculate_qc_metrics(query, qc_vars=["mito", "ribo", "hb"], log1p=True, inplace=True, percent_top=[20], use_raw=True)
+
+    metrics = {
+        "log1p_total_counts": "umi_outlier",
+        "log1p_n_genes_by_counts": "genes_outlier",
+        "pct_counts_mito": "outlier_mito",
+        "pct_counts_ribo": "outlier_ribo",
+        "pct_counts_hb": "outlier_hb",
+    }
+    
+    for metric, col_name in metrics.items():
+        query.obs[col_name] = is_outlier(query, metric, nmads)
+
+    lm_dict = get_lm(query, nmads=nmads)
+    intercept = lm_dict["model"].params[0]
+    slope = lm_dict["model"].params[1]
+    
+
+    query.obs["counts_outlier"] = (
+        query.obs["log1p_n_genes_by_counts"] < (query.obs["log1p_total_counts"] * slope + (intercept - lm_dict["intercept_adjustment"]))
+        ) | (
+        query.obs["log1p_n_genes_by_counts"] > (query.obs["log1p_total_counts"] * slope + (intercept + lm_dict["intercept_adjustment"]))
+        ) | (
+        query.obs["umi_outlier"] ) | (query.obs["genes_outlier"])
+        
+
+    query.obs["total_outlier"] = (
+        query.obs["counts_outlier"] | query.obs["outlier_mito"] | query.obs["outlier_ribo"] | query.obs["outlier_hb"] | query.obs["predicted_doublet"]
+    )
+    
+    query.obs["non_outlier"] = ~query.obs["total_outlier"]
+
+    return query
+
+            
+def map_celltype_hierarchy(query, markers_file):
+    # Load the markers table
+    df = pd.read_csv(markers_file, sep=None, header=0)
+    df.drop(columns="markers", inplace=True)
+    query.obs = query.obs.merge(df, left_on="cell_type", right_on="cell_type", how="left", suffixes=("", "_y"))
+    return query
 
 
+def make_stable_colors(color_mapping_df):
+    
+    all_subclasses = sorted(color_mapping_df["new_cell_type"])
+    # i need to hardcode a separate color palette based on the mmus mapping file
+    # Generate unique colors for each subclass
+    color_palette = sns.color_palette("husl", n_colors=len(all_subclasses))
+    subclass_colors = dict(zip(all_subclasses, color_palette))
+    return subclass_colors 
+
+
+def get_gene_to_celltype_map(markers_file, organism="mus_musculus"):
+    # Read the marker file
+    df = pd.read_csv(markers_file, sep="\t")
+    df = df[df["markers"].notnull()]
+    gene_to_celltype = {}
+
+    for _, row in df.iterrows():
+        cell_type = row["cell_type"]
+        genes = [gene.strip() for gene in row["markers"].split(",")]
+        for gene in genes:
+            if organism == "mus_musculus":
+                gene = gene.lower().capitalize()
+                # Handle multiple cell types mapping to the same gene
+            if gene not in gene_to_celltype:
+                gene_to_celltype[gene] = []
+            gene_to_celltype[gene].append(cell_type)
+
+    # Join multiple cell types into one label if needed
+    gene_ct_dict = {
+        gene: f"{gene}: {'_'.join(set(celltypes))}"
+        for gene, celltypes in gene_to_celltype.items()
+    }
+    return gene_ct_dict
+
+
+def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_name=""):
+    # Drop vars with NaN feature names
+    query = query[:, ~query.var["feature_name"].isnull()]
+    query.var_names = query.var["feature_name"]
+    
+    #Make raw index match processed var index
+    query.raw.var.index = query.raw.var["feature_name"]
+    
+    # Map cell type hierarchy
+    query = map_celltype_hierarchy(query, markers_file=markers_file)
+
+    # Read marker genes
+    gene_ct_dict = get_gene_to_celltype_map(markers_file, organism=organism)
+    # Collect all unique markers across all families/classes/cell types
+    all_markers = list(gene_ct_dict.keys())
+    valid_markers = [gene for gene in all_markers if gene in query.var_names]
+
+    # Filter raw expression matrix to match query.var_names
+    expr_matrix = query.raw.X.toarray()
+    expr_matrix = pd.DataFrame(expr_matrix, index=query.obs.index, columns=query.raw.var.index)
+    
+    avg_expr = expr_matrix.groupby(query.obs["cell_type"]).mean()
+    avg_expr = avg_expr.loc[:, valid_markers]
+    
+    # Scale expression across genes
+    scaled_expr = (avg_expr - avg_expr.mean()) / avg_expr.std()
+    scaled_expr = scaled_expr.loc[:, valid_markers]
+    scaled_expr.fillna(0, inplace=True)
+
+    # Rename columns: gene -> gene (celltype)
+    scaled_expr.rename(columns=gene_ct_dict, inplace=True)
+
+    # Save matrix
+    os.makedirs(study_name, exist_ok=True)
+    scaled_expr.to_csv(f"{study_name}/heatmap_mqc.tsv", sep="\t")
+
+ 

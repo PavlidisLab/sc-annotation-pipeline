@@ -11,11 +11,14 @@ work/
 results/
 envs/
 mmus/
-
-
+meta/author_cell_annotations/
+hsap/
+test_human/
+test_mouse/
+.vscode/
 # C extensions
 *.so
-
+process_markers.py
 # Distribution / packaging
 .Python
 build/
@@ -92,3 +95,7 @@ target/
 profile_default/
 ipython_config.py
 
+test_human/
+study_name**
+psychencode_data/
+run_psychencode_annot.sh
