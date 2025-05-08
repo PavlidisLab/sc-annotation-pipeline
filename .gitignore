@@ -98,3 +98,4 @@ ipython_config.py
 test_human/
 study_name**
 psychencode_data/
+run_psychencode_annot.sh
