@@ -176,10 +176,10 @@ def map_author_labels(obs, original_celltypes):
     return obs
 
 def extract_data(cellxgene_obs_filtered, filtered_ids, subsample=10, organism=None, census=None, 
-    obs_filter=None, cell_columns=None, dataset_info=None, 
+    obs_filter=None, cell_columns=None, dataset_info=None, rename_file=None,
     original_celltypes=None, seed=42):
      
-    brain_cell_subsampled_ids = subsample_cells(cellxgene_obs_filtered, filtered_ids, subsample, seed=seed, organism=organism)
+    brain_cell_subsampled_ids = subsample_cells(cellxgene_obs_filtered, filtered_ids, subsample, seed=seed, organism=organism, rename_file=rename_file)
     # Assuming get_seurat is defined to return an AnnData object
     adata = cellxgene_census.get_anndata(
         census=census,
@@ -256,7 +256,8 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
         subsample=subsample, organism=organism,
         census=census, obs_filter=None,
         cell_columns=cell_columns, dataset_info=dataset_info, seed = seed,
-        original_celltypes=original_celltypes
+        original_celltypes=original_celltypes,
+        rename_file=rename_file
     )
     new_obs=rename_cells(adata.obs, rename_file=rename_file)
     new_adata = adata[adata.obs["soma_joinid"].isin(new_obs["soma_joinid"])].copy()
