@@ -8,6 +8,12 @@ run_modules:
     - custom_content
 
 custom_data:
+
+  celltype_umap:
+    section_name: 'Cell type UMAP'
+    description: 'UMAP of the cell type labels, sample names and leiden clusters'
+    file_format: 'png'
+
   celltype_composition:
     section_name: 'Sample cell type composition'
     description: 'Composition per sample of predicted cell types'
@@ -61,6 +67,10 @@ custom_data:
     plot_type: 'barplot'
 
 sp:
+
+  celltype_umap:
+    fn: "*celltype_umap_mqc.png"
+ 
   markers_heatmap:
     fn: "*heatmap_mqc.tsv"
 
@@ -91,5 +101,5 @@ custom_content:
     - cluster_composition_cells
     - celltype_composition_outliers
     - markers_heatmap
-    - markers_table
+    - celltype_umap
 
