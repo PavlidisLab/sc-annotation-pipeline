@@ -1,0 +1,11 @@
+Using Gemma CLI sc from /space/opt/gemma-cli/refs/sc
+2025-05-08 10:20:49,274 [33mWARN[m [35m2488879[m [main] [36mu.g.c.c.SettingsConfig.warnIfReadableByOthers(270)[m | Gemma.properties may contain credentials and is readable by others. Adjust the permissions by running 'chmod o-r /home/rschwartz/Gemma.properties' to remove this warning.
+2025-05-08 10:20:49,335 [32mINFO[m [35m2488879[m [main] [36mu.g.c.c.SpringContextUtils.prepareContext(140)[m | Loading Gemma 1.32.0-SNAPSHOT built on May 7, 2025, 12:06:36 PM from c217b9fba4a4dc0f4ea3eb230586c94038c0d7a9 (active profiles: production, cli), hold on!
+2025-05-08 10:20:51,571 [32mINFO[m [35m2488879[m [main] [36mu.g.c.c.SpringContextUtils.getApplicationContext(73)[m | Got Gemma context in 2364 ms.
+========= Gemma CLI invocation of addMetadataFile ============
+Options: -e GSE180670 --file-type MULTIQC_REPORT multiqc_report.html --force --changelog-entry 'sc-pipeline-1.1.1 --nmads 5'
+2025-05-08 10:20:57,261 [32mINFO[m [35m2488879[m [main] [36mu.g.c.u.AbstractAuthenticatedCLI.authenticate(138)[m | Logged in as raschwar
+2025-05-08 10:20:57,291 [32mINFO[m [35m2488879[m [main] [36mu.g.a.ExpressionExperimentManipulatingCLI.doAuthenticatedWork(338)[m | Final dataset: ExpressionExperiment Id=40651 Name=scRNAseq of human oligodendrocytes in primary culture exposed to glutamate vs. vehicle Short Name=GSE180670 https://dev.gemma.msl.ubc.ca/expressionExperiment/showExpressionExperiment.html?id=40651
+2025-05-08 10:20:57,307 [32mINFO[m [35m2488879[m [main] [36mu.g.c.a.s.ExpressionDataFileServiceImpl.copyMetadataFileInternal(372)[m | Copying metadata file: multiqc_report.html to /space/gemmaData/metadata/GSE180670/MultiQCReports/multiqc_report.html.
+2025-05-08 10:20:57,461 [32mINFO[m [35m2488879[m [main] [36mu.g.c.a.s.ExpressionMetadataChangelogFileServiceImpl.addChangelogEntry(72)[m | Added an entry to the changelog for GSE180670.
+========= Gemma CLI run of addMetadataFile complete in 5 seconds ============

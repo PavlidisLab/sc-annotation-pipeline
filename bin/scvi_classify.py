@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import anndata as ad
 import cellxgene_census
-import scvi
 from scipy.sparse import csr_matrix
 import warnings
 import cellxgene_census
