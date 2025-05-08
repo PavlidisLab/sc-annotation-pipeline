@@ -109,7 +109,7 @@ def plot_joint_umap(query, study_name, sample_name):
     combined_img.save(out_path)
 
 def plot_ct_umap(query, study_name):
-    colors = ["cell_type","sample_name"]
+    colors = ["cell_type","leiden","sample_name"]
     
     fig = sc.pl.umap(
             query,
