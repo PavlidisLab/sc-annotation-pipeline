@@ -1,4 +1,4 @@
-# Nextflow Pipeline for Single-Cell Data Processing and Classification
+# Nextflow Pipeline for Automated Single-Cell Annotation
 
 Nextflow pipeline designed to automatically annotate cell types from single-cell data loaded into the Gemma database. Cell types are assigned using a random forest classifier trained on `scvi` embeddings from the CellxGene data corpus [1][2][3].
 
