@@ -105,10 +105,25 @@ def plot_joint_umap(query, study_name, sample_name):
         y_offset = row * img_height
         combined_img.paste(img, (x_offset, y_offset))
 
-    os.makedirs(study_name, exist_ok=True)
     out_path = f"{study_name}/{sample_name}_combined_mqc.png"
     combined_img.save(out_path)
 
+def plot_ct_umap(query, study_name):
+    colors = ["cell_type","sample_name"]
+    
+    fig = sc.pl.umap(
+            query,
+            color=colors,
+            use_raw=False,
+            show=False,
+            title="",
+            ncols=1,
+            return_fig=True
+        )
+
+    out_path = f"{study_name}/celltype_umap_mqc.png"
+    fig.savefig(out_path, bbox_inches='tight')
+    plt.close(fig)
  
 def main():
     # Parse command line arguments
@@ -130,10 +145,11 @@ def main():
 
     # Load query and reference datasets
     study_name = os.path.basename(query_path).replace(".h5ad", "")
+    os.makedirs(study_name, exist_ok=True)
+
     assigned_celltypes = pd.read_csv(assigned_celltypes_path, sep=None, header=0)
     sample_meta = pd.read_csv(sample_meta, sep=None, header=0)
    # markers = pd.read_csv(markers_file, sep=None, header=0)
-    os.makedirs(study_name, exist_ok=True)
      
     query = read_query(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
     query.obs.index = query.obs["index"]
@@ -168,6 +184,8 @@ def main():
 
     #combine query subsets
     query_combined = ad.concat(query_subsets.values(), axis=0) 
+    
+    plot_ct_umap(query_combined, study_name=study_name)
     ## make a table of counts by outliers
     # Count all combinations + non-outliers
     outlier_counts = (
