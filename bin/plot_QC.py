@@ -104,8 +104,9 @@ def plot_joint_umap(query, study_name, sample_name):
         x_offset = col * img_width
         y_offset = row * img_height
         combined_img.paste(img, (x_offset, y_offset))
-
-    out_path = f"{study_name}/{sample_name}_combined_mqc.png"
+    # replace slashes, spaces, weird stuff
+    new_sample_name = re.sub(r"[^a-zA-Z0-9_]", "_", sample_name)
+    out_path = f"{study_name}/{new_sample_name}_combined_mqc.png"
     combined_img.save(out_path)
 
 def plot_ct_umap(query, study_name):
