@@ -33,25 +33,6 @@ process save_params_to_file {
     """
 }
 
-
-
- process downloadStudies {
-   // publishDir "${params.outdir}/studies", mode: 'copy'
-
-    input:
-        val study_name
-
-    output:
-        tuple val(study_name), path("${study_name}/"), emit: study_channel
-
-
-     script:
-
-     """
-     gemma-cli-sc getSingleCellDataMatrix -e $study_name --format mex --scale-type count --use-ensembl-ids -o $study_name
-     """
- }
-
 process runSetup {
     //conda '/home/rschwartz/anaconda3/envs/scanpyenv'
 
