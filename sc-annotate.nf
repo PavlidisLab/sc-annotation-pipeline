@@ -138,7 +138,7 @@ process loadResults {
 
 
     """
-    gemma-cli-sc deleteSingleCellData -deleteCta "sc-pipeline-${params.version}" -e ${study_name} || true
+    ( gemma-cli-sc deleteSingleCellData -deleteCta "sc-pipeline-${params.version}" -e ${study_name} ) || true
 
     gemma-cli-sc loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} -preferredCta \\
