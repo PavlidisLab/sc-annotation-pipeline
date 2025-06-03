@@ -138,9 +138,9 @@ process loadResults {
 
 
     """
-    ( gemma-cli-sc deleteSingleCellData -deleteCta "sc-pipeline-${params.version}" -e ${study_name} ) || true
+    ( gemma-cli deleteSingleCellData -deleteCta "sc-pipeline-${params.version}" -e ${study_name} ) || true
 
-    gemma-cli-sc loadSingleCellData -loadCta -e ${study_name} \\
+    gemma-cli loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} -preferredCta \\
                -ctaName "sc-pipeline-${params.version}" \\
                -ctaProtocol "sc-pipeline-${params.version}" 2> "message.txt"
@@ -224,7 +224,7 @@ process publishMultiQC {
 
     script:
     """
-    gemma-cli-sc addMetadataFile -e ${study_name} --file-type MULTIQC_REPORT ${multiqc_html} --force --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
+    gemma-cli addMetadataFile -e ${study_name} --file-type MULTIQC_REPORT ${multiqc_html} --force --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
     """
 }
 
