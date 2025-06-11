@@ -185,7 +185,7 @@ For more info on multiQC report, see
 
 ## Workflow Description
 
-![Workflow DAG](./images/dag.png)
+![Workflow DAG](./images/nextflow_pipeline_dag.png)
    
 ## References
 
