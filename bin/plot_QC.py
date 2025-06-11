@@ -106,7 +106,7 @@ def plot_joint_umap(query, study_name, sample_name):
         combined_img.paste(img, (x_offset, y_offset))
     # replace slashes, spaces, weird stuff
     # fix this
-    new_sample_name = str(sample_name).replace(" ", "_").replace("/", "_").replace("\\", "_")
+    new_sample_name = str(sample_name).replace(" ", "_").replace("\\/", "_").replace("\\", "_")
     out_path = f"{study_name}/{new_sample_name}_combined_mqc.png"
     combined_img.save(out_path)
 
