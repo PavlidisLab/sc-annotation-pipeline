@@ -29,12 +29,12 @@ import math
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
     parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/18/fecb53daa7bb744fa83e3806c0b2aa/Velmeshev_et_al.1.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/18/fecb53daa7bb744fa83e3806c0b2aa/Velmeshev_et_al.1_predicted_celltype.tsv")
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/b4/0e30911a63f5ebc51ee48b6d58af87/MultiomeBrain.h5ad")
+    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/b4/0e30911a63f5ebc51ee48b6d58af87/MultiomeBrain_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/18/fecb53daa7bb744fa83e3806c0b2aa/Velmeshev_et_al.1_sample_meta.tsv")
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/f3/d613cc85471483dfefcb266c34f654/MultiomeBrain_sample_meta.tsv")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -105,7 +105,8 @@ def plot_joint_umap(query, study_name, sample_name):
         y_offset = row * img_height
         combined_img.paste(img, (x_offset, y_offset))
     # replace slashes, spaces, weird stuff
-    new_sample_name = re.sub(r"[^a-zA-Z0-9_]", "_", sample_name)
+    # fix this
+    new_sample_name = str(sample_name).replace(" ", "_").replace("/", "_").replace("\\", "_")
     out_path = f"{study_name}/{new_sample_name}_combined_mqc.png"
     combined_img.save(out_path)
 
