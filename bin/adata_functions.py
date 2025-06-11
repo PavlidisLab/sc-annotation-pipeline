@@ -396,12 +396,9 @@ def read_query(query_path, gene_mapping, new_meta, sample_meta):
     new_meta["full_barcode"] = new_meta["sample_id"].astype(str) + "_" + new_meta["cell_id"].astype(str)
     
     query.obs = query.obs.merge(new_meta, left_on="full_barcode", right_on="full_barcode", how="left", suffixes=("", "_y"))
-   
-   
-   
+ 
     sample_meta["sample_id"] = sample_meta["sample_id"].astype(str)
     query.obs = query.obs.merge(sample_meta, left_on="sample_id", right_on="sample_id", how="left", suffixes=("", "_y"))
-    
     
     columns_to_drop = [col for col in query.obs.columns if col.endswith("_y")]
     query.obs.drop(columns=columns_to_drop, inplace=True)
