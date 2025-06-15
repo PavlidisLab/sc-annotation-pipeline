@@ -28,13 +28,13 @@ import math
 # Function to parse command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
-    parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/b4/0e30911a63f5ebc51ee48b6d58af87/MultiomeBrain.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/b4/0e30911a63f5ebc51ee48b6d58af87/MultiomeBrain_predicted_celltype.tsv")
+    parser.add_argument('--organism', type=str, default='homo_sapiens', help='Organism name (e.g., homo_sapiens)')
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/d9/9e11cdd8f430c3f1756b9f7b573c67/GSE180670_raw.h5ad")
+    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/99/b87342c0118043ce9b3dd58244b3d1/GSE180670/GSE180670_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/f3/d613cc85471483dfefcb266c34f654/MultiomeBrain_sample_meta.tsv")
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/c0/155e651415b5011b83b321072a8a9e/GSE180670_sample_meta.tsv")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -146,7 +146,7 @@ def main():
     gene_mapping.set_index("ENSEMBL_ID", inplace=True) 
 
     # Load query and reference datasets
-    study_name = os.path.basename(query_path).replace(".h5ad", "")
+    study_name = os.path.basename(query_path).replace("_raw.h5ad", "")
     os.makedirs(study_name, exist_ok=True)
 
     assigned_celltypes = pd.read_csv(assigned_celltypes_path, sep=None, header=0)

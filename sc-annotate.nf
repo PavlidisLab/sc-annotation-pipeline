@@ -58,18 +58,20 @@ process processQuery {
 
     output:
     tuple val("${study_name}"), path("${study_name}.h5ad"), emit: processed_query
+    tuple val("${study_name}"), path("${study_name}_raw.h5ad"), emit: raw_query
 
-script:
+        
+    script:
 
 
-"""
+    """
 
-python $projectDir/bin/process_query.py \\
-                        --model_path ${model_path} \\
-                        --study_path ${study_path} \\
-                        --study_name ${study_name} \\
-                        --seed ${params.seed}
-"""
+    python $projectDir/bin/process_query.py \\
+                            --model_path ${model_path} \\
+                            --study_path ${study_path} \\
+                            --study_name ${study_name} \\
+                            --seed ${params.seed}
+    """
 
 }
 
@@ -264,8 +266,8 @@ workflow {
     model_path = runSetup(params.organism, params.census_version)
 
     // Process each query by relabeling, subsampling, and passing through scvi model
-    processed_queries_adata = processQuery(model_path, study_channel) 
-     
+    processQuery(model_path, study_channel) 
+    processed_queries_adata = processQuery.out.processed_query 
     // Get collection names to pull from census
     ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ') 
 
@@ -280,7 +282,9 @@ workflow {
     rfClassify(combos_adata)
 
     celltype_files = rfClassify.out.celltype_file_channel
-    celltype_files.join(processed_queries_adata, by: 0)
+
+    raw_queries = processQuery.out.raw_query
+    celltype_files.join(raw_queries, by: 0)
     .set{qc_channel}
 
     getMeta(study_channel)
@@ -288,7 +292,7 @@ workflow {
 
     qc_channel.join(meta_channel, by: 0)
     .set { qc_channel_with_meta }
-
+    qc_channel_with_meta.view() 
     plotQC(qc_channel_with_meta)
     multiqc_channel = plotQC.out.qc_channel
 

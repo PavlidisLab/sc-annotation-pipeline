@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import anndata as ad
 import cellxgene_census
-import scvi
 from scipy.sparse import csr_matrix
 import warnings
 import cellxgene_census
@@ -99,7 +98,8 @@ def main():
   combined_adata = sc.concat(all_sample_ids, label="sample_id", join="inner") 
   combined_adata.obs["cell_id"] = combined_adata.obs.index
   combined_adata.obs_names = combined_adata.obs["cell_id"].astype(str) + "_" + combined_adata.obs["sample_id"].astype(str)
-
+  # save unprocessed adata
+  combined_adata.write_h5ad(f"{study_name}_raw.h5ad")
   combined_adata = process_query(combined_adata, model_path, batch_key="sample_id")
   combined_adata.write_h5ad(f"{study_name}.h5ad")
 
