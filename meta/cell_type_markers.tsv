@@ -1,41 +1,59 @@
-cell_type_ontology	cell_type	class	family	markers
-glutamatergic neuron	Glutamatergic	Glutamatergic	Glutamatergic	SLC17A7, SLC17A6
-GABAergic neuron	GABAergic	GABAergic	GABAergic	GAD1
-caudal ganglionic eminence derived GABAergic cortical interneuron	CGE	CGE	GABAergic	PROX1, NTNG1
-lamp5 GABAergic cortical interneuron	LAMP5	CGE	GABAergic	LAMP5
-sncg GABAergic cortical interneuron	SNCG	CGE	GABAergic	SNCG
-vip GABAergic cortical interneuron	VIP	CGE	GABAergic	VIP
-chandelier pvalb GABAergic cortical interneuron	Chandelier	MGE	GABAergic	PVALB, VIPR2, UNC5B
-pvalb GABAergic cortical interneuron	PVALB	MGE	GABAergic	PVALB
-sst chodl GABAergic cortical interneuron	SST	MGE	GABAergic	CHODL
-sst GABAergic cortical interneuron	SST	MGE	GABAergic	SST
-Cajal-Retzius cell	Cajal-Retzius cell	Cajal-Retzius cell	Glutamatergic	RELN
-L5 extratelencephalic projecting glutamatergic cortical neuron	L5 ET	deep layer non-IT	Glutamatergic	FEZF2, POU3F1, BCL6, ETV1, BCL11B
-near-projecting glutamatergic cortical neuron	NP	deep layer non-IT	Glutamatergic	FOXP2, TLE4, SLC17A8
-L5/6 near-projecting glutamatergic neuron	NP	deep layer non-IT	Glutamatergic	FOXP2, TLE4, SLC17A8
-L6 corticothalamic-projecting glutamatergic cortical neuron'	L6 CT	deep layer non-IT	Glutamatergic	FOXP2, TLE4, SEMA3E
-corticothalamic-projecting glutamatergic cortical neuron	CT	deep layer non-IT	Glutamatergic	FOXP2, TLE4, SEMA3E
-L6b glutamatergic cortical neuron	L6b	deep layer non-IT	Glutamatergic	CPLX3, CTGF, NXPH4
-L2/3-6 intratelencephalic projecting glutamatergic neuron	L2/3-6 IT	L2/3-6 IT	Glutamatergic	CUX2, LHX2, RORB
-L2/3 intratelencephalic projecting glutamatergic neuron of the primary motor cortex	L2/3 IT	L2/3-6 IT	Glutamatergic	CUX2, LHX2
-L4/5 intratelencephalic projecting glutamatergic neuron of the primary motor cortex	L4/5 IT	L2/3-6 IT	Glutamatergic	RORB
-L6 intratelencephalic projecting Car3 glutamatergic neuron	L6 Car3	L2/3-6 IT	Glutamatergic	CAR3
-CA1-prosubiculum hippocampal neuron	CA1-ProS	Hippocampal	Glutamatergic	SATB2, GLIPR, DLK1, DCN
-CA2-IG-FC hippocampal neuron	CA2-IG-FC	Hippocampal	Glutamatergic	AMIGO2, RAMP3
-CA3 hippocampal neuron	CA3	Hippocampal	Glutamatergic	BOK, FXYDZ
-dentate gyrus hippocampal neuron	DG	Hippocampal	Glutamatergic	PROX1
-subiculum hippocampal neuron	Subiculum	Hippocampal	Glutamatergic	FN1
-neural stem cell	Neural stem cell	Neuroglioblast	Neuroglioblast	HES5, NES, SOX2, DLX2
-CNS macrophage	CNS macrophage	CNS macrophage	Non-neuron	CD45, CD44
-microglial cell	Microglia	CNS macrophage	Non-neuron	TMEM119, P2RY12, P2Y12, HEXB
-astrocyte	Astrocyte	Glia	Non-neuron	GFAP, AQP4
-ependymal cell	Ependymal	Glia	Non-neuron	TUBA1A, FOXJ1
-oligodendrocyte	Oligodendrocyte	Glia	Non-neuron	MOG
-oligodendrocyte precursor cell	OPC	Glia	Non-neuron	PDGFRA
-CD8-positive, alpha-beta T cell	CD8+ T cell	Immune	Non-neuron	CD8A
-mature NK T cell	NK T cell	Immune	Non-neuron	CD45RB
-T cell	T cell	Immune	Non-neuron	CD3, CD8A, CD45RB
-pericyte	Pericyte	Mural	Non-neuron	PDGFRB, RGS5
-smooth muscle cell	Smooth muscle cell	Mural	Non-neuron	ACTA2
-vascular leptomeningeal cell	VLMC	Stromal	Non-neuron	DCN, LUM, COL1A1, COL5A1
-endothelial cell	Endothelial	Vascular	Non-neuron	FLT1
+cell_type	markers	shortname	family	organism
+vip GABAergic cortical interneuron	VIP	VIP	GABAergic	mus_musculus
+pvalb GABAergic cortical interneuron	PVALB	PVALB	GABAergic	mus_musculus
+sst GABAergic cortical interneuron	SST	SST	GABAergic	mus_musculus
+lamp5 GABAergic cortical interneuron	LAMP5	LAMP5	GABAergic	mus_musculus
+sncg GABAergic cortical interneuron	SNCG	SNCG	GABAergic	mus_musculus
+neural stem cell	HES5, NES, SOX2, DLX2	Neural stem cell	Neuroglioblast	mus_musculus
+L4/5 intratelencephalic projecting glutamatergic neuron	RORB	L4/5 IT	Glutamatergic	mus_musculus
+L2/3 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2	L2/3 IT	Glutamatergic	mus_musculus
+L6 corticothalamic-projecting glutamatergic cortical neuron	FOXP2, TLE4, SEMA3E	L6 CT	Glutamatergic	mus_musculus
+L6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB, SEMA3E	L6 IT	Glutamatergic	mus_musculus
+L5/6 near-projecting glutamatergic neuron	FOXP2, TLE4, SLC17A8	L5/6 NP	Glutamatergic	mus_musculus
+L5 extratelencephalic projecting glutamatergic cortical neuron	FEZF2, POU3F1, BCL6, ETV1, BCL11B	L5 ET	Glutamatergic	mus_musculus
+L6b glutamatergic cortical neuron	CPLX3, CTGF, NXPH4	L6b	Glutamatergic	mus_musculus
+subiculum-prosubiculum hippocampal neuron	FN1	Sub-ProS	Glutamatergic	mus_musculus
+astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	mus_musculus
+Cajal-Retzius cell	RELN	Cajal-Retzius cell	Glutamatergic	mus_musculus
+L6 intratelencephalic projecting Car3 glutamatergic neuron	CAR3	L6 Car3	Glutamatergic	mus_musculus
+corticothalamic-projecting glutamatergic cortical neuron	FOXP2, TLE4, SEMA3E	CT	Glutamatergic	mus_musculus
+endothelial cell	FLT1	Endothelial	Non-neuron	mus_musculus
+ependymal cell	TUBA1A, FOXJ1	Ependymal	Non-neuron	mus_musculus
+dentate gyrus hippocampal neuron	PROX1	DG	Glutamatergic	mus_musculus
+CA3 hippocampal neuron	BOK, FXYDZ	CA3	Glutamatergic	mus_musculus
+CA2-IG-FC hippocampal neuron	AMIGO2, RAMP3	CA2-IG-FC	Glutamatergic	mus_musculus
+L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB	L2/3-6 IT	Glutamatergic	mus_musculus
+near-projecting glutamatergic cortical neuron	FOXP2, TLE4, SLC17A8	L5/6 NP	Glutamatergic	mus_musculus
+vascular leptomeningeal cell	DCN, LUM, COL1A1, COL5A1	VLMC	Non-neuron	mus_musculus
+central nervous system macrophage	CD45, CD44	CNS macrophage	Non-neuron	mus_musculus
+microglial cell	TMEM119, P2RY12, P2Y12, HEXB	Microglia	Non-neuron	mus_musculus
+neuroepithelial stem cell	HES5, NES, SOX2	Neuroepithelial stem cell	Neuroglioblast	mus_musculus
+oligodendrocyte	MOG	Oligodendrocyte	Non-neuron	mus_musculus
+oligodendrocyte precursor cell	PDGFRA	OPC	Non-neuron	mus_musculus
+pericyte	PDGFRB, RGS5	Pericyte	Non-neuron	mus_musculus
+CA1-prosubiculum hippocampal neuron	SATB2, GLIPR, DLK1, DCN	CA1-ProS	Glutamatergic	mus_musculus
+L4 RSP-ACA glutamatergic neuron	#N/A	#N/A	Glutamatergic	mus_musculus
+smooth muscle cell	ACTA2	Smooth muscle cell	Non-neuron	mus_musculus
+sst chodl GABAergic cortical interneuron	CHODL	SST	GABAergic	mus_musculus
+CD8-positive, alpha-beta T cell	CD8A	CD8+ T cell	Non-neuron	mus_musculus
+T cell	CD3, CD8A, CD45RB	T cell	Non-neuron	mus_musculus
+mature NK T cell	CD45RB	NK T cell	Non-neuron	mus_musculus
+L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB	L2/3-6 IT	Glutamatergic	homo_sapiens
+oligodendrocyte	MOG	Oligodendrocyte	Non-neuron	homo_sapiens
+pvalb GABAergic cortical interneuron	PVALB	PVALB	GABAergic	homo_sapiens
+vip GABAergic cortical interneuron	VIP	VIP	GABAergic	homo_sapiens
+sst GABAergic cortical interneuron	SST	SST	GABAergic	homo_sapiens
+astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	homo_sapiens
+lamp5 GABAergic cortical interneuron	LAMP5	LAMP5	GABAergic	homo_sapiens
+microglial cell	TMEM119, P2RY12, P2Y12, HEXB	Microglia	Non-neuron	homo_sapiens
+oligodendrocyte precursor cell	PDGFRA	OPC	Non-neuron	homo_sapiens
+sncg GABAergic cortical interneuron	SNCG	SNCG	GABAergic	homo_sapiens
+near-projecting glutamatergic cortical neuron	FOXP2, TLE4, SLC17A8	L5/6 NP	Glutamatergic	homo_sapiens
+L6b glutamatergic cortical neuron	CPLX3, CTGF, NXPH4	L6b	Glutamatergic	homo_sapiens
+chandelier pvalb GABAergic cortical interneuron	PVALB, VIPR2, UNC5B	Chandelier	GABAergic	homo_sapiens
+caudal ganglionic eminence derived GABAergic cortical interneuron	PROX1, NTNG1	CGE	GABAergic	homo_sapiens
+L5 extratelencephalic projecting glutamatergic cortical neuron	FEZF2, POU3F1, BCL6, ETV1, BCL11B	L5 ET	Glutamatergic	homo_sapiens
+L6 corticothalamic-projecting glutamatergic cortical neuron	FOXP2, TLE4, SEMA3E	L6 CT	Glutamatergic	homo_sapiens
+vascular leptomeningeal cell	DCN, LUM, COL1A1, COL5A1	VLMC	Non-neuron	homo_sapiens
+endothelial cell	FLT1	Endothelial	Non-neuron	homo_sapiens
+pericyte	PDGFRB, RGS5	Pericyte	Non-neuron	homo_sapiens
