@@ -34,7 +34,7 @@ def parse_arguments():
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/c0/155e651415b5011b83b321072a8a9e/GSE180670_sample_meta.tsv")
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/d2/d6e92949de0f8bd1db9b930631dc8f/GSE180670_sample_meta.tsv")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -156,10 +156,11 @@ def main():
     query = read_query(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
     query.obs.index = query.obs["index"]
     query.raw = query.copy()
+    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name)
+
     query = qc_preprocess(query)
     
     #plot_markers(query, markers_file, organism=organism)
-    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name)
     
     
     query_subsets = {}
