@@ -236,28 +236,6 @@ include { DOWNLOAD_STUDIES_SUBWF } from "${projectDir}/modules/subworkflows/down
 workflow {
 
 
-    //if (params.study_names) {
-
-        //// Get query names from file (including region)
-        //study_names = Channel.fromPath(params.study_names).flatMap { file ->
-            //// Read the file, split by lines, and trim any extra spaces
-            //file.readLines().collect { it.trim() }
-        //}
-        //downloadStudies(study_names)
-        //downloadStudies.out.study_channel.set { study_channel }
-
-    //} else if (params.studies_path) {
-        //study_channel = Channel.fromPath(params.studies_path).flatMap { path ->
-        //// get subdirectories
-        //def results = []
-        //path.eachDir { dir ->
-            //results << [dir.name, dir]
-            //}
-        //return results
-        //}
-    //} else {
-        //exit 1, "Error: You must provide either 'study_names' or 'studies_path'."
-    //}
     DOWNLOAD_STUDIES_SUBWF(params.study_names, params.studies_path)
 
     DOWNLOAD_STUDIES_SUBWF.out.study_channel.set { study_channel }
