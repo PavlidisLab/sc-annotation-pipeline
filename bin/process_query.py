@@ -13,8 +13,7 @@ import warnings
 import cellxgene_census
 import cellxgene_census.experimental
 import scvi
-import adata_functions
-from adata_functions import *
+from bin.utils import *
 from pathlib import Path
 import argparse
 import os
