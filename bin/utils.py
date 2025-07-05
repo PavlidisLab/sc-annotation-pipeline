@@ -275,7 +275,8 @@ def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5
 
 
 
-def process_query(query, model_file_path, batch_key="sample"):
+def process_query(query, model_file_path, batch_key="sample", seed=42):
+    scvi.settings.seed = seed  
     # Ensure the input AnnData object is valid
     if not isinstance(query, ad.AnnData):
         raise ValueError("Input must be an AnnData object.")
@@ -585,9 +586,12 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
     
     ## get ontology mapping from file
     cell_types = markers_df["cell_type"]
-    overlap = set(cell_types).intersection(scaled_expr.index)
+    overlap = list(set(cell_types).intersection(scaled_expr.index))
 
-    sorted_cell_types = sorted(overlap, key=lambda x: ontology_mapping.get(x, x)) 
+    sorted_cell_types = sorted(
+        overlap,
+        key=lambda x: ontology_mapping[x] if not pd.isna(ontology_mapping.get(x)) else x
+    )
     # sort rows
     scaled_expr = scaled_expr.loc[sorted_cell_types, :]
 

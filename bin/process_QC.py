@@ -18,8 +18,7 @@ import argparse
 import os
 import json
 from types import SimpleNamespace
-import adata_functions
-from adata_functions import *
+from utils import *
 from PIL import Image
 import io
 import os
@@ -28,13 +27,13 @@ import math
 # Function to parse command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
-    parser.add_argument('--organism', type=str, default='homo_sapiens', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/d9/9e11cdd8f430c3f1756b9f7b573c67/GSE180670_raw.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/99/b87342c0118043ce9b3dd58244b3d1/GSE180670/GSE180670_predicted_celltype.tsv")
+    parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/1b/e925b52fd34dacee982922da5f0433/GSE152715.1_raw.h5ad")
+    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/1b/e925b52fd34dacee982922da5f0433/GSE152715.1_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/d2/d6e92949de0f8bd1db9b930631dc8f/GSE180670_sample_meta.tsv")
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/1b/e925b52fd34dacee982922da5f0433/GSE152715.1_sample_meta.tsv")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -159,10 +158,7 @@ def main():
     make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name)
 
     query = qc_preprocess(query)
-    
-    #plot_markers(query, markers_file, organism=organism)
-    
-    
+ 
     query_subsets = {}
     for sample_name in query.obs["sample_name"].unique():
         query_subset = query[query.obs["sample_name"] == sample_name]
@@ -227,6 +223,16 @@ def main():
         .astype(int)
     )
     celltype_outlier_counts.to_csv(os.path.join(study_name,"celltype_outlier_counts_mqc.tsv"), sep="\t", index=True)
+    
+    
+        # write CLC file with outliers
+    # At minimum, sample_id, cell_id, category (set to mask), value (set to true or false).
+
+    CLC_df = query_combined.obs[["sample_id","cell_id", "total_outlier"]]
+    CLC_df["category"] = "mask"
+    CLC_df.rename(columns={"total_outlier": "value"}, inplace=True)
+    CLC_df.to_csv(f"{study_name}_mask.tsv", sep="\t", index=False)
+ 
     
     
 if __name__ == "__main__":
