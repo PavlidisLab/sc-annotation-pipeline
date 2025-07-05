@@ -127,7 +127,7 @@ process rfClassify{
 
 }
 
-process loadResults {
+process loadCTA {
     publishDir (
         "${params.outdir}/${study_name}", mode: 'copy'
     )
@@ -149,10 +149,8 @@ process loadResults {
     """
 }
 
+
 process getMeta {
-    //publishDir (
-        //"${params.outdir}/${study_name}", mode: 'copy'
-    //)
 
     input:
         tuple val(study_name), path(study_path)
@@ -167,12 +165,7 @@ process getMeta {
 }
 
 
-process plotQC {
-   // conda '/home/rschwartz/anaconda3/envs/scanpyenv'
-    
-    //publishDir (
-        //"${params.outdir}/${study_name}/qc_results", mode: 'copy'
-    //)
+process processQC {
 
     input:
         tuple val(study_name), path(predicted_meta), path(study_path), path(sample_meta)
@@ -180,11 +173,12 @@ process plotQC {
     output:
     path "**png"
     tuple val(study_name), path("${study_name}/"), emit: qc_channel
+    tuple val(study_name), path("${study_name}_mask.tsv"), emit: mask_file
 
 
     script:
     """
-    python $projectDir/bin/plot_QC.py --query_path ${study_path} \\
+    python $projectDir/bin/process_QC.py --query_path ${study_path} \\
         --assigned_celltypes_path ${predicted_meta} \\
         --gene_mapping ${params.gene_mapping} \\
         --rename_file ${params.rename_file} \\
@@ -195,6 +189,28 @@ process plotQC {
     """ 
 }
 
+process loadCLC {
+    publishDir (
+        "${params.outdir}/celltype_annotations/${study_name}", mode: 'copy'
+    )
+
+    input:
+        tuple val(study_name), path(mask_file)
+
+    output:
+        path "message.txt"
+
+    script:
+    """
+    ( gemma-cli deleteSingleCellData -deleteClc "sc-pipeline-${params.version}-nmads-${params.nmads}" -e ${study_name} ) || true
+
+    gemma-cli loadSingleCellData --load-cell-level-characteristics \\
+         -e ${study_name} \\
+        -clcFile ${mask_file} \\
+        -clcName "sc-pipeline-${params.version}-nmads-${params.nmads}" \\
+        2>> "message.txt"
+    """
+}
 
 process runMultiQC {
     publishDir (
@@ -270,16 +286,15 @@ workflow {
 
     qc_channel.join(meta_channel, by: 0)
     .set { qc_channel_with_meta }
-    qc_channel_with_meta.view() 
-    plotQC(qc_channel_with_meta)
-    multiqc_channel = plotQC.out.qc_channel
-
+    processQC(qc_channel_with_meta)
+    multiqc_channel = processQC.out.qc_channel
+    mask_file = processQC.out.mask_file
     runMultiQC(multiqc_channel)
 
-    loadResults(celltype_files)
+    loadCTA(celltype_files)
+    //loadCLC(mask_file)
 
     multiqc_channel = runMultiQC.out.multiqc_html
-
     publishMultiQC(multiqc_channel)
 
     save_params_to_file()
