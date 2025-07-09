@@ -285,7 +285,6 @@ def process_query(query, model_file_path, batch_key="sample", seed=42):
     #query.var["ensembl_id"] = query.var["feature_id"]
     if "feature_id" in query.var.columns:
         query.var.set_index("feature_id", inplace=True)
-
     query.obs["n_counts"] = query.X.sum(axis=1)
     query.obs["joinid"] = list(range(query.n_obs))
     query.obs["batch"] = query.obs[batch_key]

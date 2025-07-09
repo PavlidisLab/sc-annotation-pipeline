@@ -10,7 +10,7 @@ process PROCESS_QUERY_SAMPLE {
 
     input:
     val model_path
-    tuple val(study_name), path(study_path)
+    tuple val(study_name), val(study_path)
 
     output:
     tuple val("${study_name}"), path("${study_name}.h5ad"), emit: processed_query
@@ -24,8 +24,8 @@ process PROCESS_QUERY_SAMPLE {
 
     python $projectDir/bin/process_query_samples.py \\
                             --model_path ${model_path} \\
-                            --study_path ${study_path} \\
-                            --study_name ${study_name} \\
+                            --query_name ${study_name} \\
+                            --query_path ${study_path} \\
                             --seed ${params.seed}
     """
 

@@ -2,29 +2,39 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout Code') {
+        stage('Run Nextflow Pipeline') {
             steps {
-                    // Checkout the repository
-                checkout scm
-            }
-        }
+                script {
+                    echo 'Running sc-annotate pipeline...'
 
-        stage('Run Pipeline') {
-            steps {
-                    // Run the Nextflow pipeline
-                sh 'nextflow run main.nf -profile conda -params-file params.mm.json'
+                    // Wrap in try-catch to capture errors
+                    try {
+                        sh '''
+                            set -euo pipefail
 
+                            nextflow run sc-annotate.nf \
+                              -profile conda \
+                              -params-file params.mm.json \
+                              --study_names /space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/study_names_mouse.txt \
+                              -process.executor slurm \
+                              -resume
+                        '''
+                    } catch (err) {
+                        echo 'Pipeline failed with the following error:'
+                        echo err.getMessage()
+                        error('Pipeline execution failed') // fail the Jenkins build
+                    }
+                }
             }
         }
     }
 
     post {
         success {
-            echo "Pipeline ran successfully!"
+            echo 'Pipeline executed successfully!'
         }
-
         failure {
-            echo "Pipeline failed!"
+            echo 'Jenkins job failed.'
         }
     }
 }
