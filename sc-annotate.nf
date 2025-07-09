@@ -17,6 +17,7 @@ process save_params_to_file {
     echo "census_version: ${params.census_version}" >> params.txt 
     echo "outdir: ${params.outdir}" >> params.txt
     echo "study_names: ${params.study_names}" >> params.txt
+    echo "process_samples: ${params.process_samples}" >> params.txt
     echo "subsample ref: ${params.subsample_ref}" >> params.txt
     echo "ref collections: ${params.ref_collections}" >> params.txt
     echo "rename file: ${params.rename_file}" >> params.txt
@@ -82,7 +83,7 @@ process getCensusAdata {
     val ref_collections
 
     output:
-    path "refs/*.h5ad", emit: ref_paths_adata
+    path "refs/*.h5ad", emit: ref_paths
     //path "**ref_cell_info.tsv"
 
     script:
@@ -247,37 +248,60 @@ process publishMultiQC {
 }
 
 include { DOWNLOAD_STUDIES_SUBWF } from "${projectDir}/modules/subworkflows/download_studies.nf"
+include { PROCESS_QUERY_SAMPLE } from "${projectDir}/modules/processes/process_query_samples.nf"
+include { PROCESS_QUERY_COMBINED } from "${projectDir}/modules/processes/process_query_combined.nf"
 
 // Workflow definition
 workflow {
 
 
     DOWNLOAD_STUDIES_SUBWF(params.study_names, params.studies_path)
-
     DOWNLOAD_STUDIES_SUBWF.out.study_channel.set { study_channel }
     
     // Call the setup process to download the model
     model_path = runSetup(params.organism, params.census_version)
 
+    // If process_samples is true, we will process each query sample separately
+    // and use a different process
+    def processed_queries
+    def raw_queries
+    if (params.process_samples) {
+        // Split study_channel into individual samples
+        expanded_channel = study_channel.flatMap { study_name, study_dir ->
+                def results = []
+                study_dir.eachDir { dir -> results << [dir.name, dir.toString()] }
+                return results
+            }
+        // Process each query sample separately
+        PROCESS_QUERY_SAMPLE(model_path, expanded_channel)
+        raw_queries = PROCESS_QUERY_SAMPLE.out.raw_query
+        processed_queries = PROCESS_QUERY_SAMPLE.out.processed_query
+    } else {
+        // Process each query without subsampling
+        PROCESS_QUERY_COMBINED(model_path, study_channel)
+        raw_queries = PROCESS_QUERY_COMBINED.out.raw_query
+        processed_queries = PROCESS_QUERY_COMBINED.out.processed_query
+        
+    }
     // Process each query by relabeling, subsampling, and passing through scvi model
-    processQuery(model_path, study_channel) 
-    processed_queries_adata = processQuery.out.processed_query 
+   // processQuery(model_path, study_channel) 
+ //processed_queries = processQuery.out.processed_query 
+
     // Get collection names to pull from census
     ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ') 
 
     // Get reference data and save to files
     getCensusAdata(ref_collections)
-    getCensusAdata.out.ref_paths_adata.flatten()
-    .set { ref_paths_adata }
+    getCensusAdata.out.ref_paths.flatten()
+    .set { ref_paths }
     
     // Combine the processed queries with the reference paths
-    combos_adata = processed_queries_adata.combine(ref_paths_adata)
+    combos_adata = processed_queries.combine(ref_paths)
     // Process each query-reference pair
     rfClassify(combos_adata)
 
     celltype_files = rfClassify.out.celltype_file_channel
 
-    raw_queries = processQuery.out.raw_query
     celltype_files.join(raw_queries, by: 0)
     .set{qc_channel}
 
