@@ -142,7 +142,7 @@ process loadCTA {
 
     """
     ( gemma-cli deleteSingleCellData -deleteCta "sc-pipeline-${params.version}" -e ${study_name} ) || true
-
+    
     gemma-cli loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} -preferredCta \\
                -ctaName "sc-pipeline-${params.version}" \\
