@@ -150,6 +150,30 @@ process loadCTA {
     """
 }
 
+process loadCLC {
+    publishDir (
+        "${params.outdir}/celltype_annotations/${study_name}", mode: 'copy'
+    )
+
+    input:
+        tuple val(study_name), path(mask_file)
+
+    output:
+        path "message.txt"
+
+    script:
+    """
+    ( gemma-cli deleteSingleCellData -deleteClc "sc-pipeline-${params.version}-nmads-${params.nmads}" -e ${study_name} ) || true
+
+    gemma-cli loadSingleCellData --load-cell-level-characteristics \\
+         -e ${study_name} \\
+        -clcFile ${mask_file} \\
+        -clcName "sc-pipeline-${params.version}-nmads-${params.nmads}" \\
+        2>> "message.txt"
+    """
+}
+
+
 
 process getMeta {
 
@@ -188,29 +212,6 @@ process processQC {
         --organism ${params.organism} \\
         --markers_file ${params.markers_file}
     """ 
-}
-
-process loadCLC {
-    publishDir (
-        "${params.outdir}/celltype_annotations/${study_name}", mode: 'copy'
-    )
-
-    input:
-        tuple val(study_name), path(mask_file)
-
-    output:
-        path "message.txt"
-
-    script:
-    """
-    ( gemma-cli deleteSingleCellData -deleteClc "sc-pipeline-${params.version}-nmads-${params.nmads}" -e ${study_name} ) || true
-
-    gemma-cli loadSingleCellData --load-cell-level-characteristics \\
-         -e ${study_name} \\
-        -clcFile ${mask_file} \\
-        -clcName "sc-pipeline-${params.version}-nmads-${params.nmads}" \\
-        2>> "message.txt"
-    """
 }
 
 process runMultiQC {
