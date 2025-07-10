@@ -10,7 +10,7 @@ process PROCESS_QUERY_COMBINED {
 
     input:
     val model_path
-    tuple val(study_name), path(study_path)
+    tuple val(study_name), val(study_path)
 
     output:
     tuple val("${study_name}"), path("${study_name}.h5ad"), emit: processed_query

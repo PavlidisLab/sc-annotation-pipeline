@@ -315,7 +315,11 @@ workflow {
     runMultiQC(multiqc_channel)
 
     loadCTA(celltype_files)
-    //loadCLC(mask_file)
+
+    if (params.mask) {
+        // If mask is true, we will load the cell-level characteristics
+        loadCLC(mask_file)
+    } 
 
     multiqc_channel = runMultiQC.out.multiqc_html
     publishMultiQC(multiqc_channel)
