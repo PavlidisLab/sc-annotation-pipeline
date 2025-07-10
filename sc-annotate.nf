@@ -128,6 +128,29 @@ process rfClassify{
 
 }
 
+process combineCTA {
+   publishDir (
+        "${params.outdir}/${study_name}", mode: 'copy'
+    )
+     input:
+        val(study_name)
+        celltype_file_channel
+
+
+    output :
+        path "${study_name}_combined_celltype.tsv", emit: combined_celltype_file
+
+    script:
+    """
+    # Combine all celltype files into one and only take header from the first file
+    echo "Combining celltype files for ${study_name}"
+    echo "Celltype files: ${celltype_file_channel}"
+    echo "Output file: ${study_name}_combined_celltype.tsv"
+    """
+
+
+}
+
 process loadCTA {
     publishDir (
         "${params.outdir}/${study_name}", mode: 'copy'
@@ -141,8 +164,6 @@ process loadCTA {
 
 
     """
-    ( gemma-cli deleteSingleCellData -deleteCta "sc-pipeline-${params.version}" -e ${study_name} ) || true
-    
     gemma-cli loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} -preferredCta \\
                -ctaName "sc-pipeline-${params.version}" \\
