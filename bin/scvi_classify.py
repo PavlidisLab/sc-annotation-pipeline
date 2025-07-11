@@ -75,7 +75,7 @@ def main():
     os.makedirs(query_name, exist_ok=True)
     
     filtered_obs = query.obs[["sample_id","cell_id","cell_type", "cell_type_uri"]]
-    filtered_obs.to_csv(os.path.join(query_name,f"{query_name}_predicted_celltype.tsv"), sep="\t", index=False)
+    filtered_obs.to_csv(f"{query_name}_predicted_celltype.tsv", sep="\t", index=False)
 
 if __name__ == "__main__":
     main()
