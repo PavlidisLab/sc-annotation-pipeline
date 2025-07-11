@@ -13,8 +13,8 @@ process PROCESS_QUERY_COMBINED {
     tuple val(study_name), val(study_path)
 
     output:
-    tuple val("${study_name}"), path("${study_name}.h5ad"), emit: processed_query
-    tuple val("${study_name}"), path("${study_name}_raw.h5ad"), emit: raw_query
+    tuple val("${study_name}"), val("${study_name}"), path("${study_name}.h5ad"), emit: processed_query
+    tuple val("${study_name}"), val("${study_name}"), path("${study_name}_raw.h5ad"), emit: raw_query
 
         
     script:

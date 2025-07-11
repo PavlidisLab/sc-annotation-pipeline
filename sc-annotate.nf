@@ -110,15 +110,15 @@ process rfClassify{
   //  conda '/home/rschwartz/anaconda3/envs/scanpyenv'
 
     publishDir (
-        path: "${params.outdir}",
+        path: "${params.outdir}/${study_name}/predicted_celltypes",
         mode: "copy"
     )
 
     input:
-    tuple val(study_name), val(query_path), val(ref_path)
+    tuple val(study_name), val(query_name), val(query_path), val(ref_path)
 
     output:
-    tuple val{study_name}, path("${study_name}/${study_name}_predicted_celltype.tsv"), emit : celltype_file_channel
+    tuple val{study_name}, val(query_name), path("${query_name}_predicted_celltype.tsv"), emit : celltype_file_channel
 
     script:
     """
@@ -130,24 +130,25 @@ process rfClassify{
 
 process combineCTA {
    publishDir (
-        "${params.outdir}/${study_name}", mode: 'copy'
+        "${params.outdir}/${study_name}/predicted_celltypes", mode: 'copy'
     )
      input:
-        val(study_name)
-        celltype_file_channel
+        tuple val(study_name), val(query_names), path(combined_celltype_files)
 
-
-    output :
-        path "${study_name}_combined_celltype.tsv", emit: combined_celltype_file
+    output:
+        tuple val(study_name), val(query_names), path("${study_name}_combined_celltypes.tsv"), emit: celltype_file_channel
 
     script:
     """
     # Combine all celltype files into one and only take header from the first file
-    echo "Combining celltype files for ${study_name}"
-    echo "Celltype files: ${celltype_file_channel}"
-    echo "Output file: ${study_name}_combined_celltype.tsv"
-    """
+     # Extract header from first file
+    head -n 1 \$(ls ${combined_celltype_files} | head -n 1) > ${study_name}_combined_celltypes.tsv
 
+    # Append all lines excluding header from all files
+    for f in ${combined_celltype_files}; do
+        tail -n +2 "\$f" >> ${study_name}_combined_celltypes.tsv
+    done
+    """
 
 }
 
@@ -156,7 +157,7 @@ process loadCTA {
         "${params.outdir}/${study_name}", mode: 'copy'
     )
      input:
-        tuple val(study_name), path(celltype_file)
+        tuple val(study_name), val(query_names), path(celltype_file)
 
 
     output :
@@ -164,11 +165,36 @@ process loadCTA {
 
 
     """
+
     gemma-cli loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} -preferredCta \\
                -ctaName "sc-pipeline-${params.version}" \\
                -ctaProtocol "sc-pipeline-${params.version}" 2> "message.txt"
     """
+}
+
+process combineCLC {
+   publishDir (
+        "${params.outdir}/${study_name}", mode: 'copy'
+    )
+     input:
+        tuple val(study_name), val(query_names), path(combined_mask_files)
+
+    output :
+        path "${study_name}_combined_celltype_mask.tsv", emit: celltype_mask_files
+
+    script:
+    """
+    # Combine all celltype files into one and only take header from the first file
+     # Extract header from first file
+    head -n 1 \$(ls ${combined_mask_files} | head -n 1) > ${study_name}_combined_celltype_mask.tsv
+
+    # Append all lines excluding header from all files
+    for f in ${combined_mask_files}; do
+        tail -n +2 "\$f" >> ${study_name}_combined_celltype_mask.tsv
+    done
+    """
+
 }
 
 process loadCLC {
@@ -212,12 +238,12 @@ process getMeta {
 process processQC {
 
     input:
-        tuple val(study_name), path(predicted_meta), path(study_path), path(sample_meta)
+        tuple val(study_name), val(query_name), path(predicted_meta), path(study_path), path(sample_meta)
 
     output:
     path "**png"
-    tuple val(study_name), path("${study_name}/"), emit: qc_channel
-    tuple val(study_name), path("${study_name}_mask.tsv"), emit: mask_file
+    tuple val(study_name), path("${query_name}/"), emit: qc_channel
+    tuple val(study_name), path("${query_name}_mask.tsv"), emit: mask_file
 
 
     script:
@@ -289,7 +315,7 @@ workflow {
         // Split study_channel into individual samples
         expanded_channel = study_channel.flatMap { study_name, study_dir ->
                 def results = []
-                study_dir.eachDir { dir -> results << [dir.name, dir.toString()] }
+                study_dir.eachDir { dir -> results << [study_name, dir.name, dir.toString()] }
                 return results
             }
         // Process each query sample separately
@@ -303,10 +329,7 @@ workflow {
         processed_queries = PROCESS_QUERY_COMBINED.out.processed_query
         
     }
-    // Process each query by relabeling, subsampling, and passing through scvi model
-   // processQuery(model_path, study_channel) 
- //processed_queries = processQuery.out.processed_query 
-
+    
     // Get collection names to pull from census
     ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ') 
 
@@ -322,30 +345,51 @@ workflow {
 
     celltype_files = rfClassify.out.celltype_file_channel
 
-    celltype_files.join(raw_queries, by: 0)
+    if (params.process_samples) {
+        // If process_samples is true, we will combine the celltype files
+        // for each study into one file
+        // need to combine celltype files for each study
+        celltype_file_channel = celltype_files.groupTuple(by: 0)
+            .set{ combined_celltype_files }
+        combineCTA(combined_celltype_files)
+        predicted_celltypes = combineCTA.out.celltype_file_channel 
+
+    } else {
+        // If process_samples is false, we will use the celltype files as they are
+        predicted_celltypes = celltype_files
+    } 
+    //combined_celltype_files.view()
+    
+    loadCTA(predicted_celltypes)
+
+
+    celltype_files.join(raw_queries, by: [0, 1])
     .set{qc_channel}
 
     getMeta(study_channel)
     meta_channel = getMeta.out.meta_channel
-
-    qc_channel.join(meta_channel, by: 0)
+    qc_channel.combine(meta_channel, by: 0)
     .set { qc_channel_with_meta }
+
     processQC(qc_channel_with_meta)
     multiqc_channel = processQC.out.qc_channel
-    mask_file = processQC.out.mask_file
-    runMultiQC(multiqc_channel)
+    mask_files = processQC.out.mask_file
+    mask_files.view()
 
-    loadCTA(celltype_files)
+    multiqc_channel.groupTuple(by: 0)
+    .set { multiqc_channel }
+    multiqc_channel.view()
+   // runMultiQC(multiqc_channel)
 
-    if (params.mask) {
-        // If mask is true, we will load the cell-level characteristics
-        loadCLC(mask_file)
-    } 
+    //if (params.mask) {
+        //// If mask is true, we will load the cell-level characteristics
+        //loadCLC(mask_file)
+    //} 
 
-    multiqc_channel = runMultiQC.out.multiqc_html
-    publishMultiQC(multiqc_channel)
+    //multiqc_channel = runMultiQC.out.multiqc_html
+    //publishMultiQC(multiqc_channel)
 
-    save_params_to_file()
+    //save_params_to_file()
 }
 
 workflow.onComplete {

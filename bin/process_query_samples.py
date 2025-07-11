@@ -48,7 +48,7 @@ def main():
   args = parse_arguments()
   query_path = args.query_path
   query_name = args.query_name
-  sample_id = query_name.split("_")[1]
+  sample_id = query_name.split("_")[0]
   model_path = args.model_path
   SEED = args.seed
   random.seed(SEED)         # For `random`
@@ -60,7 +60,6 @@ def main():
     # Attempt to read the 10x mtx data
     adata = sc.read_10x_mtx(query_path)
     adata.obs["sample_id"] = sample_id  # Add sample_id to obs
-    adata.obs.index = adata.obs_names + "_" + adata.obs["sample_id"]
     adata.obs_names_make_unique()
   except Exception as e:
     print(f"Error processing {sample_id} automatically: {e}. Trying manual read.")
@@ -88,7 +87,6 @@ def main():
         adata.var_names_make_unique()# gene ids as the variable names
         adata.obs_names = barcodes  # cell barcodes as the observation names
         adata.obs["sample_id"] = sample_id  # Add sample_id to obs
-        adata.obs.index = adata.obs_names + "_" + adata.obs["sample_id"]
         adata.obs_names_make_unique()  # make sure the observation names are unique
         # Store the AnnData object in the dictionary
      #   all_sample_ids[new_sample_id] = adata
@@ -97,7 +95,6 @@ def main():
     except Exception as manual_e:
       adata = sc.AnnData(X=csr_matrix((0, 0)))
       adata.obs["sample_id"] = sample_id  # Add sample_id to obs
-      adata.obs.index = adata.obs_names + "_" + adata.obs["sample_id"]
       adata.write_h5ad(f"{sample_id}_empty.h5ad")
       #print(f"Error processing {sample_id} manually: {manual_e}")
       raise Warning(f"Failed to process {sample_id} using both automatic and manual methods: {manual_e}")
