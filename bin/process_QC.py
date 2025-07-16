@@ -134,7 +134,7 @@ def write_clc_files(query_combined, study_name, metrics=["counts_outlier", "outl
         CLC_df.rename(columns={metric: "value"}, inplace=True)
         
         # Save to TSV file
-        CLC_df.to_csv(f"{study_name}_{metric}.tsv", sep="\t", index=False)
+        CLC_df.to_csv(f"{study_name}_{metric}_mask.tsv", sep="\t", index=False)
 
 def main():
     # Parse command line arguments
