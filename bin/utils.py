@@ -490,12 +490,13 @@ def get_qc_metrics(query, nmads):
         query.obs["log1p_n_genes_by_counts"] < (query.obs["log1p_total_counts"] * slope + (intercept - lm_dict["intercept_adjustment"]))
         ) | (
         query.obs["log1p_n_genes_by_counts"] > (query.obs["log1p_total_counts"] * slope + (intercept + lm_dict["intercept_adjustment"]))
-        ) | (
-        query.obs["umi_outlier"] ) | (query.obs["genes_outlier"])
+        ) #| (
+      #  query.obs["umi_outlier"] ) | (query.obs["genes_outlier"])
         
 
     query.obs["total_outlier"] = (
-        query.obs["counts_outlier"] | query.obs["outlier_mito"] | query.obs["outlier_ribo"] | query.obs["outlier_hb"] | query.obs["predicted_doublet"]
+        query.obs["counts_outlier"] | query.obs["outlier_mito"] | query.obs["outlier_ribo"] | query.obs["outlier_hb"] | query.obs["predicted_doublet"] 
+        | query.obs["umi_outlier"] | query.obs["genes_outlier"]
     )
     
     query.obs["non_outlier"] = ~query.obs["total_outlier"]
