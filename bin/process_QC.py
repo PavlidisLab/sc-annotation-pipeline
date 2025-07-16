@@ -126,8 +126,8 @@ def plot_ct_umap(query, study_name):
     fig.savefig(out_path, bbox_inches='tight')
     plt.close(fig)
  
-def write_clc_files(query_combined, study_name):
-    for metric in ["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "umi_outlier", "genes_outlier"]:
+def write_clc_files(query_combined, study_name, metrics=["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "umi_outlier", "genes_outlier"]):
+    for metric in metrics:
         # Create a DataFrame for each metric
         CLC_df = query_combined.obs[["sample_id", "cell_id", metric]].copy()
         CLC_df["category"] = "mask"
@@ -238,7 +238,7 @@ def main():
         # write CLC file with outliers
     # At minimum, sample_id, cell_id, category (set to mask), value (set to true or false).
 
-    write_clc_files(query_combined, study_name)
+    write_clc_files(query_combined, study_name, metrics=["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "umi_outlier", "genes_outlier"])
     
 if __name__ == "__main__":
     main()
