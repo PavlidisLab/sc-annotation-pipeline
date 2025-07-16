@@ -178,20 +178,20 @@ process combineCLC {
         "${params.outdir}/${study_name}", mode: 'copy'
     )
      input:
-        tuple val(study_name), val(query_names), path(combined_mask_files)
+        tuple val(study_name), val(query_names), val(metric), path(combined_mask_files)
 
     output :
-        path "${study_name}_combined_celltype_mask.tsv", emit: celltype_mask_files
+        path "${study_name}_${metric}_combined_celltype_mask.tsv", emit: celltype_mask_files
 
     script:
     """
     # Combine all celltype files into one and only take header from the first file
      # Extract header from first file
-    head -n 1 \$(ls ${combined_mask_files} | head -n 1) > ${study_name}_combined_celltype_mask.tsv
+    head -n 1 \$(ls ${combined_mask_files} | head -n 1) > ${study_name}_${metric}_combined_celltype_mask.tsv
 
     # Append all lines excluding header from all files
     for f in ${combined_mask_files}; do
-        tail -n +2 "\$f" >> ${study_name}_combined_celltype_mask.tsv
+        tail -n +2 "\$f" >> ${study_name}_${metric}_combined_celltype_mask.tsv
     done
     """
 
@@ -209,8 +209,9 @@ process loadCLC {
         path "message.txt"
 
     script:
+    //     ( gemma-cli deleteSingleCellData -deleteClc "sc-pipeline-${params.version}-nmads-${params.nmads}" -e ${study_name} ) || true
+
     """
-    ( gemma-cli deleteSingleCellData -deleteClc "sc-pipeline-${params.version}-nmads-${params.nmads}" -e ${study_name} ) || true
 
     gemma-cli loadSingleCellData --load-cell-level-characteristics \\
          -e ${study_name} \\
@@ -243,7 +244,7 @@ process processQC {
     output:
     path "**png"
     tuple val(study_name), path("${query_name}/"), emit: qc_channel
-    tuple val(study_name), path("${query_name}_mask.tsv"), emit: mask_file
+    tuple val(study_name), val(query_name), path("${query_name}**mask.tsv"), emit: mask_files
 
 
     script:
@@ -258,6 +259,24 @@ process processQC {
         --markers_file ${params.markers_file}
     """ 
 }
+
+process combineQC {
+    publishDir (
+        "${params.outdir}/qc/${study_name}", mode: 'copy'
+    )
+
+    input:
+        tuple val(study_name), path(qc_dir)
+
+    output:
+        tuple val(study_name), path("qc_report.html"), emit: qc_html
+
+    script:
+    """
+    python $projectDir/bin/combine_qc.py --qc_dir ${qc_dir} --study_name ${study_name}
+    """
+}
+
 
 process runMultiQC {
     publishDir (
@@ -373,18 +392,41 @@ workflow {
 
     processQC(qc_channel_with_meta)
     multiqc_channel = processQC.out.qc_channel
-    mask_files = processQC.out.mask_file
-    mask_files.view()
+    mask_files = processQC.out.mask_files
+
+    if (params.process_samples) {
+        // If process_samples is true, we will combine the mask files
+        // for each study into one file
+        // need to combine mask files for each study
+        mask_files.flatMap { study_name, query_name, mask_files ->
+            // Rename the mask file to include the query name
+            mask_files.collect { mask_file ->
+            def metric = mask_file.getName().split("_")[2]
+            [ study_name, query_name, metric, mask_file ]
+            }
+        }.set { mask_files }
+        //mask_files.view()
+        mask_files.groupTuple(by: [0,2])
+        .set{ combined_mask_files }
+        combined_mask_files.view()
+        combineCLC(combined_mask_files)
+        celltype_mask_files = combineCLC.out.celltype_mask_files
+        celltype_mask_files.view()
+    } else {
+        // If process_samples is false, we will use the mask files as they are
+        celltype_mask_files = mask_files
+    } 
+
 
     multiqc_channel.groupTuple(by: 0)
     .set { multiqc_channel }
-    multiqc_channel.view()
+   // multiqc_channel.view()
    // runMultiQC(multiqc_channel)
 
-    //if (params.mask) {
+   // if (params.mask) {
         //// If mask is true, we will load the cell-level characteristics
-        //loadCLC(mask_file)
-    //} 
+   //     loadCLC(celltype_mask_files)
+  //  } 
 
     //multiqc_channel = runMultiQC.out.multiqc_html
     //publishMultiQC(multiqc_channel)
