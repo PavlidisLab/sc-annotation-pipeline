@@ -126,6 +126,16 @@ def plot_ct_umap(query, study_name):
     fig.savefig(out_path, bbox_inches='tight')
     plt.close(fig)
  
+def write_clc_files(query_combined, study_name):
+    for metric in ["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "umi_outlier", "genes_outlier"]:
+        # Create a DataFrame for each metric
+        CLC_df = query_combined.obs[["sample_id", "cell_id", metric]].copy()
+        CLC_df["category"] = "mask"
+        CLC_df.rename(columns={metric: "value"}, inplace=True)
+        
+        # Save to TSV file
+        CLC_df.to_csv(f"{study_name}_{metric}.tsv", sep="\t", index=False)
+
 def main():
     # Parse command line arguments
     args = parse_arguments()
@@ -218,7 +228,7 @@ def main():
     
     celltype_outlier_counts = (
         query_combined.obs
-        .groupby(["cell_type"])[["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "non_outlier"]]
+        .groupby(["cell_type"])[["counts_outlier", "genes_outlier", "umi_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "non_outlier"]]
         .sum()
         .astype(int)
     )
@@ -228,12 +238,7 @@ def main():
         # write CLC file with outliers
     # At minimum, sample_id, cell_id, category (set to mask), value (set to true or false).
 
-    CLC_df = query_combined.obs[["sample_id","cell_id", "total_outlier"]]
-    CLC_df["category"] = "mask"
-    CLC_df.rename(columns={"total_outlier": "value"}, inplace=True)
-    CLC_df.to_csv(f"{study_name}_mask.tsv", sep="\t", index=False)
- 
-    
+    write_clc_files(query_combined, study_name)
     
 if __name__ == "__main__":
     main()
