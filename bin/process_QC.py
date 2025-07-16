@@ -128,13 +128,14 @@ def plot_ct_umap(query, study_name):
  
 def write_clc_files(query_combined, study_name, metrics=["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "umi_outlier", "genes_outlier"]):
     for metric in metrics:
+        metric_name = metric.replace("_outlier", "").replace("outlier_", "").replace("predicted_", "")
         # Create a DataFrame for each metric
         CLC_df = query_combined.obs[["sample_id", "cell_id", metric]].copy()
         CLC_df["category"] = "mask"
         CLC_df.rename(columns={metric: "value"}, inplace=True)
         
         # Save to TSV file
-        CLC_df.to_csv(f"{study_name}_{metric}_mask.tsv", sep="\t", index=False)
+        CLC_df.to_csv(f"{study_name}_{metric_name}_mask.tsv", sep="\t", index=False)
 
 def main():
     # Parse command line arguments
