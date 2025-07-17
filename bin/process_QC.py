@@ -191,7 +191,7 @@ def main():
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_name a column
     )
-    celltype_counts.to_csv(os.path.join(study_name,study_name,"celltype_counts_mqc.tsv"), sep="\t", index=False)
+    celltype_counts.to_csv(os.path.join(study_name,f"{study_name}_celltype_counts_mqc.tsv"), sep="\t", index=False)
 
     #combine query subsets
     query_combined = ad.concat(query_subsets.values(), axis=0) 
@@ -206,7 +206,7 @@ def main():
         .sum()
         .astype(int)
     )
-    outlier_counts.to_csv(os.path.join(study_name, study_name, "outlier_counts_mqc.tsv"), sep="\t", index=True)
+    outlier_counts.to_csv(os.path.join(study_name, f"{study_name}_outlier_counts_mqc.tsv"), sep="\t", index=True)
 
 
     # cluster stats
@@ -235,7 +235,7 @@ def main():
         .sum()
         .astype(int)
     )
-    celltype_outlier_counts.to_csv(os.path.join(study_name,f"{study_name}_celltype_outlier_counts_mqc.tsv"), sep="\t", index=True)
+    celltype_outlier_counts.to_csv(os.path.join(study_name, f"{study_name}_celltype_outlier_counts_mqc.tsv"), sep="\t", index=True)
     
     
         # write CLC file with outliers
