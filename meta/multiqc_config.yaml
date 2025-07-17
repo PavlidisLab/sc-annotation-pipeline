@@ -73,6 +73,9 @@ sp:
  
   markers_heatmap:
     fn: "*heatmap_mqc.tsv"
+  
+  outlier_composition:
+    fn: "*outlier_counts_mqc.tsv"
 
   cluster_composition_outliers:
     fn: "*cluster_counts_mqc.tsv"
@@ -84,10 +87,7 @@ sp:
     fn: "*cell_type_markers_mqc.tsv"
 
   celltype_composition_outliers:
-    fn: "*_celltype_outlier_counts_mqc.tsv"
-
-  outlier_composition:
-    fn: "*_outlier_counts_mqc.tsv"
+    fn: "*celltype_outliers_mqc.tsv"
 
   celltype_composition:
     fn: "*celltype_counts_mqc.tsv"
