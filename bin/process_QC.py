@@ -123,7 +123,7 @@ def plot_ct_umap(query, study_name):
             return_fig=True
         )
 
-    out_path = os.path.join(study_name,f"{study_name}_celltype_umap_mqc.png")
+    out_path = os.path.join(study_name,"celltype_umap_mqc.png")
     fig.savefig(out_path, bbox_inches='tight')
     plt.close(fig)
  
@@ -191,7 +191,7 @@ def main():
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_name a column
     )
-    celltype_counts.to_csv(os.path.join(study_name,f"{study_name}_celltype_counts_mqc.tsv"), sep="\t", index=False)
+    celltype_counts.to_csv(os.path.join(study_name,"celltype_counts_mqc.tsv"), sep="\t", index=False)
 
     #combine query subsets
     query_combined = ad.concat(query_subsets.values(), axis=0) 
@@ -206,7 +206,7 @@ def main():
         .sum()
         .astype(int)
     )
-    outlier_counts.to_csv(os.path.join(study_name, f"{study_name}_outlier_counts_mqc.tsv"), sep="\t", index=True)
+    outlier_counts.to_csv(os.path.join(study_name, "outlier_counts_mqc.tsv"), sep="\t", index=True)
 
 
     # cluster stats
@@ -216,7 +216,7 @@ def main():
         .sum()
         .astype(int)                     # make sample_name a column
     )
-    cluster_counts.to_csv(os.path.join(study_name,f"{study_name}_cluster_counts_mqc.tsv"), sep="\t", index=True)
+    cluster_counts.to_csv(os.path.join(study_name,"cluster_counts_mqc.tsv"), sep="\t", index=True)
     
     cluster_celltypes = (
         query_combined.obs
@@ -225,7 +225,7 @@ def main():
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_name a column
     )
-    cluster_celltypes.to_csv(os.path.join(study_name,f"{study_name}_cluster_celltypes_mqc.tsv"), sep="\t", index=False)
+    cluster_celltypes.to_csv(os.path.join(study_name,"cluster_celltypes_mqc.tsv"), sep="\t", index=False)
 
     # cell type by outlier composition
     
@@ -235,7 +235,7 @@ def main():
         .sum()
         .astype(int)
     )
-    celltype_outlier_counts.to_csv(os.path.join(study_name, f"{study_name}_celltype_outlier_counts_mqc.tsv"), sep="\t", index=True)
+    celltype_outlier_counts.to_csv(os.path.join(study_name, "celltype_outliers_mqc.tsv"), sep="\t", index=True)
     
     
         # write CLC file with outliers
