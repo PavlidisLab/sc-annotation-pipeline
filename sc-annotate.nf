@@ -153,9 +153,7 @@ process combineCTA {
 }
 
 process loadCTA {
-    publishDir (
-        "${params.outdir}/${study_name}", mode: 'copy'
-    )
+
      input:
         tuple val(study_name), val(query_names), path(celltype_file)
 
@@ -175,13 +173,13 @@ process loadCTA {
 
 process combineCLC {
    publishDir (
-        "${params.outdir}/${study_name}", mode: 'copy'
+        "${params.outdir}/${study_name}/masks", mode: 'copy'
     )
      input:
         tuple val(study_name), val(query_names), val(metric), path(combined_mask_files)
 
     output :
-        path "${study_name}_${metric}_combined_celltype_mask.tsv", emit: celltype_mask_files
+       tuple val(study_name), val(metric), path("${study_name}_${metric}_combined_celltype_mask.tsv"), emit: celltype_mask_files
 
     script:
     """
@@ -198,12 +196,8 @@ process combineCLC {
 }
 
 process loadCLC {
-    publishDir (
-        "${params.outdir}/celltype_annotations/${study_name}", mode: 'copy'
-    )
-
     input:
-        tuple val(study_name), path(mask_file)
+        tuple val(study_name), val(metric), path(mask_file)
 
     output:
         path "message.txt"
@@ -216,7 +210,6 @@ process loadCLC {
     gemma-cli loadSingleCellData --load-cell-level-characteristics \\
          -e ${study_name} \\
         -clcFile ${mask_file} \\
-        -clcName "sc-pipeline-${params.version}-nmads-${params.nmads}" \\
         2>> "message.txt"
     """
 }
@@ -237,6 +230,9 @@ process getMeta {
 
 
 process processQC {
+    publishDir (
+        "${params.outdir}/${study_name}/qc", mode: 'copy'
+    )
 
     input:
         tuple val(study_name), val(query_name), path(predicted_meta), path(study_path), path(sample_meta)
@@ -262,21 +258,25 @@ process processQC {
 
 process combineQC {
     publishDir (
-        "${params.outdir}/qc/${study_name}", mode: 'copy'
+        "${params.outdir}/${study_name}/combined_qc", mode: 'copy'
     )
 
     input:
-        tuple val(study_name), path(qc_dir)
+        tuple val(study_name), path(qc_dirs)
+
 
     output:
-        tuple val(study_name), path("qc_report.html"), emit: qc_html
+       tuple val(study_name), path("${study_name}/"), emit: qc_dir_combined
 
     script:
     """
-    python $projectDir/bin/combine_qc.py --qc_dir ${qc_dir} --study_name ${study_name}
+    # combine all qc directories into one directory
+    mkdir -p ${study_name}
+    for dir in ${qc_dirs}; do
+        cp -r \$dir/* "${study_name}/"
+    done
     """
 }
-
 
 process runMultiQC {
     publishDir (
@@ -296,9 +296,6 @@ process runMultiQC {
 }
 
 process publishMultiQC {
-    publishDir (
-        "${params.outdir}/multiqc/${study_name}", mode: 'copy'
-    )
 
     input:
         tuple val(study_name), path(multiqc_html)
@@ -377,7 +374,6 @@ workflow {
         // If process_samples is false, we will use the celltype files as they are
         predicted_celltypes = celltype_files
     } 
-    //combined_celltype_files.view()
     
     loadCTA(predicted_celltypes)
 
@@ -391,7 +387,7 @@ workflow {
     .set { qc_channel_with_meta }
 
     processQC(qc_channel_with_meta)
-    multiqc_channel = processQC.out.qc_channel
+    qc_channel = processQC.out.qc_channel
     mask_files = processQC.out.mask_files
 
     if (params.process_samples) {
@@ -405,29 +401,36 @@ workflow {
             [ study_name, query_name, metric, mask_file ]
             }
         }.set { mask_files }
-        //mask_files.view()
         mask_files.groupTuple(by: [0,2])
         .set{ combined_mask_files }
-        combined_mask_files.view()
         combineCLC(combined_mask_files)
         celltype_mask_files = combineCLC.out.celltype_mask_files
-        celltype_mask_files.view()
     } else {
         // If process_samples is false, we will use the mask files as they are
         celltype_mask_files = mask_files
     } 
 
 
-    multiqc_channel.groupTuple(by: 0)
-    .set { multiqc_channel }
-   // multiqc_channel.view()
-   // runMultiQC(multiqc_channel)
-
-   // if (params.mask) {
+    if (params.mask) {
         //// If mask is true, we will load the cell-level characteristics
-   //     loadCLC(celltype_mask_files)
-  //  } 
+        loadCLC(celltype_mask_files)
+    } 
 
+
+    if (params.process_samples) {
+        qc_channel.groupTuple(by: 0)
+        .set { qc_dir_channel }
+        qc_dir_channel.view()
+        combineQC(qc_dir_channel)
+        multiqc_channel = combineQC.out.qc_dir_combined
+    } else {
+        // If process_samples is false, we will use the qc_dir as it is
+        multiqc_channel = qc_channel
+    }
+
+  
+    
+    runMultiQC(multiqc_channel)
     //multiqc_channel = runMultiQC.out.multiqc_html
     //publishMultiQC(multiqc_channel)
 
