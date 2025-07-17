@@ -597,6 +597,6 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
 
     # Save matrix
     os.makedirs(study_name, exist_ok=True)
-    scaled_expr.to_csv(f"{study_name}/heatmap_mqc.tsv", sep="\t")
+    scaled_expr.to_csv(os.path.join(study_name,f"{study_name}_heatmap_mqc.tsv"), sep="\t")
 
  

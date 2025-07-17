@@ -28,12 +28,12 @@ import math
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
     parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/1b/e925b52fd34dacee982922da5f0433/GSE152715.1_raw.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/1b/e925b52fd34dacee982922da5f0433/GSE152715.1_predicted_celltype.tsv")
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/0b/68cfefa2a36c50d15a3a190600e38f/1051990_GSM4624687_raw.h5ad")
+    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/0b/68cfefa2a36c50d15a3a190600e38f/1051990_GSM4624687_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/1b/e925b52fd34dacee982922da5f0433/GSE152715.1_sample_meta.tsv")
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/0b/68cfefa2a36c50d15a3a190600e38f/GSE152715.1_sample_meta.tsv")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -42,7 +42,7 @@ def parse_arguments():
 def plot_joint_umap(query, study_name, sample_name):
     x_metric = "log1p_n_genes_by_counts"
     metrics = {
-        "log1p_total_counts": "counts_outlier",
+        "log1p_total_counts": ["counts_outlier", "umi_outlier", "genes_outlier"],
         "pct_counts_mito": "outlier_mito",
         "pct_counts_ribo": "outlier_ribo",
         "pct_counts_hb": "outlier_hb",
@@ -50,43 +50,44 @@ def plot_joint_umap(query, study_name, sample_name):
     
     data = query.obs
     images = []
-    for yval, hue in metrics.items():
-        fig_joint = sns.jointplot(
-            data=data,
-            x=x_metric,
-            y=yval,
-            hue=hue,
-            kind="scatter"
-        )
+    for yval, hues in metrics.items():
+        for hue in (hues if isinstance(hues, list) else [hues]):
+            fig_joint = sns.jointplot(
+                data=data,
+                x=x_metric,
+                y=yval,
+                hue=hue,
+                kind="scatter"
+            )
         
         
-        umap_fig = sc.pl.umap(
-        query,
-        color=hue,
-        use_raw=False,
-        save=None,
-        show=False,
-        title=f"{hue}",
-        ncols=1,
-        legend_loc="upper right",
-        return_fig=True
-        ) 
+            umap_fig = sc.pl.umap(
+            query,
+            color=hue,
+            use_raw=False,
+            save=None,
+            show=False,
+            title=f"{hue}",
+            ncols=1,
+            legend_loc="upper right",
+            return_fig=True
+            ) 
 
 
-        joint_buf = io.BytesIO()
-        fig_joint.savefig(joint_buf, format="png", bbox_inches='tight')
-        plt.close(fig_joint.fig) 
+            joint_buf = io.BytesIO()
+            fig_joint.savefig(joint_buf, format="png", bbox_inches='tight')
+            plt.close(fig_joint.fig) 
+            
+            umap_buf = io.BytesIO()
+            umap_fig.savefig(umap_buf, format="png", bbox_inches='tight')
+            plt.close(umap_fig)
+            
+            joint_buf.seek(0)
+            images.append(Image.open(joint_buf))
+            
+            umap_buf.seek(0)
+            images.append(Image.open(umap_buf))
         
-        umap_buf = io.BytesIO()
-        umap_fig.savefig(umap_buf, format="png", bbox_inches='tight')
-        plt.close(umap_fig)
-        
-        joint_buf.seek(0)
-        images.append(Image.open(joint_buf))
-        
-        umap_buf.seek(0)
-        images.append(Image.open(umap_buf))
-    
     scale = 0.5  # Resize to 50%
     resized_images = [img.resize((int(img.width * scale), int(img.height * scale))) for img in images]
 
@@ -122,7 +123,7 @@ def plot_ct_umap(query, study_name):
             return_fig=True
         )
 
-    out_path = f"{study_name}/celltype_umap_mqc.png"
+    out_path = os.path.join(study_name,f"{study_name}_celltype_umap_mqc.png")
     fig.savefig(out_path, bbox_inches='tight')
     plt.close(fig)
  
@@ -158,6 +159,7 @@ def main():
     # Load query and reference datasets
     study_name = os.path.basename(query_path).replace("_raw.h5ad", "")
     os.makedirs(study_name, exist_ok=True)
+    os.makedirs(os.path.join(study_name, study_name), exist_ok=True)
 
     assigned_celltypes = pd.read_csv(assigned_celltypes_path, sep=None, header=0)
     sample_meta = pd.read_csv(sample_meta, sep=None, header=0)
@@ -180,8 +182,7 @@ def main():
         
        # plot_umap_qc(query_subset, study_name=study_name, sample_name=sample_name)
         plot_joint_umap(query_subset, study_name=study_name, sample_name=sample_name)
-      #  plot_jointplots(query_subset, study_name=study_name, sample_name=sample_name)
-        
+    
     # Count occurrences
     celltype_counts = (
         query.obs
@@ -190,12 +191,13 @@ def main():
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_name a column
     )
-    celltype_counts.to_csv(os.path.join(study_name,"celltype_counts_mqc.tsv"), sep="\t", index=False)
+    celltype_counts.to_csv(os.path.join(study_name,study_name,"celltype_counts_mqc.tsv"), sep="\t", index=False)
 
     #combine query subsets
     query_combined = ad.concat(query_subsets.values(), axis=0) 
     
     plot_ct_umap(query_combined, study_name=study_name)
+    
     ## make a table of counts by outliers
     # Count all combinations + non-outliers
     outlier_counts = (
@@ -204,7 +206,7 @@ def main():
         .sum()
         .astype(int)
     )
-    outlier_counts.to_csv(os.path.join(study_name, "outlier_counts_mqc.tsv"), sep="\t", index=True)
+    outlier_counts.to_csv(os.path.join(study_name, study_name, "outlier_counts_mqc.tsv"), sep="\t", index=True)
 
 
     # cluster stats
@@ -214,7 +216,7 @@ def main():
         .sum()
         .astype(int)                     # make sample_name a column
     )
-    cluster_counts.to_csv(os.path.join(study_name,"cluster_counts_mqc.tsv"), sep="\t", index=True)
+    cluster_counts.to_csv(os.path.join(study_name,f"{study_name}_cluster_counts_mqc.tsv"), sep="\t", index=True)
     
     cluster_celltypes = (
         query_combined.obs
@@ -223,7 +225,7 @@ def main():
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_name a column
     )
-    cluster_celltypes.to_csv(os.path.join(study_name,"cluster_celltypes_mqc.tsv"), sep="\t", index=False)
+    cluster_celltypes.to_csv(os.path.join(study_name,f"{study_name}_cluster_celltypes_mqc.tsv"), sep="\t", index=False)
 
     # cell type by outlier composition
     
@@ -233,7 +235,7 @@ def main():
         .sum()
         .astype(int)
     )
-    celltype_outlier_counts.to_csv(os.path.join(study_name,"celltype_outlier_counts_mqc.tsv"), sep="\t", index=True)
+    celltype_outlier_counts.to_csv(os.path.join(study_name,f"{study_name}_celltype_outlier_counts_mqc.tsv"), sep="\t", index=True)
     
     
         # write CLC file with outliers
