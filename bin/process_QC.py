@@ -152,6 +152,13 @@ def plot_upset_by_group(obs, outlier_cols, group_col, outdir):
     if group_col:
         for group in sorted(obs[group_col].unique()):
             counts = obs[obs[group_col] == group]["membership"].value_counts()
+            data = from_memberships(counts.index, data=counts.values)
+            plt.figure(figsize=(8, 4))
+            UpSet(data, show_counts=True).plot()
+            plt.suptitle(f"{group_col} = {group}")
+            plt.tight_layout()
+            plt.savefig(os.path.join(outdir, f"{group}_upset_mqc.png"))
+            plt.close()
             if counts.empty:
                 continue
     else:   
@@ -160,13 +167,14 @@ def plot_upset_by_group(obs, outlier_cols, group_col, outdir):
         counts = obs["membership"].value_counts()
         if counts.empty:
             return
-    data = from_memberships(counts.index, data=counts.values)
-    plt.figure(figsize=(8, 4))
-    UpSet(data, show_counts=True).plot()
-    plt.suptitle(f"{group_col} = {group}")
-    plt.tight_layout()
-    plt.savefig(os.path.join(outdir, f"{group_col}_{group}_upset_mqc.png"))
-    plt.close()
+        data = from_memberships(counts.index, data=counts.values)
+        plt.figure(figsize=(8, 4))
+        UpSet(data, show_counts=True).plot()
+        plt.suptitle(f"{group_col} = {group}")
+        plt.tight_layout()
+        plt.savefig(os.path.join(outdir, f"{group}_upset_mqc.png"))
+        plt.close()
+    
 
 def main():
     # Parse command line arguments
@@ -189,7 +197,6 @@ def main():
     # Load query and reference datasets
     study_name = os.path.basename(query_path).replace("_raw.h5ad", "")
     os.makedirs(study_name, exist_ok=True)
-    os.makedirs(os.path.join(study_name, study_name), exist_ok=True)
 
     assigned_celltypes = pd.read_csv(assigned_celltypes_path, sep=None, header=0)
     sample_meta = pd.read_csv(sample_meta, sep=None, header=0)
