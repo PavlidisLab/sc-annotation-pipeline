@@ -23,17 +23,19 @@ from PIL import Image
 import io
 import os
 import math
+from upsetplot import UpSet, from_memberships
+
 
 # Function to parse command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
     parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/0b/68cfefa2a36c50d15a3a190600e38f/1051990_GSM4624687_raw.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/0b/68cfefa2a36c50d15a3a190600e38f/1051990_GSM4624687_predicted_celltype.tsv")
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/a1/9f427f1ed702b94d7294e978f51c56/1051990_GSM4624687_raw.h5ad")
+    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/a1/9f427f1ed702b94d7294e978f51c56/1051990_GSM4624687_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/0b/68cfefa2a36c50d15a3a190600e38f/GSE152715.1_sample_meta.tsv")
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/a1/9f427f1ed702b94d7294e978f51c56/GSE152715.1_sample_meta.tsv")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -107,8 +109,11 @@ def plot_joint_umap(query, study_name, sample_name):
     # replace slashes, spaces, weird stuff
     # fix this
     new_sample_name = str(sample_name).replace(" ", "_").replace("\\/", "_").replace("\\", "_")
-    out_path = f"{study_name}/{new_sample_name}_combined_mqc.png"
+    out_path = f"{study_name}/{new_sample_name}_outliers_mqc.png"
     combined_img.save(out_path)
+
+
+
 
 def plot_ct_umap(query, study_name):
     colors = ["cell_type","leiden","sample_name"]
@@ -137,6 +142,31 @@ def write_clc_files(query_combined, study_name, metrics=["counts_outlier", "outl
         
         # Save to TSV file
         CLC_df.to_csv(f"{study_name}_{metric_name}_mask.tsv", sep="\t", index=False)
+
+
+def plot_upset_by_group(obs, outlier_cols, group_col, outdir):
+    os.makedirs(outdir, exist_ok=True)
+    obs = obs.copy()
+    obs["membership"] = obs[outlier_cols].apply(lambda row: tuple(c for c in outlier_cols if row[c]), axis=1)
+
+    if group_col:
+        for group in sorted(obs[group_col].unique()):
+            counts = obs[obs[group_col] == group]["membership"].value_counts()
+            if counts.empty:
+                continue
+    else:   
+        group_col = "study"
+        group = "all"
+        counts = obs["membership"].value_counts()
+        if counts.empty:
+            return
+    data = from_memberships(counts.index, data=counts.values)
+    plt.figure(figsize=(8, 4))
+    UpSet(data, show_counts=True).plot()
+    plt.suptitle(f"{group_col} = {group}")
+    plt.tight_layout()
+    plt.savefig(os.path.join(outdir, f"{group_col}_{group}_upset_mqc.png"))
+    plt.close()
 
 def main():
     # Parse command line arguments
@@ -182,7 +212,10 @@ def main():
         
        # plot_umap_qc(query_subset, study_name=study_name, sample_name=sample_name)
         plot_joint_umap(query_subset, study_name=study_name, sample_name=sample_name)
-    
+  
+    #combine query subsets
+    query_combined = ad.concat(query_subsets.values(), axis=0) 
+     
     # Count occurrences
     celltype_counts = (
         query.obs
@@ -192,31 +225,8 @@ def main():
         .reset_index()                      # make sample_name a column
     )
     celltype_counts.to_csv(os.path.join(study_name,"celltype_counts_mqc.tsv"), sep="\t", index=False)
-
-    #combine query subsets
-    query_combined = ad.concat(query_subsets.values(), axis=0) 
-    
+ 
     plot_ct_umap(query_combined, study_name=study_name)
-    
-    ## make a table of counts by outliers
-    # Count all combinations + non-outliers
-    outlier_counts = (
-        query_combined.obs
-        .groupby("sample_name")[["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "non_outlier"]]
-        .sum()
-        .astype(int)
-    )
-    outlier_counts.to_csv(os.path.join(study_name, "outlier_counts_mqc.tsv"), sep="\t", index=True)
-
-
-    # cluster stats
-    cluster_counts = (
-        query_combined.obs
-        .groupby("leiden")[["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "non_outlier"]]
-        .sum()
-        .astype(int)                     # make sample_name a column
-    )
-    cluster_counts.to_csv(os.path.join(study_name,"cluster_counts_mqc.tsv"), sep="\t", index=True)
     
     cluster_celltypes = (
         query_combined.obs
@@ -227,20 +237,19 @@ def main():
     )
     cluster_celltypes.to_csv(os.path.join(study_name,"cluster_celltypes_mqc.tsv"), sep="\t", index=False)
 
-    # cell type by outlier composition
+    # plot upset plots by sample and cell type
     
-    celltype_outlier_counts = (
-        query_combined.obs
-        .groupby(["cell_type"])[["counts_outlier", "genes_outlier", "umi_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "non_outlier"]]
-        .sum()
-        .astype(int)
-    )
-    celltype_outlier_counts.to_csv(os.path.join(study_name, "celltype_outliers_mqc.tsv"), sep="\t", index=True)
+    outlier_cols = [
+        "counts_outlier", 
+        "umi_outlier", 
+        "genes_outlier",
+        "outlier_mito", 
+        "outlier_ribo", 
+        "outlier_hb", 
+        "predicted_doublet"
+    ]
+    plot_upset_by_group(query_combined.obs, outlier_cols, "sample_name", study_name)
     
-    
-        # write CLC file with outliers
-    # At minimum, sample_id, cell_id, category (set to mask), value (set to true or false).
-
     write_clc_files(query_combined, study_name, metrics=["counts_outlier", "outlier_mito", "outlier_ribo", "outlier_hb", "predicted_doublet", "umi_outlier", "genes_outlier"])
     
 if __name__ == "__main__":

@@ -291,7 +291,7 @@ process runMultiQC {
 
     script:
     """
-    multiqc ${qc_dir} -d --config ${params.multiqc_config}
+    multiqc ${qc_dir} -d ${params.process_samples ? "" : "--config ${params.multiqc_config}"}
     """
 }
 
@@ -309,9 +309,9 @@ process publishMultiQC {
     """
 }
 
-include { DOWNLOAD_STUDIES_SUBWF } from "${projectDir}/modules/subworkflows/download_studies.nf"
-include { PROCESS_QUERY_SAMPLE } from "${projectDir}/modules/processes/process_query_samples.nf"
-include { PROCESS_QUERY_COMBINED } from "${projectDir}/modules/processes/process_query_combined.nf"
+include { DOWNLOAD_STUDIES_SUBWF } from "$projectDir/modules/subworkflows/download_studies.nf"
+include { PROCESS_QUERY_SAMPLE } from "$projectDir/modules/processes/process_query_samples.nf"
+include { PROCESS_QUERY_COMBINED } from "$projectDir/modules/processes/process_query_combined.nf"
 
 // Workflow definition
 workflow {
@@ -428,12 +428,13 @@ workflow {
         multiqc_channel = qc_channel
     }
 
-  
-    
-    runMultiQC(multiqc_channel)
-    //multiqc_channel = runMultiQC.out.multiqc_html
-    //publishMultiQC(multiqc_channel)
-
+ 
+    // Run MultiQC on the combined qc directory
+    if (params.process_samples == false) {
+        runMultiQC(multiqc_channel)
+        multiqc_channel = runMultiQC.out.multiqc_html
+        publishMultiQC(multiqc_channel)
+    }
     //save_params_to_file()
 }
 

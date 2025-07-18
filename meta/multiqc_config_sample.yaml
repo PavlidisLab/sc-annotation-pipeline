@@ -9,10 +9,6 @@ run_modules:
 
 custom_data:
 
-  celltype_umap:
-    section_name: 'Cell type UMAP'
-    description: 'UMAP of the cell type labels, sample names and leiden clusters'
-    file_format: 'png'
 
   sample_celltype_composition:
     section_name: 'Sample cell type composition'
@@ -32,29 +28,8 @@ custom_data:
     file_format: 'tsv'
     plot_type: 'barplot'
 
-  cluster_outlier_composition:
-    section_name: 'Leiden Cluster Composition (outliers)'
-    description: >
-      Leiden clustering performed on log-transformed data with top 2000 variable genes,
-      10 PCs, 30 neighbors, resolution = 0.3
-    file_format: 'tsv'
-    plot_type: 'barplot'
 
-  markers_heatmap:
-    section_name: 'Cell type markers'
-    description: 'Expression of select markers. Count are averaged across cell-type labels and z-score normalized across genes.'
-    file_format: 'tsv'
-    plot_type: 'heatmap'
-
-  cluster_celltype_composition:
-    section_name: 'Leiden cluster composition (cell types)'
-    description: >
-      Leiden clustering performed on log-transformed data with top 2000 variable genes,
-      10 PCs, 30 neighbors, resolution = 0.3
-    file_format: 'tsv'
-    plot_type: 'barplot'
-
-  celltype_outlier_composition:
+  celltype_composition_outliers:
     section_name: 'Cell type outlier composition'
     description: >
     Composition per sample of predicted outliers:
@@ -68,29 +43,22 @@ custom_data:
 
 sp:
 
-  celltype_umap:
-    fn: "*celltype_umap_mqc.png"
- 
-  markers_heatmap:
-    fn: "*heatmap_mqc.tsv"
+  sample_outlier_composition:
+    fn: "*outlier_counts_mqc.tsv"
 
-  cluster_celltype_composition:
-    fn: "*cluster_celltypes_mqc.tsv"
+  sample_celltype_composition:
+    fn: "*celltype_counts_mqc.tsv"
   
   markers_table:
     fn: "*cell_type_markers_mqc.tsv"
 
-  sample_celltype_composition:
-    fn: "*celltype_counts_mqc.tsv"
-
+  celltype_outlier_composition:
+    fn: "*celltype_outliers_mqc.tsv"
 
 custom_content:
   order:
     - sample_outlier_composition 
     - sample_celltype_composition
-    - cluster_outlier_composition
-    - cluster_celltype_composition
     - celltype_outlier_composition
-    - markers_heatmap
-    - celltype_umap
+
 
