@@ -20,25 +20,6 @@ custom_data:
     file_format: 'tsv'
     plot_type: 'barplot'
 
-  sample_outlier_composition:
-    section_name: 'Sample Outlier Composition (outliers)'
-    description: >
-      Composition per sample of predicted outliers:
-      outlier_mito = mitochondrial outliers;
-      outlier_ribo = ribosomal outliers;
-      outlier_hb = hemoglobin outliers;
-      counts_outlier = outlier of log1p_n_genes ~ log1p_n_counts;
-      predicted_doublet = doublets predicted by sc.pp.scrublet;
-    file_format: 'tsv'
-    plot_type: 'barplot'
-
-  cluster_outlier_composition:
-    section_name: 'Leiden Cluster Composition (outliers)'
-    description: >
-      Leiden clustering performed on log-transformed data with top 2000 variable genes,
-      10 PCs, 30 neighbors, resolution = 0.3
-    file_format: 'tsv'
-    plot_type: 'barplot'
 
   markers_heatmap:
     section_name: 'Cell type markers'
@@ -54,17 +35,6 @@ custom_data:
     file_format: 'tsv'
     plot_type: 'barplot'
 
-  celltype_outlier_composition:
-    section_name: 'Cell type outlier composition'
-    description: >
-    Composition per sample of predicted outliers:
-      outlier_mito = mitochondrial outliers;
-      outlier_ribo = ribosomal outliers;
-      outlier_hb = hemoglobin outliers;
-      counts_outlier = outlier of log1p_n_genes ~ log1p_n_counts;
-      predicted_doublet = doublets predicted by sc.pp.scrublet;
-    file_format: 'tsv'
-    plot_type: 'barplot'
 
 sp:
 
@@ -86,11 +56,8 @@ sp:
 
 custom_content:
   order:
-    - sample_outlier_composition 
     - sample_celltype_composition
-    - cluster_outlier_composition
     - cluster_celltype_composition
-    - celltype_outlier_composition
     - markers_heatmap
     - celltype_umap
 
