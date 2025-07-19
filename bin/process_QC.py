@@ -247,6 +247,7 @@ def main():
     # plot upset plots by sample and cell type
     
     outlier_cols = [
+        "non_outlier",
         "counts_outlier", 
         "umi_outlier", 
         "genes_outlier",
