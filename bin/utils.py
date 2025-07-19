@@ -285,7 +285,6 @@ def process_query(query, model_file_path, batch_key="sample", seed=42):
     #query.var["ensembl_id"] = query.var["feature_id"]
     if "feature_id" in query.var.columns:
         query.var.set_index("feature_id", inplace=True)
-
     query.obs["n_counts"] = query.X.sum(axis=1)
     query.obs["joinid"] = list(range(query.n_obs))
     query.obs["batch"] = query.obs[batch_key]
@@ -491,12 +490,13 @@ def get_qc_metrics(query, nmads):
         query.obs["log1p_n_genes_by_counts"] < (query.obs["log1p_total_counts"] * slope + (intercept - lm_dict["intercept_adjustment"]))
         ) | (
         query.obs["log1p_n_genes_by_counts"] > (query.obs["log1p_total_counts"] * slope + (intercept + lm_dict["intercept_adjustment"]))
-        ) | (
-        query.obs["umi_outlier"] ) | (query.obs["genes_outlier"])
+        ) #| (
+      #  query.obs["umi_outlier"] ) | (query.obs["genes_outlier"])
         
 
     query.obs["total_outlier"] = (
-        query.obs["counts_outlier"] | query.obs["outlier_mito"] | query.obs["outlier_ribo"] | query.obs["outlier_hb"] | query.obs["predicted_doublet"]
+        query.obs["counts_outlier"] | query.obs["outlier_mito"] | query.obs["outlier_ribo"] | query.obs["outlier_hb"] | query.obs["predicted_doublet"] 
+        | query.obs["umi_outlier"] | query.obs["genes_outlier"]
     )
     
     query.obs["non_outlier"] = ~query.obs["total_outlier"]
@@ -597,6 +597,6 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
 
     # Save matrix
     os.makedirs(study_name, exist_ok=True)
-    scaled_expr.to_csv(f"{study_name}/heatmap_mqc.tsv", sep="\t")
+    scaled_expr.to_csv(os.path.join(study_name,f"{study_name}_heatmap_mqc.tsv"), sep="\t")
 
  
