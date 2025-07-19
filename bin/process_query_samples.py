@@ -23,9 +23,9 @@ import gzip
     
 def parse_arguments():
   parser = argparse.ArgumentParser(description="Download model file based on organism, census version, and tree file.")
-  parser.add_argument('--model_path', type=str, default="/space/grp/rschwartz/rschwartz/biof501_proj/scvi-human-2024-07-01", help='Path to the scvi model file')
-  parser.add_argument('--query_name', type=str, default="GSE198014", help='Name of the study')
-  parser.add_argument('--query_path', type=str, default="/space/scratch/gemma-single-cell-data-ensembl-id/GSE178226", help='Path to the study file')
+  parser.add_argument('--model_path', type=str, default="/space/grp/rschwartz/rschwartz/biof501_proj/scvi-mus_musculus-2024-07-01", help='Path to the scvi model file')
+  parser.add_argument('--query_name', type=str, default="1051989_GSM4624688", help='Name of the study')
+  parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/d9/1e3df0f6b9d5110c28514f5639bc97/GSE152715.1/1051989_GSM4624688", help='Path to the study file')
   parser.add_argument('--seed', type=int, default=42)
    
   if __name__ == "__main__":
@@ -48,18 +48,18 @@ def main():
   args = parse_arguments()
   query_path = args.query_path
   query_name = args.query_name
-  sample_id = query_name.split("_")[1]
+  sample_id = query_name.split("_")[0]
   model_path = args.model_path
   SEED = args.seed
   random.seed(SEED)         # For `random`
   np.random.seed(SEED)      # For `numpy`
   scvi.settings.seed = SEED # For `scvi`
-
+  
+  
   try:
     # Attempt to read the 10x mtx data
     adata = sc.read_10x_mtx(query_path)
     adata.obs["sample_id"] = sample_id  # Add sample_id to obs
-    adata.obs.index = adata.obs_names + "_" + adata.obs["sample_id"]
     adata.obs_names_make_unique()
   except Exception as e:
     print(f"Error processing {sample_id} automatically: {e}. Trying manual read.")
@@ -87,7 +87,6 @@ def main():
         adata.var_names_make_unique()# gene ids as the variable names
         adata.obs_names = barcodes  # cell barcodes as the observation names
         adata.obs["sample_id"] = sample_id  # Add sample_id to obs
-        adata.obs.index = adata.obs_names + "_" + adata.obs["sample_id"]
         adata.obs_names_make_unique()  # make sure the observation names are unique
         # Store the AnnData object in the dictionary
      #   all_sample_ids[new_sample_id] = adata
@@ -96,25 +95,24 @@ def main():
     except Exception as manual_e:
       adata = sc.AnnData(X=csr_matrix((0, 0)))
       adata.obs["sample_id"] = sample_id  # Add sample_id to obs
-      adata.obs.index = adata.obs_names + "_" + adata.obs["sample_id"]
       adata.write_h5ad(f"{sample_id}_empty.h5ad")
       #print(f"Error processing {sample_id} manually: {manual_e}")
       raise Warning(f"Failed to process {sample_id} using both automatic and manual methods: {manual_e}")
 
-    if has_expression_data(adata) is False:
-      adata = sc.AnnData(X=csr_matrix((0, 0)))
-      # write a fake h5ad to trick nextflow
-      adata.write_h5ad(f"{sample_id}_empty.h5ad")
-      raise Warning(f"Sample {sample_id} has no expression data. Skipping.")
-    if check_size(adata) is False:
-      os.makedirs("small_samples", exist_ok=True)
-      adata.obs["cell_id"] = adata.obs.index
-      adata.write_h5ad(os.path.join("small_samples",f"{query_name}.h5ad"))
-    else:
-      adata.obs["cell_id"] = adata.obs.index
-      adata.write_h5ad(f"{query_name}_raw.h5ad")
-      adata = process_query(adata, args.model_path, batch_key=None, seed=SEED)
-      adata.write_h5ad(f"{query_name}.h5ad")
+  if has_expression_data(adata) is False:
+    adata = sc.AnnData(X=csr_matrix((0, 0)))
+    # write a fake h5ad to trick nextflow
+    adata.write_h5ad(f"{sample_id}_empty.h5ad")
+    raise Warning(f"Sample {sample_id} has no expression data. Skipping.")
+  if check_size(adata) is False:
+    os.makedirs("small_samples", exist_ok=True)
+    adata.obs["cell_id"] = adata.obs.index
+    adata.write_h5ad(os.path.join("small_samples",f"{query_name}.h5ad"))
+  else:
+    adata.obs["cell_id"] = adata.obs.index
+    adata.write_h5ad(f"{query_name}_raw.h5ad")
+    adata = process_query(adata, model_path, batch_key="sample_id", seed=SEED)
+    adata.write_h5ad(f"{query_name}.h5ad")
       
         
 if __name__ == "__main__":
