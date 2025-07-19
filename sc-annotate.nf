@@ -287,11 +287,19 @@ process runMultiQC {
         tuple val(study_name), path(qc_dir)
 
     output:
-        tuple val(study_name), path("multiqc_report.html"), emit: multiqc_html
+        tuple val(study_name), path("**multiqc_report.html"), emit: multiqc_html
+
 
     script:
+    def use_config_flag = params.process_samples ? "" : "--config new_config.yaml"
+
     """
-    multiqc ${qc_dir} -d ${params.process_samples ? "" : "--config ${params.multiqc_config}"}
+    # Combine base config with dynamic title
+    cp ${params.multiqc_config} new_config.yaml
+    echo "title: \\"${study_name}\\"" >> new_config.yaml
+
+
+    multiqc ${qc_dir} -d ${use_config_flag}
     """
 }
 
