@@ -473,9 +473,9 @@ def get_qc_metrics(query, nmads):
     metrics = {
         "log1p_total_counts": "umi_outlier",
         "log1p_n_genes_by_counts": "genes_outlier",
-        "pct_counts_mito": "outlier_mito",
-        "pct_counts_ribo": "outlier_ribo",
-        "pct_counts_hb": "outlier_hb",
+        "pct_counts_mito": "mito_outlier",
+        "pct_counts_ribo": "ribo_outlier",
+        "pct_counts_hb": "hb_outlier",
     }
     
     for metric, col_name in metrics.items():
@@ -495,7 +495,7 @@ def get_qc_metrics(query, nmads):
         
 
     query.obs["total_outlier"] = (
-        query.obs["counts_outlier"] | query.obs["outlier_mito"] | query.obs["outlier_ribo"] | query.obs["outlier_hb"] | query.obs["predicted_doublet"] 
+        query.obs["counts_outlier"] | query.obs["mito_outlier"] | query.obs["ribo_outlier"] | query.obs["hb_outlier"] | query.obs["predicted_doublet"] 
         | query.obs["umi_outlier"] | query.obs["genes_outlier"]
     )
     
