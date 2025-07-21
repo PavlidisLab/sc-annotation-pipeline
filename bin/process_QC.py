@@ -136,26 +136,15 @@ def write_clc_files(query_combined, study_name, metrics=["counts_outlier", "mito
     # change to long format
    # for metric in metrics:
     CLC_df = query_combined.obs[["sample_id", "cell_id"] + metrics].copy()
-   # metric_dict = {}
-   # for metric in metrics:
-   #     metric_name = metric.replace("_outlier", "").replace("outlier_", "").replace("predicted_", "")
-     #   metric_dict[metric] = metric_name
+
     
     CLC_df = CLC_df.melt(
         id_vars=["sample_id", "cell_id"],
         value_vars=metrics,
         value_name="value",
-        var_name="category_id"
+        var_name="category"
     )
         
-    CLC_df["category"] = "mask"
-    
-    # replace category_id with metric name
-    #CLC_df["category_id"] = CLC_df["category_name"].map(metric_dict)
-   # CLC_df.drop(columns=["category_name"], inplace=True)
-    
-    CLC_df.rename(columns={metric: "value"}, inplace=True)
-    
     # change true and false to lower
     CLC_df["value"] = CLC_df["value"].astype(str).str.lower()
     # Save to TSV file
