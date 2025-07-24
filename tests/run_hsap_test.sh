@@ -3,9 +3,9 @@
 nextflow sc-annotate.nf \
 	-profile conda \
 	-params-file params.hs.json \
-	--studies_path //home/bxu/sc-annotation-pipeline/work/74/0e54911c90f1ab60613cd463f5d73c \
-	-process.executor slurm \
-	--process_samples true \
+	--study_names tests/study_names_human.txt \
+	-process.executor local \
+	--process_samples false \
 	--mask false \
 	-resume
 	
