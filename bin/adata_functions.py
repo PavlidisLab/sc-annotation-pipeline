@@ -396,12 +396,9 @@ def read_query(query_path, gene_mapping, new_meta, sample_meta):
     new_meta["full_barcode"] = new_meta["sample_id"].astype(str) + "_" + new_meta["cell_id"].astype(str)
     
     query.obs = query.obs.merge(new_meta, left_on="full_barcode", right_on="full_barcode", how="left", suffixes=("", "_y"))
-   
-   
-   
+ 
     sample_meta["sample_id"] = sample_meta["sample_id"].astype(str)
     query.obs = query.obs.merge(sample_meta, left_on="sample_id", right_on="sample_id", how="left", suffixes=("", "_y"))
-    
     
     columns_to_drop = [col for col in query.obs.columns if col.endswith("_y")]
     query.obs.drop(columns=columns_to_drop, inplace=True)
@@ -524,14 +521,13 @@ def make_stable_colors(color_mapping_df):
     return subclass_colors 
 
 
-def get_gene_to_celltype_map(markers_file, organism="mus_musculus"):
+def get_gene_to_celltype_map(df, organism="mus_musculus"):
     # Read the marker file
-    df = pd.read_csv(markers_file, sep="\t")
     df = df[df["markers"].notnull()]
     gene_to_celltype = {}
 
     for _, row in df.iterrows():
-        cell_type = row["cell_type"]
+        cell_type = row["shortname"]
         genes = [gene.strip() for gene in row["markers"].split(",")]
         for gene in genes:
             if organism == "mus_musculus":
@@ -543,7 +539,7 @@ def get_gene_to_celltype_map(markers_file, organism="mus_musculus"):
 
     # Join multiple cell types into one label if needed
     gene_ct_dict = {
-        gene: f"{gene}: {'_'.join(set(celltypes))}"
+        gene: f"{'_'.join(set(celltypes))}: {gene}"
         for gene, celltypes in gene_to_celltype.items()
     }
     return gene_ct_dict
@@ -554,14 +550,15 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
     query = query[:, ~query.var["feature_name"].isnull()]
     query.var_names = query.var["feature_name"]
     
+    markers_df = pd.read_csv(markers_file, sep="\t")
+    markers_df = markers_df[markers_df["organism"] == organism]
+    ontology_mapping = markers_df.set_index("cell_type")["shortname"].to_dict()
+   
     #Make raw index match processed var index
     query.raw.var.index = query.raw.var["feature_name"]
-    
-    # Map cell type hierarchy
-    query = map_celltype_hierarchy(query, markers_file=markers_file)
 
     # Read marker genes
-    gene_ct_dict = get_gene_to_celltype_map(markers_file, organism=organism)
+    gene_ct_dict = get_gene_to_celltype_map(markers_df, organism=organism)
     # Collect all unique markers across all families/classes/cell types
     all_markers = list(gene_ct_dict.keys())
     valid_markers = [gene for gene in all_markers if gene in query.var_names]
@@ -580,6 +577,23 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
 
     # Rename columns: gene -> gene (celltype)
     scaled_expr.rename(columns=gene_ct_dict, inplace=True)
+    
+    sorted_columns = sorted(scaled_expr.columns, key=lambda x: x.split(":")[0])  
+    
+    # Sort by the first part of the column name
+    scaled_expr = scaled_expr[sorted_columns]
+    
+    ## get ontology mapping from file
+    cell_types = markers_df["cell_type"]
+    overlap = set(cell_types).intersection(scaled_expr.index)
+
+    sorted_cell_types = sorted(
+        overlap,
+        key=lambda x: x if pd.isna(ontology_mapping.get(x, x)) else ontology_mapping.get(x, x)
+    )
+
+    # sort rows
+    scaled_expr = scaled_expr.loc[sorted_cell_types, :]
 
     # Save matrix
     os.makedirs(study_name, exist_ok=True)
