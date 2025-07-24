@@ -587,7 +587,11 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
     cell_types = markers_df["cell_type"]
     overlap = set(cell_types).intersection(scaled_expr.index)
 
-    sorted_cell_types = sorted(overlap, key=lambda x: ontology_mapping.get(x, x)) 
+    sorted_cell_types = sorted(
+        overlap,
+        key=lambda x: x if pd.isna(ontology_mapping.get(x, x)) else ontology_mapping.get(x, x)
+    )
+
     # sort rows
     scaled_expr = scaled_expr.loc[sorted_cell_types, :]
 
