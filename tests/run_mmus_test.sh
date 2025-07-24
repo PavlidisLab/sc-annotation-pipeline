@@ -3,9 +3,9 @@
 nextflow sc-annotate.nf \
 	-profile conda \
 	-params-file params.mm.json \
-	--study_names /space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/tests/study_names_mouse.txt \
+	--study_names GSE152715.1 \
 	-process.executor local \
 	--process_samples false \
 	-resume \
-	--mask true 
+	--mask false 
 	

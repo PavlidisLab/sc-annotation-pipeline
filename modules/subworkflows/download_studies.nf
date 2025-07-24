@@ -10,22 +10,36 @@ workflow DOWNLOAD_STUDIES_SUBWF {
 
     main:
     if (study_names) {
-        Channel
-            .fromPath(params.study_names)
-            .flatMap { file -> file.readLines().collect { it.trim() } }
+        // change to accept command line input or params input separated by space
+        
+        Channel.from(study_names)
             .set { study_names }
+            
+            //.fromPath(params.study_names)
+            //.flatMap { file -> file.readLines().collect { it.trim() } }
+            //.set { study_names }
 
         DOWNLOAD_STUDIES(study_names)
             .set { study_channel }
 
     } else if (studies_path) {
-        study_channel = Channel
-            .fromPath(params.studies_path)
-            .flatMap { path ->
-                def results = []
-                path.eachDir { dir -> results << [dir.name, dir] }
-                return results
-            }
+        // change to accept command line input or params input
+        // separated by space
+        Channel.fromPath(params.studies_path)
+        .set { studies_path }
+
+        studies_path.view()
+        // get study names from each path
+        studies_path.map { path ->
+            def name = path.getName()
+            [name, path]
+        }.set { study_channel }
+            //.fromPath(params.studies_path)
+            //.flatMap { path ->
+                //def results = []
+                //path.eachDir { dir -> results << [dir.name, dir] }
+                //return results
+            //}
     } else {
         exit 1, "Error: You must provide either 'study_names' or 'studies_path'."
     }
