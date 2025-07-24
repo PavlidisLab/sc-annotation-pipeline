@@ -28,13 +28,13 @@ import math
 # Function to parse command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
-    parser.add_argument('--organism', type=str, default='homo_sapiens', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/d9/9e11cdd8f430c3f1756b9f7b573c67/GSE180670_raw.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/99/b87342c0118043ce9b3dd58244b3d1/GSE180670/GSE180670_predicted_celltype.tsv")
+    parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/5c/0b197da6150daa93cb4361598be788/GSE152715.1_raw.h5ad")
+    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/5c/0b197da6150daa93cb4361598be788/GSE152715.1_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/d2/d6e92949de0f8bd1db9b930631dc8f/GSE180670_sample_meta.tsv")
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/5c/0b197da6150daa93cb4361598be788/GSE152715.1_sample_meta.tsv")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args

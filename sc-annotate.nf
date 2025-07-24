@@ -270,7 +270,6 @@ workflow {
 
     qc_channel.join(meta_channel, by: 0)
     .set { qc_channel_with_meta }
-    qc_channel_with_meta.view() 
     plotQC(qc_channel_with_meta)
     multiqc_channel = plotQC.out.qc_channel
 
