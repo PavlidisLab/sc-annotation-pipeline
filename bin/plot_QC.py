@@ -29,12 +29,12 @@ import math
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
     parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/18/fecb53daa7bb744fa83e3806c0b2aa/Velmeshev_et_al.1.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/18/fecb53daa7bb744fa83e3806c0b2aa/Velmeshev_et_al.1_predicted_celltype.tsv")
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/5c/0b197da6150daa93cb4361598be788/GSE152715.1_raw.h5ad")
+    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/5c/0b197da6150daa93cb4361598be788/GSE152715.1_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/18/fecb53daa7bb744fa83e3806c0b2aa/Velmeshev_et_al.1_sample_meta.tsv")
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/5c/0b197da6150daa93cb4361598be788/GSE152715.1_sample_meta.tsv")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -105,7 +105,8 @@ def plot_joint_umap(query, study_name, sample_name):
         y_offset = row * img_height
         combined_img.paste(img, (x_offset, y_offset))
     # replace slashes, spaces, weird stuff
-    new_sample_name = re.sub(r"[^a-zA-Z0-9_]", "_", sample_name)
+    # fix this
+    new_sample_name = str(sample_name).replace(" ", "_").replace("\\/", "_").replace("\\", "_")
     out_path = f"{study_name}/{new_sample_name}_combined_mqc.png"
     combined_img.save(out_path)
 
@@ -145,7 +146,7 @@ def main():
     gene_mapping.set_index("ENSEMBL_ID", inplace=True) 
 
     # Load query and reference datasets
-    study_name = os.path.basename(query_path).replace(".h5ad", "")
+    study_name = os.path.basename(query_path).replace("_raw.h5ad", "")
     os.makedirs(study_name, exist_ok=True)
 
     assigned_celltypes = pd.read_csv(assigned_celltypes_path, sep=None, header=0)
@@ -155,10 +156,11 @@ def main():
     query = read_query(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
     query.obs.index = query.obs["index"]
     query.raw = query.copy()
+    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name)
+
     query = qc_preprocess(query)
     
     #plot_markers(query, markers_file, organism=organism)
-    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name)
     
     
     query_subsets = {}

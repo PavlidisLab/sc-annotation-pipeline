@@ -58,18 +58,20 @@ process processQuery {
 
     output:
     tuple val("${study_name}"), path("${study_name}.h5ad"), emit: processed_query
+    tuple val("${study_name}"), path("${study_name}_raw.h5ad"), emit: raw_query
 
-script:
+        
+    script:
 
 
-"""
+    """
 
-python $projectDir/bin/process_query.py \\
-                        --model_path ${model_path} \\
-                        --study_path ${study_path} \\
-                        --study_name ${study_name} \\
-                        --seed ${params.seed}
-"""
+    python $projectDir/bin/process_query.py \\
+                            --model_path ${model_path} \\
+                            --study_path ${study_path} \\
+                            --study_name ${study_name} \\
+                            --seed ${params.seed}
+    """
 
 }
 
@@ -138,12 +140,11 @@ process loadResults {
 
 
     """
-    ( gemma-cli deleteSingleCellData -deleteCta "sc-pipeline-${params.version}" -e ${study_name} ) || true
 
-    gemma-cli loadSingleCellData -loadCta -e ${study_name} \\
+    gemma-cli-staging loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} -preferredCta \\
                -ctaName "sc-pipeline-${params.version}" \\
-               -ctaProtocol "sc-pipeline-${params.version}" 2> "message.txt"
+               -ctaProtocol "sc-pipeline-${params.version}" 2> "message.txt" 
     """
 }
 
@@ -224,7 +225,7 @@ process publishMultiQC {
 
     script:
     """
-    gemma-cli addMetadataFile -e ${study_name} --file-type MULTIQC_REPORT ${multiqc_html} --force --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
+    gemma-cli-staging addMetadataFile -e ${study_name} --file-type MULTIQC_REPORT ${multiqc_html} --force --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
     """
 }
 
@@ -234,28 +235,6 @@ include { DOWNLOAD_STUDIES_SUBWF } from "${projectDir}/modules/subworkflows/down
 workflow {
 
 
-    //if (params.study_names) {
-
-        //// Get query names from file (including region)
-        //study_names = Channel.fromPath(params.study_names).flatMap { file ->
-            //// Read the file, split by lines, and trim any extra spaces
-            //file.readLines().collect { it.trim() }
-        //}
-        //downloadStudies(study_names)
-        //downloadStudies.out.study_channel.set { study_channel }
-
-    //} else if (params.studies_path) {
-        //study_channel = Channel.fromPath(params.studies_path).flatMap { path ->
-        //// get subdirectories
-        //def results = []
-        //path.eachDir { dir ->
-            //results << [dir.name, dir]
-            //}
-        //return results
-        //}
-    //} else {
-        //exit 1, "Error: You must provide either 'study_names' or 'studies_path'."
-    //}
     DOWNLOAD_STUDIES_SUBWF(params.study_names, params.studies_path)
 
     DOWNLOAD_STUDIES_SUBWF.out.study_channel.set { study_channel }
@@ -264,8 +243,8 @@ workflow {
     model_path = runSetup(params.organism, params.census_version)
 
     // Process each query by relabeling, subsampling, and passing through scvi model
-    processed_queries_adata = processQuery(model_path, study_channel) 
-     
+    processQuery(model_path, study_channel) 
+    processed_queries_adata = processQuery.out.processed_query 
     // Get collection names to pull from census
     ref_collections = params.ref_collections.collect { "\"${it}\"" }.join(' ') 
 
@@ -280,7 +259,9 @@ workflow {
     rfClassify(combos_adata)
 
     celltype_files = rfClassify.out.celltype_file_channel
-    celltype_files.join(processed_queries_adata, by: 0)
+
+    raw_queries = processQuery.out.raw_query
+    celltype_files.join(raw_queries, by: 0)
     .set{qc_channel}
 
     getMeta(study_channel)
@@ -288,7 +269,6 @@ workflow {
 
     qc_channel.join(meta_channel, by: 0)
     .set { qc_channel_with_meta }
-
     plotQC(qc_channel_with_meta)
     multiqc_channel = plotQC.out.qc_channel
 
