@@ -141,11 +141,10 @@ process loadResults {
 
     """
 
-    gemma-cli loadSingleCellData -loadCta -e ${study_name} \\
+    gemma-cli-staging loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} -preferredCta \\
                -ctaName "sc-pipeline-${params.version}" \\
-               -ctaProtocol "sc-pipeline-${params.version}" 2> "message.txt" \\
-               --replace-existing-cell-type-assignments
+               -ctaProtocol "sc-pipeline-${params.version}" 2> "message.txt" 
     """
 }
 
@@ -226,7 +225,7 @@ process publishMultiQC {
 
     script:
     """
-    gemma-cli addMetadataFile -e ${study_name} --file-type MULTIQC_REPORT ${multiqc_html} --force --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
+    gemma-cli-staging addMetadataFile -e ${study_name} --file-type MULTIQC_REPORT ${multiqc_html} --force --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
     """
 }
 
