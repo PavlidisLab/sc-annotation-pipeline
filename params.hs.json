@@ -4,7 +4,7 @@
     "cutoff": 0,
     "seed": 42,
     "subsample_ref": 500,
-    "studies_path": null,
+    "study_paths": null,
     "study_names": null,
     "ref_collections": [
         "Transcriptomic cytoarchitecture reveals principles of human neocortex organization",

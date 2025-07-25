@@ -5,7 +5,7 @@
     "seed": 42,
     "subsample_ref": 500,
     "study_names": null,
-    "studies_path": null,
+    "study_paths": null,
     "ref_collections": [
         "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
         "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",

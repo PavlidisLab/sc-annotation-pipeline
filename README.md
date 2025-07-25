@@ -18,10 +18,12 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 
 - Downloads SCVI model based on provided organism and CELLxGENE census version.
 - Processes query datasets using pre-trained SCVI model.
-- Pulls reference datasets from CellxGene census data given an oranism and collection name.
+- Pulls reference datasets from CellxGene census data given an organism and collection names.
 - Performs cell type classification of query datasets using a random forest model.
+- Supports individual sample processing with `process_samples` (skips QC and combines outputs).
+- Optionally loads cell-level characteristics with outlier statistics using `mask` flag.
 - Uploads re-annotated cell types to [gemma.msl.ubc.ca](https://gemma.msl.ubc.ca/home.html)
-- Summarizes QC metrics per-sample in a custome MutliQC report.
+- Summarizes QC metrics per-sample in a custom MultiQC report.
 - Saves runtime parameters and outputs in a specified directory.
 
 ---
@@ -48,13 +50,13 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 To run re-annotation with from a list of study names with default parameters:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --study_names <study_names_file.txt> 
+nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --study_names <study_name_1> <study_name_2>
 ```
 
 To run with pre-downloaded MEX files, provide a path to a parent directory with all MEX files. If you only have one study, make sure to place it in a parent directory, or each sample will be trated as a separate Gemma experiment:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --studies_path <path_to_gemma_experiments>
+nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --study_paths <path_to_gemma_experiments>
 ```
 
 The `params.json` file can be passed instead of all command-line parameters. Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line (see [Input](#input) section for details). Examples of the params file can be found in `params.hs.json` and `params.mm.json`. 
@@ -91,7 +93,7 @@ nextflow run sc-annotate.nf -profile conda \
   --census_version 2024-07-01 \
   --subsample_ref 500 \
   --nmads 5 \
-  --studies_path test_mouse/ \
+  --study_paths path_to_mouse_mex/ \
   --subsample_ref 500 \
   --ref_collections [
         "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
@@ -115,7 +117,14 @@ nextflow run sc-annotate.nf -profile conda \
 
 ## Input
 
-A text file with the names of studies to be downloaded, annotated, and uploaded back to Gemma. Names are separated by newline. See `study_names_mouse.txt` for example. Alternatively, the path to a parent directory where sub-directories are experiments downloaded in MEX format from Gemma.
+You must provide either:
+
+- `--study_name` — a study name to download from Gemma  
+**or**
+- `--study_paths` — path to a directory containing MEX-formatted study folders
+
+Multiple names or paths may be provided on the command line separated by space, or in the `params` file.
+
 
 ### Parameters
 
@@ -125,7 +134,7 @@ A text file with the names of studies to be downloaded, annotated, and uploaded 
 | `--census_version`           | The version of the single-cell census to use (do not change from default).                                    |
 | `--outdir`                   | Directory where output files will be saved.                                                                   |
 | `--study_names`              | Path to a file listing study names to include in the analysis. See `study_names_mouse.txt` for example.       |
-| `--studies_path`             | Path to a parent directory containing sub-directories of individual experiments                               |
+| `--study_paths`             | Path to a parent directory containing sub-directories of individual experiments                               |
 | `--subsample_ref`            | Number of cells per cell type to subsample from the reference dataset.                                        |
 | `--ref_collections`          | A space-separated list of quoted reference collection names to use for annotation.                            |
 | `--seed`                     | Random seed for reproducibility of subsampling and processing.                                                |
@@ -174,14 +183,14 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 
 ### MultiQC report
 
-The pipeline will generate a custome MultiQC report for each experiment. This is a beta feature which may be expanded to flagging cells as outliers. See the following examples of experiments with high and low concordance between author cell type annotations and pipeline predictions:
+The pipeline will generate a custome MultiQC report for each experiment. This is a beta feature which may be expanded to flagging cells as outliers. See the following example:
+
+ [Velmesheve et al - PFC Subset](https://github.com/PavlidisLab/sc-annotation-pipeline/tree/development/images/multiqc/Velmeshev_et_al.1) -- high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
 
 
-1. [GSE180670](https://github.com/PavlidisLab/sc-annotation-pipeline/tree/development/images/multiqc/GSE180670) -- poor performance, according to authors these should all be Oligodendrocytes
+If `process_samples` is false, a MultiQC report is generated per study from QC metrics.  
+If `process_samples` is true, no MultiQC report is produced.
 
-2. [PTSD Brainomics](https://github.com/PavlidisLab/sc-annotation-pipeline/tree/development/images/multiqc/PTSDBrainomics) -- high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
-
-For more info on multiQC report, see 
 
 ## Workflow Description
 
