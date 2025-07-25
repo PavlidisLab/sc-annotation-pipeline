@@ -6,7 +6,7 @@ workflow DOWNLOAD_STUDIES_SUBWF {
     // One input must be null
     // Determines whether to download studies or use pre-existing path
     study_names
-    studies_path
+    study_paths
 
     main:
     if (study_names) {
@@ -22,26 +22,26 @@ workflow DOWNLOAD_STUDIES_SUBWF {
         DOWNLOAD_STUDIES(study_names)
             .set { study_channel }
 
-    } else if (studies_path) {
+    } else if (study_paths) {
         // change to accept command line input or params input
         // separated by space
-        Channel.fromPath(params.studies_path)
-        .set { studies_path }
+        Channel.fromPath(params.study_paths)
+        .set { study_paths }
 
-        studies_path.view()
+        study_paths.view()
         // get study names from each path
-        studies_path.map { path ->
+        study_paths.map { path ->
             def name = path.getName()
             [name, path]
         }.set { study_channel }
-            //.fromPath(params.studies_path)
+            //.fromPath(params.study_paths)
             //.flatMap { path ->
                 //def results = []
                 //path.eachDir { dir -> results << [dir.name, dir] }
                 //return results
             //}
     } else {
-        exit 1, "Error: You must provide either 'study_names' or 'studies_path'."
+        exit 1, "Error: You must provide either 'study_names' or 'study_paths'."
     }
 
     emit: study_channel

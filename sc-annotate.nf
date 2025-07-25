@@ -164,10 +164,11 @@ process loadCTA {
 
     """
 
-    gemma-cli loadSingleCellData -loadCta -e ${study_name} \\
+    gemma-cli-staging loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} -preferredCta \\
                -ctaName "sc-pipeline-${params.version}" \\
                -ignoreSamplesLackingData \\
+               --replace-cell-type-assignment \\
                -ctaProtocol "sc-pipeline-${params.version}" 2> "message.txt"
     """
 }
@@ -204,11 +205,11 @@ process loadCLC {
         path "message.txt"
 
     script:
-    //     ( gemma-cli deleteSingleCellData -deleteClc "sc-pipeline-${params.version}-nmads-${params.nmads}" -e ${study_name} ) || true
+    //     ( gemma-cli-staging deleteSingleCellData -deleteClc "sc-pipeline-${params.version}-nmads-${params.nmads}" -e ${study_name} ) || true
 
     """
 
-    gemma-cli loadSingleCellData --load-cell-level-characteristics \\
+    gemma-cli-staging loadSingleCellData --load-cell-level-characteristics \\
          -e ${study_name} \\
         -clcFile ${mask_file} \\
         2>> "message.txt"
@@ -297,8 +298,7 @@ process runMultiQC {
     """
     # Combine base config with dynamic title
     cp ${params.multiqc_config} new_config.yaml
-    echo "title: \\"${study_name}\\"" >> new_config.yaml
-
+    echo 'title: "${study_name} CELLxGENE Census ${params.census_version} cutoff ${params.cutoff} MADs ${params.nmads} "' >> new_config.yaml
 
     multiqc ${qc_dir} -d ${use_config_flag}
     """
@@ -314,7 +314,7 @@ process publishMultiQC {
 
     script:
     """
-    gemma-cli addMetadataFile -e ${study_name} --file-type MULTIQC_REPORT ${multiqc_html} --force --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
+    gemma-cli-staging addMetadataFile -e ${study_name} --file-type MULTIQC_REPORT ${multiqc_html} --force --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
     """
 }
 
@@ -326,7 +326,7 @@ include { PROCESS_QUERY_COMBINED } from "$projectDir/modules/processes/process_q
 workflow {
 
 
-    DOWNLOAD_STUDIES_SUBWF(params.study_names, params.studies_path)
+    DOWNLOAD_STUDIES_SUBWF(params.study_names, params.study_paths)
     DOWNLOAD_STUDIES_SUBWF.out.study_channel.set { study_channel }
     
     // Call the setup process to download the model

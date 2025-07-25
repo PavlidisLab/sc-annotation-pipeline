@@ -3,7 +3,7 @@
 nextflow sc-annotate.nf \
 	-profile conda \
 	-params-file params.hs.json \
-	--studies_path /space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/results/homo_sapiens_subsample_ref_500_2025-07-21_13-55-05/mex/Velmeshev_et_al.2 \
+	--study_paths /space/grp/rschwartz/rschwartz/get_gemma_data.nf/psychEncode.txt_author_true_sample_split_true/mex_dirs/Velmeshev_et_al.1 \
 	-process.executor local \
 	--process_samples false \
 	--mask false \
