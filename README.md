@@ -174,13 +174,10 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 
 ### MultiQC report
 
-The pipeline will generate a custome MultiQC report for each experiment. This is a beta feature which may be expanded to flagging cells as outliers. See the following examples of experiments with high and low concordance between author cell type annotations and pipeline predictions:
+The pipeline will generate a custome MultiQC report for each experiment. This is a beta feature which may be expanded to flagging cells as outliers. See the following example of an experiment with high concordance between author cell type annotations and pipeline predictions:
 
 
-1. [GSE180670](https://github.com/PavlidisLab/sc-annotation-pipeline/tree/development/images/multiqc/GSE180670) -- poor performance, according to authors these should all be Oligodendrocytes
-
-2. [PTSD Brainomics](https://github.com/PavlidisLab/sc-annotation-pipeline/tree/development/images/multiqc/PTSDBrainomics) -- high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
-
+1. [Velmeshev et al (ACC)](https://github.com/PavlidisLab/sc-annotation-pipeline/tree/use-staging/images/multiqc/Velmeshev_et_al.2) 
 For more info on multiQC report, see 
 
 ## Workflow Description
