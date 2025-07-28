@@ -185,7 +185,7 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 
 The pipeline will generate a custome MultiQC report for each experiment. This is a beta feature which may be expanded to flagging cells as outliers. See the following example:
 
- [Velmesheve et al - PFC Subset](https://github.com/PavlidisLab/sc-annotation-pipeline/tree/development/images/multiqc/Velmeshev_et_al.1) -- high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
+ [Velmeshev et al - PFC Subset](https://github.com/PavlidisLab/sc-annotation-pipeline/tree/development/images/multiqc/Velmeshev_et_al.1) -- high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
 
 
 If `process_samples` is false, a MultiQC report is generated per study from QC metrics.  
