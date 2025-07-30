@@ -12,8 +12,10 @@ workflow DOWNLOAD_STUDIES_SUBWF {
     if (study_names) {
         // change to accept command line input or params input separated by space
         
-        Channel.from(study_names)
-            .set { study_names }
+	// Define the study name
+    Channel
+        .from(params.study_names.split(/\s+/))
+        .set { study_names }
             
             //.fromPath(params.study_names)
             //.flatMap { file -> file.readLines().collect { it.trim() } }
@@ -25,8 +27,18 @@ workflow DOWNLOAD_STUDIES_SUBWF {
     } else if (study_paths) {
         // change to accept command line input or params input
         // separated by space
-        Channel.fromPath(params.study_paths)
-        .set { study_paths }
+
+        def paths = params.study_paths
+
+        // Support both repeated flags and space‑separated string
+        if (!(paths instanceof List)) {
+            paths = paths.toString().split(/\s+/)
+        }
+
+
+        Channel
+            .from( paths.collect { file(it) } ) // convert to Path objects
+            .set { study_paths }
 
         study_paths.view()
         // get study names from each path
