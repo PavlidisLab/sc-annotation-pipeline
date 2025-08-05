@@ -30,12 +30,12 @@ from upsetplot import UpSet, from_memberships
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
     parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/a1/9f427f1ed702b94d7294e978f51c56/1051990_GSM4624687_raw.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/a1/9f427f1ed702b94d7294e978f51c56/1051990_GSM4624687_predicted_celltype.tsv")
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/1373636_5M_Tim3_cKO.5XFAD_rep2_raw.h5ad")
+    parser.add_argument('--assigned_celltypes_path', type=str, default="//space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/1373636_5M_Tim3_cKO.5XFAD_rep2_predicted_celltype.tsv")
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/a1/9f427f1ed702b94d7294e978f51c56/GSE152715.1_sample_meta.tsv")
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/GSE223423_sample_meta.tsv")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
