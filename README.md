@@ -155,8 +155,9 @@ Nextflow parameters begin with `-` (e.g. `-profile`; pipeline-specific parameter
 | `--organism`                 | The species being analyzed (one of `homo_sapiens`, `mus_musculus`).                                           |
 | `--census_version`           | The version of the single-cell census to use (do not change from default).                                    |
 | `--outdir`                   | Directory where output files will be saved.                                                                   |
-| `--study_names`              | Path to a file listing study names to include in the analysis. See `study_names_mouse.txt` for example.       |
-| `--study_paths`             | Path to a parent directory containing sub-directories of individual experiments                               |
+| `--study_names`              | Either a path to a text file containing one study name per line **or** a space‑separated, quoted list of study names |
+| `--study_paths`              | Either a path to a text file containing one directory path per line **or** a space‑separated, quoted list of directory paths |
+| `--use_staging`              | Use staging data for downloading studies instead of production.                                               |
 | `--subsample_ref`            | Number of cells per cell type to subsample from the reference dataset.                                        |
 | `--ref_collections`          | A space-separated list of quoted reference collection names to use for annotation.                            |
 | `--seed`                     | Random seed for reproducibility of subsampling and processing.                                                |
@@ -172,6 +173,7 @@ Nextflow parameters begin with `-` (e.g. `-profile`; pipeline-specific parameter
 | `--nmads`                    | Number of MADs for calling outliers in multiQC report.                                                        |
 | `-params-file`               | JSON file specifying pipeline parameters.                                                                     |
 | `-work-dir`                  | Directory for Nextflow to use as a working directory for intermediate files.                                  |
+
 
 
 As of right now, experimental factors such as tissue or batch are not incorporated into the label transfer. The sample accession (i.e. each set of .mex files) is taken as the `batch_key` for the `scvi` forward pass.
