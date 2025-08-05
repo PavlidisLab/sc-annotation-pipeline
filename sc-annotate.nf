@@ -162,9 +162,12 @@ process loadCTA {
         path "message.txt"
 
 
+
+    script:
+    def gemma_cmd = params.use_staging ? "gemma-cli-staging" : "gemma-cli"
     """
 
-    gemma-cli-staging loadSingleCellData -loadCta -e ${study_name} \\
+   ${gemma_cmd} loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} -preferredCta \\
                -ctaName "sc-pipeline-${params.version}" \\
                -ignoreSamplesLackingData \\
@@ -205,11 +208,9 @@ process loadCLC {
         path "message.txt"
 
     script:
-    //     ( gemma-cli-staging deleteSingleCellData -deleteClc "sc-pipeline-${params.version}-nmads-${params.nmads}" -e ${study_name} ) || true
-
+    def gemma_cmd = params.use_staging ? "gemma-cli-staging" : "gemma-cli"
     """
-
-    gemma-cli-staging loadSingleCellData --load-cell-level-characteristics \\
+    ${gemma_cmd} loadSingleCellData --load-cell-level-characteristics \\
          -e ${study_name} \\
         -clcFile ${mask_file} \\
         2>> "message.txt"
@@ -313,9 +314,18 @@ process publishMultiQC {
         path "**message.txt"
 
     script:
+    
+    def gemma_cmd = params.use_staging ? "gemma-cli-staging" : "gemma-cli"
+
     """
-    gemma-cli-staging addMetadataFile -e ${study_name} --file-type MULTIQC_REPORT ${multiqc_html} --force --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" 2> "message.txt"
+    ${gemma_cmd} addMetadataFile \
+    -e ${study_name} \
+    --file-type MULTIQC_REPORT ${multiqc_html} \
+    --force \
+    --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" \
+    2> message.txt
     """
+
 }
 
 include { DOWNLOAD_STUDIES_SUBWF } from "$projectDir/modules/subworkflows/download_studies.nf"

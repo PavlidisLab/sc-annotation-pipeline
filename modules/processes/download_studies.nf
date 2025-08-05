@@ -10,7 +10,8 @@ process DOWNLOAD_STUDIES {
         tuple val(study_name), path("${study_name}/")
 
     script:
+    def gemma_cmd = params.use_staging ? "gemma-cli-staging" : "gemma-cli"
     """
-    gemma-cli-staging getSingleCellDataMatrix -e $study_name --format mex --scale-type count --use-ensembl-ids -o $study_name
+    ${gemma_cmd} getSingleCellDataMatrix -e $study_name --format mex --scale-type count --use-ensembl-ids -o $study_name
     """
 }
