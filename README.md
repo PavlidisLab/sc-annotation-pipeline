@@ -46,17 +46,19 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 
 ## Usage 
 
+### Input
+
 You can provide studies either as a **space‑separated list** on the command line **or** as a file containing one entry per line.  
 The workflow will automatically detect whether you passed a list of **study names** or **paths**.
 
 
-### Run re‑annotation from study names
+#### Run from study names
 
 You can pass a space‑separated list of study names:
 
 ```
 nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
-    --study_names GSE12345 GSE67890
+    --study_names "experiment1 experiment2"
 ```
 
 Or pass a text file containing one study name per line:
@@ -66,13 +68,13 @@ nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
     --study_names studies.txt
 ```
 
-### Run with pre‑downloaded MEX files
+#### Run with pre‑downloaded MEX files
 
-If you already have MEX files, you can pass a space‑separated list of **paths** to the parent directories:
+If you already have MEX files, you can pass a space‑separated list of **paths** to the parent directories. Make sure to place the list in quotes:
 
 ```
 nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
-    --study_paths /data/gemma/experiment1 /data/gemma/experiment2
+    --study_paths "/data/gemma/experiment1 /data/gemma/experiment2"
 ```
 
 Or pass a text file containing one path per line:
@@ -82,36 +84,11 @@ nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
     --study_paths paths.txt
 ```
 
-### Examples
 
-See the `tests` directory for example bash scripts and study names/paths files.
-
-### Using a `params.json` file
-
-You can also pass a JSON parameters file instead of specifying all parameters on the command line.  
-Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line  
-(see [Input](#input) for details).
-
-Examples of parameter files are provided in:
-
-- `params.hs.json`
-- `params.mm.json`
-
-### Working directories and caching
+#### Working directories and caching
 
 Task hashes are stored by default in `.nextflow/cache`. Intermediate files for each pipeline run stored by default in the `work` directory. Both of these are necessary to resume your pipeline run with `-resume`. You can read more about caching and resuming with Nextflow [here](https://www.nextflow.io/docs/latest/cache-and-resume.html#work-directory).
 `work-dir` is an optional parameter to keep the working directory for your pipeline runs separate. It's a good idea to delete your working directory when you're finished.
-
-### Parameters
-
-Parameters are configured in order of priority:
-1. Command line arguments 
-2. `params.json`
-3. `nextflow.config`
-
-So, 1 will override 2 and 2 will override 3.
-
-Nextflow parameters begin with `-` (e.g. `-profile`; pipeline-specific parameters can be changed on the CLI with `--`).
 
 To resume from the last completed step after an error, run:
 
@@ -151,19 +128,27 @@ nextflow run sc-annotate.nf -profile conda \
   --use_staging false
 
 ```
+#### Using a `params.json` file
 
-## Input
+You can also pass a JSON parameters file instead of specifying all parameters on the command line.  
+Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line  
+(see [Input](#input) for details).
 
-You must provide either:
+Examples of parameter files are provided in:
 
-- `--study_name` — a study name to download from Gemma  
-**or**
-- `--study_paths` — path to a directory containing MEX-formatted study folders
+- `params.hs.json`
+- `params.mm.json`
 
-Multiple names or paths may be provided on the command line separated by space, or in the `params` file.
+#### Parameters
 
+Parameters are configured in order of priority:
+1. Command line arguments 
+2. `params.json`
+3. `nextflow.config`
 
-### Parameters
+So, 1 will override 2 and 2 will override 3.
+
+Nextflow parameters begin with `-` (e.g. `-profile`; pipeline-specific parameters can be changed on the CLI with `--`).
 
 | Parameter                    | Description                                                                                                  |
 |------------------------------|---------------------------------------------------------------------------------------------------------------|
