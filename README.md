@@ -46,20 +46,56 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 
 ## Usage 
 
+You can provide studies either as a **space‑separated list** on the command line **or** as a file containing one entry per line.  
+The workflow will automatically detect whether you passed a list of **study names** or **paths**.
 
-To run re-annotation with from a list of study names with default parameters:
+
+### Run re‑annotation from study names
+
+You can pass a space‑separated list of study names:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --study_names <study_name_1> <study_name_2>
+nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+    --study_names GSE12345 GSE67890
 ```
 
-To run with pre-downloaded MEX files, provide a path to a parent directory with all MEX files. If you only have one study, make sure to place it in a parent directory, or each sample will be trated as a separate Gemma experiment:
+Or pass a text file containing one study name per line:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json --study_paths <path_to_gemma_experiments>
+nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+    --study_names studies.txt
 ```
 
-The `params.json` file can be passed instead of all command-line parameters. Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line (see [Input](#input) section for details). Examples of the params file can be found in `params.hs.json` and `params.mm.json`. 
+### Run with pre‑downloaded MEX files
+
+If you already have MEX files, you can pass a space‑separated list of **paths** to the parent directories:
+
+```
+nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+    --study_paths /data/gemma/experiment1 /data/gemma/experiment2
+```
+
+Or pass a text file containing one path per line:
+
+```
+nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+    --study_paths paths.txt
+```
+
+### Examples
+
+See the `tests` directory for example bash scripts and study names/paths files.
+
+### Using a `params.json` file
+
+You can also pass a JSON parameters file instead of specifying all parameters on the command line.  
+Inside `params.json`, you should declare the `ref_collections` parameter, as it is difficult to pass on the command line  
+(see [Input](#input) for details).
+
+Examples of parameter files are provided in:
+
+- `params.hs.json`
+- `params.mm.json`
 
 ### Working directories and caching
 
@@ -111,7 +147,8 @@ nextflow run sc-annotate.nf -profile conda \
   --original_celltype_columns /space/grp/Pipelines/sc-annotation-pipelinecell_annotation_cortex.nf/meta/author_cell_annotations/original_celltype_columns.tsv \
   --gene_mapping /space/grp/Pipelines/sc-annotation-pipelinecell_annotation_cortex.nf/meta/gemma_genes.tsv \
   --multiqc_config /space/grp/Pipelines/sc-annotation-pipelinecell_annotation_cortex.nf/meta/multiqc_config.yaml \
-  --version 1.1.0
+  --version 1.1.0 \
+  --use_staging false
 
 ```
 
