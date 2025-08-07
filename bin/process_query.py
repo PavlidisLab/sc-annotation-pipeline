@@ -13,8 +13,7 @@ import warnings
 import cellxgene_census
 import cellxgene_census.experimental
 import scvi
-import adata_functions
-from adata_functions import *
+from utils import *
 from pathlib import Path
 import argparse
 import os
@@ -100,7 +99,7 @@ def main():
   combined_adata.obs_names = combined_adata.obs["cell_id"].astype(str) + "_" + combined_adata.obs["sample_id"].astype(str)
   # save unprocessed adata
   combined_adata.write_h5ad(f"{study_name}_raw.h5ad")
-  combined_adata = process_query(combined_adata, model_path, batch_key="sample_id")
+  combined_adata = process_query(combined_adata, model_path, batch_key="sample_id", seed=SEED)
   combined_adata.write_h5ad(f"{study_name}.h5ad")
 
   

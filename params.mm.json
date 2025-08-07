@@ -5,7 +5,7 @@
     "seed": 42,
     "subsample_ref": 500,
     "study_names": null,
-    "studies_path": null,
+    "study_paths": null,
     "ref_collections": [
         "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
         "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
@@ -17,5 +17,7 @@
     "rename_file": "/space/grp/Pipelines/sc-annotation-pipeline/meta/rename_cells_mmus_author.tsv",
     "nmads": 5,
     "author_annotations_path": "/space/grp/Pipelines/sc-annotation-pipeline/meta/author_cell_annotations",
-    "original_celltype_columns": "/space/grp/Pipelines/sc-annotation-pipeline/meta/original_celltype_columns.tsv"
+    "original_celltype_columns": "/space/grp/Pipelines/sc-annotation-pipeline/meta/original_celltype_columns.tsv",
+    "mask": false,
+    "process_samples": false
 }

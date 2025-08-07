@@ -14,8 +14,7 @@ import cellxgene_census
 import cellxgene_census.experimental
 import scvi
 from sklearn.ensemble import RandomForestClassifier
-import adata_functions
-from adata_functions import *
+from utils import *
 from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -76,7 +75,7 @@ def main():
     os.makedirs(query_name, exist_ok=True)
     
     filtered_obs = query.obs[["sample_id","cell_id","cell_type", "cell_type_uri"]]
-    filtered_obs.to_csv(os.path.join(query_name,f"{query_name}_predicted_celltype.tsv"), sep="\t", index=False)
+    filtered_obs.to_csv(f"{query_name}_predicted_celltype.tsv", sep="\t", index=False)
 
 if __name__ == "__main__":
     main()
