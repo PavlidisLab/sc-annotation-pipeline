@@ -7,5 +7,5 @@ nextflow sc-annotate.nf \
 	-process.executor local \
 	--process_samples false \
 	-resume \
-	--mask false 
+	--mask 
 	
