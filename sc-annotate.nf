@@ -167,11 +167,7 @@ process loadCTA {
     def gemma_cmd = params.use_staging ? "gemma-cli-staging" : "gemma-cli"
     """
 
-<<<<<<< HEAD
-    gemma-cli loadSingleCellData -loadCta -e ${study_name} \\
-=======
    ${gemma_cmd} loadSingleCellData -loadCta -e ${study_name} \\
->>>>>>> use-staging
                -ctaFile ${celltype_file} -preferredCta \\
                -ctaName "sc-pipeline-${params.version}" \\
                -ignoreSamplesLackingData \\
