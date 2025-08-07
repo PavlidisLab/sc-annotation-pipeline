@@ -180,20 +180,20 @@ process combineCLC {
         "${params.outdir}/${study_name}/masks", mode: 'copy'
     )
      input:
-        tuple val(study_name), val(query_names), val(metric), path(combined_mask_files)
+        tuple val(study_name), path(combined_mask_files)
 
     output :
-       tuple val(study_name), val(metric), path("${study_name}_${metric}_combined_celltype_mask.tsv"), emit: celltype_mask_files
+       tuple val(study_name), path("${study_name}_combined_celltype_mask.tsv"), emit: celltype_mask_files
 
     script:
     """
     # Combine all celltype files into one and only take header from the first file
      # Extract header from first file
-    head -n 1 \$(ls ${combined_mask_files} | head -n 1) > ${study_name}_${metric}_combined_celltype_mask.tsv
+    head -n 1 \$(ls ${combined_mask_files} | head -n 1) > ${study_name}_combined_celltype_mask.tsv
 
     # Append all lines excluding header from all files
     for f in ${combined_mask_files}; do
-        tail -n +2 "\$f" >> ${study_name}_${metric}_combined_celltype_mask.tsv
+        tail -n +2 "\$f" >> ${study_name}_combined_celltype_mask.tsv
     done
     """
 
@@ -201,7 +201,7 @@ process combineCLC {
 
 process loadCLC {
     input:
-        tuple val(study_name), val(metric), path(mask_file)
+        tuple val(study_name), path(mask_file)
 
     output:
         path "message.txt"
@@ -212,8 +212,8 @@ process loadCLC {
     ${gemma_cmd} loadSingleCellData --load-cell-level-characteristics \\
         -e ${study_name} \\
         -clcFile "${mask_file}" \\
-        -clcName counts_outlier,genes_outlier,hb_outlier,mito_outlier,predicted_doublet,ribo_outlier,umi_outlier \\
         -replaceClc \\
+        -clcName counts_outlier,genes_outlier,hb_outlier,mito_outlier,predicted_doublet,ribo_outlier,umi_outlier \\
         2>> "message.txt"
     """
 }
@@ -244,7 +244,7 @@ process processQC {
     output:
     path "**png"
     tuple val(study_name), path("${query_name}/"), emit: qc_channel
-    tuple val(study_name), val(query_name), path("${query_name}**mask.tsv"), emit: mask_files
+    tuple val(study_name), path("${query_name}**mask.tsv"), emit: mask_files
 
 
     script:
@@ -414,14 +414,14 @@ workflow {
         // If process_samples is true, we will combine the mask files
         // for each study into one file
         // need to combine mask files for each study
-        mask_files.flatMap { study_name, query_name, mask_files ->
+      //  mask_files.flatMap { study_name, query_name, mask_files ->
             // Rename the mask file to include the query name
-            mask_files.collect { mask_file ->
-            def metric = mask_file.getName().split("_")[2]
-            [ study_name, query_name, metric, mask_file ]
-            }
-        }.set { mask_files }
-        mask_files.groupTuple(by: [0,2])
+            //mask_files.collect { mask_file ->
+            //def metric = mask_file.getName().split("_")[2]
+            //[ study_name, query_name, metric, mask_file ]
+            //}
+       // }.set { mask_files }
+        mask_files.groupTuple(by: 0)
         .set{ combined_mask_files }
         combineCLC(combined_mask_files)
         celltype_mask_files = combineCLC.out.celltype_mask_files
@@ -430,6 +430,8 @@ workflow {
         celltype_mask_files = mask_files
     } 
 
+    // view
+    celltype_mask_files.view()
 
     if (params.mask) {
         //// If mask is true, we will load the cell-level characteristics
