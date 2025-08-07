@@ -4,7 +4,7 @@
     "cutoff": 0,
     "seed": 42,
     "subsample_ref": 500,
-    "studies_path": null,
+    "study_paths": null,
     "study_names": null,
     "ref_collections": [
         "Transcriptomic cytoarchitecture reveals principles of human neocortex organization",
@@ -12,5 +12,7 @@
     ],
     "organ": "brain",
     "rename_file": "/space/grp/Pipelines/sc-annotation-pipeline/meta/rename_cells_hsap.tsv",
-    "nmads": 5
+    "nmads": 5,
+    "mask": false,
+    "process_samples": false
 }

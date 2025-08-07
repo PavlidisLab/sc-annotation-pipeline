@@ -1,35 +1,66 @@
 include { DOWNLOAD_STUDIES } from "${projectDir}/modules/processes/download_studies.nf"
 
 workflow DOWNLOAD_STUDIES_SUBWF {
-    
+
     take:
-    // One input must be null
-    // Determines whether to download studies or use pre-existing path
     study_names
-    studies_path
+    study_paths
 
     main:
+
     if (study_names) {
-        Channel
-            .fromPath(params.study_names)
-            .flatMap { file -> file.readLines().collect { it.trim() } }
-            .set { study_names }
+        // read from file or space‑separated list
+        study_channel = (
+            file(study_names).exists() && file(study_names).isFile()
+                ? Channel.from(
+                      file(study_names)
+                          .readLines()
+                          .collect { it.trim() }
+                          .findAll { it }
+                          .collect { it }
+                  )
+                : Channel.from(
+                      study_names
+                          .toString()
+                          .split(/\s+/)
+                          .findAll { it }
+                          .collect { it }
+                  )
+        )
 
-        DOWNLOAD_STUDIES(study_names)
-            .set { study_channel }
+        study_channel = DOWNLOAD_STUDIES(study_channel)
 
-    } else if (studies_path) {
-        study_channel = Channel
-            .fromPath(params.studies_path)
-            .flatMap { path ->
-                def results = []
-                path.eachDir { dir -> results << [dir.name, dir] }
-                return results
-            }
-    } else {
-        exit 1, "Error: You must provide either 'study_names' or 'studies_path'."
+    }
+    else if (study_paths) {
+        // read from file or space‑separated list
+        study_channel = (
+            file(study_paths).exists() && file(study_paths).isFile()
+                ? Channel.from(
+                      file(study_paths)
+                          .readLines()
+                          .collect { it.trim() }
+                          .findAll { it }
+                          .collect { path ->
+                              def p = file(path)
+                              [p.getName(), p]
+                          }
+                  )
+                : Channel.from(
+                      study_paths
+                          .toString()
+                          .split(/\s+/)
+                          .findAll { it }
+                          .collect { path ->
+                              def p = file(path)
+                              [p.getName(), p]
+                          }
+                  )
+        )
+    }
+    else {
+        exit 1, "Error: You must provide either 'study_names' or 'study_paths'."
     }
 
-    emit: study_channel
-    
+    emit:
+    study_channel
 }

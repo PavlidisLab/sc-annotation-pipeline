@@ -7,6 +7,7 @@ sncg GABAergic cortical interneuron	SNCG	SNCG	GABAergic	mus_musculus
 neural stem cell	HES5, NES, SOX2, DLX2	Neural stem cell	Neuroglioblast	mus_musculus
 L4/5 intratelencephalic projecting glutamatergic neuron	RORB	L4/5 IT	Glutamatergic	mus_musculus
 L2/3 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2	L2/3 IT	Glutamatergic	mus_musculus
+L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB, SLC30A3	L2/3-6 IT	Glutamatergic	mus_musculus
 L6 corticothalamic-projecting glutamatergic cortical neuron	FOXP2, TLE4, SEMA3E	L6 CT	Glutamatergic	mus_musculus
 L6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB, SEMA3E	L6 IT	Glutamatergic	mus_musculus
 L5/6 near-projecting glutamatergic neuron	FOXP2, TLE4, SLC17A8	L5/6 NP	Glutamatergic	mus_musculus
@@ -22,7 +23,7 @@ ependymal cell	TUBA1A, FOXJ1	Ependymal	Non-neuron	mus_musculus
 dentate gyrus hippocampal neuron	PROX1	DG	Glutamatergic	mus_musculus
 CA3 hippocampal neuron	BOK, FXYDZ	CA3	Glutamatergic	mus_musculus
 CA2-IG-FC hippocampal neuron	AMIGO2, RAMP3	CA2-IG-FC	Glutamatergic	mus_musculus
-L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB	L2/3-6 IT	Glutamatergic	mus_musculus
+L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB, SLC30A3	L2/3-6 IT	Glutamatergic	mus_musculus
 near-projecting glutamatergic cortical neuron	FOXP2, TLE4, SLC17A8	L5/6 NP	Glutamatergic	mus_musculus
 vascular leptomeningeal cell	DCN, LUM, COL1A1, COL5A1	VLMC	Non-neuron	mus_musculus
 central nervous system macrophage	CD45, CD44	CNS macrophage	Non-neuron	mus_musculus
