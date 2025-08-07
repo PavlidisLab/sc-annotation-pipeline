@@ -170,8 +170,8 @@ process loadCTA {
    ${gemma_cmd} loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} -preferredCta \\
                -ctaName "sc-pipeline-${params.version}" \\
-               -ignoreSamplesLackingData \\
-               -ctaProtocol "sc-pipeline-${params.version}" 2> "message.txt"
+               -ctaProtocol "sc-pipeline-${params.version}" \\
+               -ignoreSamplesLackingData 2> "message.txt"
     """
 }
 
@@ -210,8 +210,10 @@ process loadCLC {
     def gemma_cmd = params.use_staging ? "gemma-cli-staging" : "gemma-cli"
     """
     ${gemma_cmd} loadSingleCellData --load-cell-level-characteristics \\
-         -e ${study_name} \\
-        -clcFile ${mask_file} \\
+        -e ${study_name} \\
+        -clcFile "${mask_file}" \\
+        -clcName counts_outlier,genes_outlier,hb_outlier,mito_outlier,predicted_doublet,ribo_outlier,umi_outlier \\
+        -replaceClc \\
         2>> "message.txt"
     """
 }
