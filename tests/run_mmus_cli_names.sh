@@ -5,7 +5,8 @@ nextflow sc-annotate.nf \
 	-params-file params.mm.json \
 	--study_names "GSE124952 GSE185454" \
 	-process.executor local \
-	--process_samples false \
+	--process_samples \
+	--use_staging \
 	-resume \
 	--mask 
 	
