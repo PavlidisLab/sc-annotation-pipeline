@@ -420,7 +420,7 @@ def qc_preprocess(query):
         batch_key=None
     else:
         batch_key="sample_id"
-    #sc.pp.scrublet(query, batch_key=batch_key)
+    sc.pp.scrublet(query, batch_key=batch_key)
     # log normalize, comput neighbors and umap
     sc.pp.normalize_total(query, target_sum=1e4)
     sc.pp.log1p(query)
