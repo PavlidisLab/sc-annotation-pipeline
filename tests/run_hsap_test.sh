@@ -1,6 +1,6 @@
 #!/bin/bash
 
-nextflow sc-annotate.nf \
+nextflow main.nf \
 	-profile conda \
 	-params-file params.hs.json \
 	--study_names tests/study_names_human.txt \

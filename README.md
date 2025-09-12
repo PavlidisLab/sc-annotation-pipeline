@@ -57,14 +57,14 @@ The workflow will automatically detect whether you passed a list of **study name
 You can pass a space‑separated list of study names:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+nextflow run main.nf -profile conda -params-file params.mm.json \
     --study_names "experiment1 experiment2"
 ```
 
 Or pass a text file containing one study name per line:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+nextflow run main.nf -profile conda -params-file params.mm.json \
     --study_names studies.txt
 ```
 
@@ -73,14 +73,14 @@ nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
 If you already have MEX files, you can pass a space‑separated list of **paths** to the parent directories. Make sure to place the list in quotes:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+nextflow run main.nf -profile conda -params-file params.mm.json \
     --study_paths "/data/gemma/experiment1 /data/gemma/experiment2"
 ```
 
 Or pass a text file containing one path per line:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+nextflow run main.nf -profile conda -params-file params.mm.json \
     --study_paths paths.txt
 ```
 
@@ -93,7 +93,7 @@ Task hashes are stored by default in `.nextflow/cache`. Intermediate files for e
 To resume from the last completed step after an error, run:
 
 ```
-nextflow run sc-annotate.nf -profile conda -resume -params-file <params file> -work-dir <working directory>
+nextflow run main.nf -profile conda -resume -params-file <params file> -work-dir <working directory>
 ```
 
 #### Defaults
@@ -101,7 +101,7 @@ nextflow run sc-annotate.nf -profile conda -resume -params-file <params file> -w
 Default parameters for mouse are as follows. You don't need to worry about the majority of these parameters; they have been defined for you in the appropriate `params.json` file (for human and mouse) or in the `nextflow.config` defaults. For reference: 
 
 ```
-nextflow run sc-annotate.nf -profile conda \
+nextflow run main.nf -profile conda \
   --organism mus_musculus \
   --census_version 2024-07-01 \
   --subsample_ref 500 \
