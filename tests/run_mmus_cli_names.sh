@@ -1,6 +1,6 @@
 #!/bin/bash
 
-nextflow sc-annotate.nf \
+nextflow main.nf \
 	-profile conda \
 	-params-file params.mm.json \
 	--study_names "GSE124952 GSE185454" \
