@@ -13,6 +13,6 @@
     "organ": "brain",
     "rename_file": "/space/grp/Pipelines/sc-annotation-pipeline/meta/rename_cells_hsap.tsv",
     "nmads": 5,
-    "mask": false,
-    "process_samples": false
+    "mask": true,
+    "process_samples": true
 }
