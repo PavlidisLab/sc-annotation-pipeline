@@ -23,9 +23,9 @@ import gzip
     
 def parse_arguments():
   parser = argparse.ArgumentParser(description="Download model file based on organism, census version, and tree file.")
-  parser.add_argument('--model_path', type=str, default="/space/grp/rschwartz/rschwartz/biof501_proj/scvi-mus_musculus-2024-07-01", help='Path to the scvi model file')
-  parser.add_argument('--query_name', type=str, default="1051989_GSM4624688", help='Name of the study')
-  parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/d9/1e3df0f6b9d5110c28514f5639bc97/GSE152715.1/1051989_GSM4624688", help='Path to the study file')
+  parser.add_argument('--model_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/31/eda2bebc822637d00e3b8963b1d11f/scvi-homo_sapiens-2024-07-01", help='Path to the scvi model file')
+  parser.add_argument('--query_name', type=str, default="1011640_GSM7050280", help='Name of the study')
+  parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/5a/8b93c45f0cf99abbc07813af44d247/GSE225554/1011640_GSM7050280", help='Path to the study file')
   parser.add_argument('--seed', type=int, default=42)
    
   if __name__ == "__main__":
