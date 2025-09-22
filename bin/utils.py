@@ -433,16 +433,6 @@ def qc_preprocess(query):
     return query
 
 
-
-def mad(var, scale='normal'):
-    """Median Absolute Deviation. Set scale='normal' for consistency with R's default."""
-    med = np.median(var)
-    mad = np.median(np.abs(var - med))
-    if scale == 'normal':
-        return mad * 1.4826  # for normally distributed data
-    return mad
-
-
 def get_lm(query, nmads=5, scale="normal"):
     # Assume dataset is an AnnData object
     # Fit linear model: log10(n_genes_per_cell) ~ log10(counts_per_cell)
