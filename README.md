@@ -208,7 +208,7 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 
 ### MultiQC Report
 
-A custom MultiQC report is generated for each experiment by [./bin/process_QC.py]. This process also defines gene, UMI, ribosomal, hemoglobin, mitochondrial, and "counts" outliers which may be passed to Gemma for optional masking from linear models of gene expression (`--mask`). Importantly, outliers are defined using Median Absolute Deviations (MAD) per-sample in line with current [best practices](https://www.sc-best-practices.org/preprocessing_visualization/quality_control.html).
+A custom MultiQC report is generated for each experiment by [./bin/process_QC.py]. This process also defines gene, UMI, ribosomal, hemoglobin, mitochondrial, and "counts" outliers which may be passed to Gemma for optional masking from linear models of gene expression (`--mask`). Importantly, outliers are defined using Median Absolute Deviations (MAD) per-sample in line with current [best practices](https://www.sc-best-practices.org/preprocessing_visualization/quality_control.html)[4].
 
 ### Mitochondrial, Ribosomal, Hemoglobin, UMI and Genes Outliers
 
@@ -275,3 +275,4 @@ If `process_samples` is true, no MultiQC report is produced.
 1. Lim N., et al., Curation of over 10,000 transcriptomic studies to enable data reuse. Database, 2021. 
 2. CZI Single-Cell Biology Program, Shibla Abdulla, Brian Aevermann, Pedro Assis, Seve Badajoz, Sidney M. Bell, Emanuele Bezzi, et al. “CZ CELL×GENE Discover: A Single-Cell Data Platform for Scalable Exploration, Analysis and Modeling of Aggregated Data,” November 2, 2023. https://doi.org/10.1101/2023.10.30.563174.
 3. Lopez, Romain, Jeffrey Regier, Michael B. Cole, Michael I. Jordan, and Nir Yosef. “Deep Generative Modeling for Single-Cell Transcriptomics.” Nature Methods 15, no. 12 (December 2018): 1053–58. https://doi.org/10.1038/s41592-018-0229-2.
+4. Heumos, L., Schaar, A.C., Lance, C. et al. Best practices for single-cell analysis across modalities. Nat Rev Genet (2023). https://doi.org/10.1038/s41576-023-00586-w
