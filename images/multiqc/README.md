@@ -3,30 +3,28 @@
 ## Outlier definitions
 
 ### Mitochondrial, Ribosomal, Hemoglobin, UMI and Genes Outliers
-
-\[
-\text{Outlier if } 
-\left| \text{pct\_counts\_x} - \text{median}(\text{pct\_counts\_x}) \right| 
-> X \cdot \text{MAD}(\text{pct\_counts\_x}), 
+$$
+\left| \text{pct\_counts\_x} - \mathrm{median}(\text{pct\_counts\_x}) \right| 
+> X \cdot \mathrm{MAD}(\text{pct\_counts\_x}), 
 \quad x \in \{\text{mito}, \text{ribo}, \text{hb}\}
-\]
+$$
 
-where \(X = \texttt{--nmads}\) (default \(X=5\)).
+where $X = \texttt{--nmads}$ (default $X=5$).
 
 ---
 
 ### Counts Outliers
 
-\[
-\text{Outlier if } 
+$$
 \left| \ln(\text{genes} + 1) - \widehat{\ln(\text{genes}+1)} \right|
-> X \cdot \text{MAD}\!\left( \ln(\text{genes}+1) - \widehat{\ln(\text{genes}+1)} \right)
-\]
+> X \cdot \mathrm{MAD}\!\left( \ln(\text{genes}+1) - \widehat{\ln(\text{genes}+1)} \right)
+$$
 
-where the fitted values \(\widehat{\ln(\text{genes}+1)}\) come from the linear model
-\[
-\ln(\text{genes} + 1) \;\sim\; \ln(\text{counts} + 1).
-\]
+where the fitted values $\widehat{\ln(\text{genes}+1)}$ come from the linear model
+
+$$
+\ln(\text{genes} + 1) \sim \ln(\text{counts} + 1).
+$$
 
 
 ## Doublets
