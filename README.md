@@ -231,21 +231,21 @@ and $X = \texttt{--nmads}$ (default $X=5$).
 
 ### Counts Outliers
 
-So-called "counts" outliers are defined as cells whose gene content deviates by more than `--nmads` from the expected value of:
+So-called "counts" outliers are defined as cells whose gene counts deviate by more than `--nmads` from the expectation of log-linearity with UMI counts per cell.
 
-
-$$
-\ln(\mathrm{ln(gene_counts)}+1) \sim \ln(\mathrm{ln(UMI_counts)}+1).
-$$
-
-Let the residuals be:
+Let the residuals be
 
 $$
 r_i = \ln(\mathrm{genes}_i + 1) - \widehat{\ln(\mathrm{genes}_i + 1)} ,
 $$
 
+where the fitted values $\widehat{\ln(\mathrm{genes}+1)}$ come from the model
 
-Outliers are defined as:
+$$
+\ln(\mathrm{genes}+1) \sim \ln(\mathrm{counts}+1).
+$$
+
+Then mark as outliers those with
 
 $$
 \lvert r_i \rvert > X \cdot \mathrm{MAD}(r).
