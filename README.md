@@ -211,31 +211,36 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 ### Mitochondrial, Ribosomal, Hemoglobin, UMI and Genes Outliers
 
 $$
-\left|\text{pct\_counts\_x} - \mathrm{median}\bigl(\text{pct\_counts\_x}\bigr)\right|
-> X \cdot \mathrm{MAD}\bigl(\text{pct\_counts\_x}\bigr), \qquad
-x \in \{\text{mito},\ \text{ribo},\ \text{hb}\}
+\left| \mathrm{pct\_counts}_x - \operatorname{median}\!\left(\mathrm{pct\_counts}_x\right) \right|
+\;>\;
+X \cdot \operatorname{MAD}\!\left(\mathrm{pct\_counts}_x\right),
+\qquad x \in \{\mathrm{mito},\ \mathrm{ribo},\ \mathrm{hb}\}
 $$
 
 where $X = \texttt{--nmads}$ (default $X=5$).
-
 
 ---
 
 ### Counts Outliers
 
 Let the residuals be
-\[
-r_i = \ln(\text{genes}_i + 1) - \widehat{\ln(\text{genes}_i + 1)},
-\]
-where the fitted values $\widehat{\ln(\text{genes}+1)}$ come from the model
-\[
-\ln(\text{genes}+1) \sim \ln(\text{counts}+1).
-\]
+
+$$
+r_i = \ln(\mathrm{genes}_i + 1) - \widehat{\ln(\mathrm{genes}_i + 1)} ,
+$$
+
+where the fitted values $\widehat{\ln(\mathrm{genes}+1)}$ come from the model
+
+$$
+\ln(\mathrm{genes}+1) \;\sim\; \ln(\mathrm{counts}+1).
+$$
 
 Then mark as outliers those with
+
 $$
-|r_i| > X \cdot \mathrm{MAD}(r).
+\lvert r_i \rvert > X \cdot \operatorname{MAD}(r).
 $$
+
 
 ### Doublets
 Doublets are predicted with [Scanpy implementation of Scrublet algorithm](https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.scrublet.html) [Wolock et al., 2019](https://scanpy.readthedocs.io/en/stable/references.html#id75)
