@@ -207,13 +207,12 @@ one `params.txt` file stores parameters for cell type classification tasks on al
 
 ### MultiQC report
 
-
 ### Mitochondrial, Ribosomal, Hemoglobin, UMI and Genes Outliers
 
 $$
-\left| \mathrm{pct\_counts}_x - \operatorname{median}\!\left(\mathrm{pct\_counts}_x\right) \right|
+\left| \mathrm{pct\_counts}_x - \mathrm{median}\!\left(\mathrm{pct\_counts}_x\right) \right|
 \;>\;
-X \cdot \operatorname{MAD}\!\left(\mathrm{pct\_counts}_x\right),
+X \cdot \mathrm{MAD}\!\left(\mathrm{pct\_counts}_x\right),
 \qquad x \in \{\mathrm{mito},\ \mathrm{ribo},\ \mathrm{hb}\}
 $$
 
@@ -232,13 +231,13 @@ $$
 where the fitted values $\widehat{\ln(\mathrm{genes}+1)}$ come from the model
 
 $$
-\ln(\mathrm{genes}+1) \;\sim\; \ln(\mathrm{counts}+1).
+\ln(\mathrm{genes}+1) \sim \ln(\mathrm{counts}+1).
 $$
 
 Then mark as outliers those with
 
 $$
-\lvert r_i \rvert > X \cdot \operatorname{MAD}(r).
+\lvert r_i \rvert > X \cdot \mathrm{MAD}(r).
 $$
 
 
