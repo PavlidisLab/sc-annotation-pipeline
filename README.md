@@ -10,18 +10,19 @@ Nextflow pipeline designed to automatically annotate cell types from single-cell
 - [Parameters](#parameters)
 - [Input](#input)
 - [Output](#output)
+- [MultiQC Report](#multiqc-report)
 - [Workflow Description](#workflow_description)
 
 ---
 
 ## Features
 
-- Downloads SCVI model based on provided organism and CELLxGENE census version.
-- Processes query datasets using pre-trained SCVI model.
-- Pulls reference datasets from CellxGene census data given an organism and collection names.
-- Performs cell type classification of query datasets using a random forest model.
+- Downloads scVI model based on provided organism and CELLxGENE census version.
+- Generates embeddings for query data using pre-trained model.
+- Pulls reference datasets and model embeddings from CellxGene census data given an organism and collection names.
+- Performs cell type classification of query datasets using a random forest model trained on scVI embeddings.
 - Supports individual sample processing with `process_samples` (skips QC and combines outputs).
-- Optionally loads cell-level characteristics with outlier statistics using `mask` flag.
+- Optionally loads cell-level characteristics with outlier statistics using `--mask` flag.
 - Uploads re-annotated cell types to [gemma.msl.ubc.ca](https://gemma.msl.ubc.ca/home.html)
 - Summarizes QC metrics per-sample in a custom MultiQC report.
 - Saves runtime parameters and outputs in a specified directory.
@@ -57,14 +58,14 @@ The workflow will automatically detect whether you passed a list of **study name
 You can pass a space‑separated list of study names:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+nextflow run main.nf -profile conda -params-file params.mm.json \
     --study_names "experiment1 experiment2"
 ```
 
 Or pass a text file containing one study name per line:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+nextflow run main.nf -profile conda -params-file params.mm.json \
     --study_names studies.txt
 ```
 
@@ -73,14 +74,14 @@ nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
 If you already have MEX files, you can pass a space‑separated list of **paths** to the parent directories. Make sure to place the list in quotes:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+nextflow run main.nf -profile conda -params-file params.mm.json \
     --study_paths "/data/gemma/experiment1 /data/gemma/experiment2"
 ```
 
 Or pass a text file containing one path per line:
 
 ```
-nextflow run sc-annotate.nf -profile conda -params-file params.mm.json \
+nextflow run main.nf -profile conda -params-file params.mm.json \
     --study_paths paths.txt
 ```
 
@@ -93,7 +94,7 @@ Task hashes are stored by default in `.nextflow/cache`. Intermediate files for e
 To resume from the last completed step after an error, run:
 
 ```
-nextflow run sc-annotate.nf -profile conda -resume -params-file <params file> -work-dir <working directory>
+nextflow run main.nf -profile conda -resume -params-file <params file> -work-dir <working directory>
 ```
 
 #### Defaults
@@ -101,7 +102,7 @@ nextflow run sc-annotate.nf -profile conda -resume -params-file <params file> -w
 Default parameters for mouse are as follows. You don't need to worry about the majority of these parameters; they have been defined for you in the appropriate `params.json` file (for human and mouse) or in the `nextflow.config` defaults. For reference: 
 
 ```
-nextflow run sc-annotate.nf -profile conda \
+nextflow run main.nf -profile conda \
   --organism mus_musculus \
   --census_version 2024-07-01 \
   --subsample_ref 500 \
@@ -205,11 +206,60 @@ For each run, an output directory with the following structure will be written:
 one `params.txt` file stores parameters for cell type classification tasks on all of the given studies (e.g. GSE154208).
 `message.txt` is the output of `'loadSingleCellData` command which uploaded `predicted_celltypes.tsv` to Gemma.
 
-### MultiQC report
+### MultiQC Report
 
-The pipeline will generate a custome MultiQC report for each experiment. See the following example:
+A custom MultiQC report is generated for each experiment by [./bin/process_QC.py]. This process also defines gene, UMI, ribosomal, hemoglobin, mitochondrial, and "counts" outliers which may be passed to Gemma for optional masking from linear models of gene expression (`--mask`). Importantly, outliers are defined using Median Absolute Deviations (MAD) per-sample in line with current [best practices](https://www.sc-best-practices.org/preprocessing_visualization/quality_control.html)[4].
 
- [Velmeshev et al - PFC Subset](https://github.com/PavlidisLab/sc-annotation-pipeline/tree/development/images/multiqc/Velmeshev_et_al.1) -- high performance according to benchmarking results (see github.com/rachadele/evaluation_summary.nf)
+### Mitochondrial, Ribosomal, Hemoglobin, UMI and Genes Outliers
+
+The above metrics are called outliers if 
+
+$$
+\lvert M_i - \mathrm{median}(M) \rvert
+\>\
+X \cdot \mathrm{MAD}(M),
+$$
+
+where $M_i$ is the metric of interest generated by `scanpy.pp.calculate_qc_metrics`:
+
+- Mitochondrial: `pct_counts_mito`
+- Ribosomal: `pct_counts_ribo`
+- Hemoglobin: `pct_counts_hb`
+- Gene content: `log1p_n_genes_by_counts`
+- UMI content: `log1p_total_counts`
+
+and $X = \texttt{--nmads}$ (default $X=5$).
+
+### Counts Outliers
+
+So-called "counts" outliers are defined as cells whose gene counts deviate by more than `--nmads` from the expectation of log-linearity with UMI counts per cell.
+
+Let the residuals be
+
+$$
+r_i = \ln(\mathrm{genes}_i + 1) - \widehat{\ln(\mathrm{genes}_i + 1)} ,
+$$
+
+where the fitted values $\widehat{\ln(\mathrm{genes}+1)}$ come from the model
+
+$$
+\ln(\mathrm{genes}+1) \sim \ln(\mathrm{counts}+1).
+$$
+
+Then mark as outliers those with
+
+$$
+\lvert r_i - \mathrm{median}(r) \rvert > X \cdot \mathrm{MAD}(r)
+$$
+
+
+### Doublets
+Doublets are predicted with [Scanpy implementation of Scrublet algorithm](https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.scrublet.html) [Wolock et al., 2019](https://scanpy.readthedocs.io/en/stable/references.html#id75)
+
+### Examples
+
+**PTSDBrainomics** Example of a "high performing" dataset, where author's "ground truth" cell type labels were shown to largely agree with predicted cell type labels. See the pipeline multiQC report [here](./images/multiqc/PTSDBrainomics-CELLxGENE-Census-2024-07-01-cutoff-0-MADs-5-_multiqc_report.html). A [benchmarking multiQC report](./images/multiqc/PTSDBrainomics_scvi_whole_cortex_multiqc.html) was generated from https://github.com/rachadele/nextflow_eval_pipeline.
+This is not to be confused with the multiQC report generated by the re-annotation pipeline, which is agnostic to "ground truth" labels as they are not provided by authors for the majority of datasets.
 
 
 If `process_samples` is false, a MultiQC report is generated per study from QC metrics.  
@@ -225,3 +275,4 @@ If `process_samples` is true, no MultiQC report is produced.
 1. Lim N., et al., Curation of over 10,000 transcriptomic studies to enable data reuse. Database, 2021. 
 2. CZI Single-Cell Biology Program, Shibla Abdulla, Brian Aevermann, Pedro Assis, Seve Badajoz, Sidney M. Bell, Emanuele Bezzi, et al. “CZ CELL×GENE Discover: A Single-Cell Data Platform for Scalable Exploration, Analysis and Modeling of Aggregated Data,” November 2, 2023. https://doi.org/10.1101/2023.10.30.563174.
 3. Lopez, Romain, Jeffrey Regier, Michael B. Cole, Michael I. Jordan, and Nir Yosef. “Deep Generative Modeling for Single-Cell Transcriptomics.” Nature Methods 15, no. 12 (December 2018): 1053–58. https://doi.org/10.1038/s41592-018-0229-2.
+4. Heumos, L., Schaar, A.C., Lance, C. et al. Best practices for single-cell analysis across modalities. Nat Rev Genet (2023). https://doi.org/10.1038/s41576-023-00586-w
