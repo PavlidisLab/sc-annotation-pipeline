@@ -478,6 +478,7 @@ workflow.onComplete {
     exit status : ${workflow.exitStatus}
     version : ${params.version}
     outdir : ${params.outdir}
+    mex directory : ${params.cacheDir}/mex
 
     --------------------------------------------------------------------------------
     ================================================================================
