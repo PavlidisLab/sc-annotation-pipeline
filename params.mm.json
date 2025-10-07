@@ -19,5 +19,6 @@
     "author_annotations_path": "/space/grp/Pipelines/sc-annotation-pipeline/meta/author_cell_annotations",
     "original_celltype_columns": "/space/grp/Pipelines/sc-annotation-pipeline/meta/original_celltype_columns.tsv",
     "mask": true,
-    "process_samples": false
+    "process_samples": false,
+    "use_staging": true
 }
