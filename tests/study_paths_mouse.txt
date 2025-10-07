@@ -1,2 +1,0 @@
-/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/results/mus_musculus_subsample_ref_500_2025-08-07_11-28-06/mex/GSE124952
-/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/results/mus_musculus_subsample_ref_500_2025-08-07_11-28-06/mex/GSE185454
