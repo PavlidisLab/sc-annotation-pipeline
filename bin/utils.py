@@ -414,7 +414,7 @@ def is_outlier(query, metric: str, nmads=3):
 
 
 def qc_preprocess(query):
-    # check if any sample_id has fewer than 30 associated cwells
+    # check if any sample_id has fewer than 30 associated cells
     sample_counts = query.obs["sample_id"].value_counts()
     if (sample_counts < 30).any():
         batch_key=None
@@ -431,16 +431,6 @@ def qc_preprocess(query):
     sc.tl.leiden(query, resolution=0.3)
     
     return query
-
-
-
-def mad(var, scale='normal'):
-    """Median Absolute Deviation. Set scale='normal' for consistency with R's default."""
-    med = np.median(var)
-    mad = np.median(np.abs(var - med))
-    if scale == 'normal':
-        return mad * 1.4826  # for normally distributed data
-    return mad
 
 
 def get_lm(query, nmads=5, scale="normal"):

@@ -213,6 +213,7 @@ process loadCLC {
         -e ${study_name} \\
         -clcFile "${mask_file}" \\
         -replaceClc \\
+        -ignoreSamplesLackingData \\
         -clcName counts_outlier,genes_outlier,hb_outlier,mito_outlier,predicted_doublet,ribo_outlier,umi_outlier \\
         2>> "message.txt"
     """
@@ -321,7 +322,7 @@ process publishMultiQC {
     """
     ${gemma_cmd} addMetadataFile \
     -e ${study_name} \
-    --file-type MULTIQC_REPORT ${multiqc_html} \
+    --file-type ${params.use_staging ? "CELL_TYPE_ANNOTATION_PIPELINE_REPORT" : "MULTIQC_REPORT"} ${multiqc_html} \
     --force \
     --changelog-entry "sc-pipeline-${params.version} --nmads ${params.nmads}" \
     2> message.txt
