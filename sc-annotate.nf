@@ -213,6 +213,7 @@ process loadCLC {
         -e ${study_name} \\
         -clcFile "${mask_file}" \\
         -replaceClc \\
+        -ignoreSamplesLackingData \\
         -clcName counts_outlier,genes_outlier,hb_outlier,mito_outlier,predicted_doublet,ribo_outlier,umi_outlier \\
         2>> "message.txt"
     """
