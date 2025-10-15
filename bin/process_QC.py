@@ -108,8 +108,8 @@ def plot_joint_umap(query, study_name, sample_name):
         combined_img.paste(img, (x_offset, y_offset))
     # replace slashes, spaces, weird stuff
     # fix this
-    new_sample_name = str(sample_name).replace(" ", "_").replace("\\/", "_").replace("\\,", "_")
-    out_path = f"{study_name}/{new_sample_name}_outliers_mqc.png"
+    new_sample_name = re.sub(r'[^A-Za-z0-9._-]', '_', str(sample_name))
+    out_path = os.path.join(study_name, f"{new_sample_name}_outliers_mqc.png")
     combined_img.save(out_path)
 
 
@@ -164,7 +164,8 @@ def plot_upset_by_group(obs, outlier_cols, group_col, outdir):
             UpSet(data, show_counts=True).plot()
             plt.suptitle(f"{group_col} = {group}")
             plt.tight_layout()
-            plt.savefig(os.path.join(outdir, f"{group}_upset_mqc.png"))
+            new_group = re.sub(r'[^A-Za-z0-9._-]', '_', str(group))
+            plt.savefig(os.path.join(outdir, f"{new_group}_upset_mqc.png"))
             plt.close()
             if counts.empty:
                 continue
