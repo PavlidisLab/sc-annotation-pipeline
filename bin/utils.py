@@ -341,12 +341,11 @@ def rfc_pred(ref, query, ref_keys, seed):
 
 
 
-def classify_cells(query, cutoff, probabilities):
-    class_metrics = {}
+def classify_cells(query, cutoff, probabilities, ref_keys=["subclass_cell_type"], mapping_df=None):
     
     # Only use the first ref_key
-    key = "cell_type" 
-    #class_metrics[key] = {}
+    # must be ordered from most granular to highest level
+    key = ref_keys[0]
 
     # Extract the class labels and probabilities (DataFrame structure)
     class_labels = probabilities.columns.values  # Class labels are the column names
@@ -368,13 +367,32 @@ def classify_cells(query, cutoff, probabilities):
         # Direct prediction without threshold filtering
         predicted_classes = class_labels[np.argmax(class_probs, axis=1)]
     
-    # Store predictions and confidence in `query`
-    query.obs[key] = predicted_classes
-    #query["confidence"] = np.max(class_probs, axis=1)  # Store max probability as confidence
+    # Store predictions in `query`
+    query[key] = predicted_classes
+    
+    query = aggregate_preds(query, ref_keys, mapping_df)
     
     return query
 
+def aggregate_preds(query, ref_keys, mapping_df):
+    # ref keys must be ordered from most granular to highest level
+    # e.g. ["subclass_cell_type","class_cell_type","family_cell_type"]
+    query.index = query.index.astype(int)
 
+    for higher_level_key in ref_keys[1:]:  # Skip the first (most granular) level
+        # Get mapping from subclass to higher-level class
+        mapping = mapping_df.set_index(ref_keys[0])[higher_level_key].to_dict()
+
+        # Assign higher-level labels based on mapping
+        query[higher_level_key] = query["predicted_" + ref_keys[0]].map(mapping)
+
+        # Fill NA values with original subclass labels
+        # not sure why this is needed, remove
+      #  query[higher_level_key] = query[higher_level_key].fillna(query[ref_keys[0]])
+
+    return query
+    
+    
 # functions for QC plotting --------------------------
 
 def read_query(query_path, gene_mapping, new_meta, sample_meta):
