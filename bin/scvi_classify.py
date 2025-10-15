@@ -61,7 +61,7 @@ def main():
 
     # Fit a random forest classifier to the reference scvi embeddings and cell type annotations
     rfc = RandomForestClassifier(class_weight='balanced', random_state=SEED)
-    rfc.fit(ref.obsm["scvi"], ref.obs["cell_type"].values)
+    rfc.fit(ref.obsm["scvi"], ref.obs["subclass_cell_type"].values)
     
     # Predict cell type using embeddings generated from scvi model
     probs = rfc.predict_proba(query.obsm["scvi"])
