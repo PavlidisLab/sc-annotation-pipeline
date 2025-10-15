@@ -1,66 +1,66 @@
-author_cell_type	new_cell_type	cell_type_ontology_term_id
-neural stem cell	neural stem cell	CL:0000047
-neuroepithelial stem cell	neural stem cell	CL:0000047
-astrocyte	astrocyte	CL:0000127
-endothelial cell	vascular	
-ependymal cell	vascular	
-Macrophage	central nervous system macrophage	CL:0000878
-macrophage	central nervous system macrophage	CL:0000878
-microglial cell	microglial cell	CL:0000129
-oligodendrocyte	oligodendrocyte	CL:0000128
-oligodendrocyte precursor cell	oligodendrocyte precursor cell	CL:0002453
-brain pericyte	vascular	
-CD8-positive, alpha-beta T cell	leukocyte	CL:0000738
-T cell	leukocyte	CL:0000738
-mature NK T cell	leukocyte	CL:0000738
-Prog/IP	neural stem cell	CL:0000047
-Vip	VIP GABAergic cortical interneuron	CL:4023016
-Pvalb	pvalb GABAergic cortical interneuron	CL:4023018
-Sst	sst GABAergic cortical interneuron	CL:4023017
-Lamp5	lamp5 GABAergic cortical interneuron	CL:4023011
-Sncg	sncg GABAergic cortical interneuron	CL:4023015
-L5 IT	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L2/3 IT	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L6 CT	deep layer non-IT	
-L6 IT	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L5/6 NP	deep layer non-IT	
-L5 ET	deep layer non-IT	
-L6b	deep layer non-IT	
-Astro	astrocyte	CL:0000127
-Endo	vascular	
-VLMC	vascular	
-Micro	microglial cell	CL:0000129
-Oligo	oligodendrocyte	CL:0000128
-Peri	vascular	
-SMC	vascular	
-Sst Chodl	sst GABAergic cortical interneuron	CL:4023017
-CR	Cajal-Retzius cell	CL:0000695
-SUB-ProS	hippocampal neuron	CL:0002608
-Car3	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-CT SUB	deep layer non-IT	
-DG	hippocampal neuron	CL:0002608
-CA3	hippocampal neuron	CL:0002608
-CA2-IG-FC	hippocampal neuron	CL:0002608
-L3 IT ENT	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L2/3 IT CTX	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L2/3 IT PPP	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L2/3 IT ENTl	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L2 IT ENTl	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L2 IT ENTm	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L2/3 IT RHP	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L4/5 IT CTX	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L5 IT CTX	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L5 PT CTX	deep layer non-IT	
-L5/6 IT TPE-ENT	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L5 PPP	deep layer non-IT	
-L5/6 NP CTX	deep layer non-IT	
-NP PPP	deep layer non-IT	
-NP SUB	deep layer non-IT	
-L6 CT CTX	deep layer non-IT	
-L6 IT CTX	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L6 IT ENTl	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
-L6b/CT ENT	deep layer non-IT	
-L6b CTX	deep layer non-IT	
-CA1-ProS	hippocampal neuron	CL:0002608
-Micro-PVM	central nervous system macrophage	CL:0000878
-SMC-Peri	vascular	
+author_cell_type	subclass_cell_type	subclass_cell_type_uri	class_cell_type	class_cell_type_uri
+neural stem cell	neural stem cell	CL:0000047	neural stem cell	CL:0000047
+neuroepithelial stem cell	neural stem cell	CL:0000047	neural stem cell	CL:0000047
+astrocyte	astrocyte	CL:0000127	astrocyte	CL:0000127
+endothelial cell	endothelial cell	CL:0000115	vascular	
+ependymal cell	ependymal cell	CL:0000065	vascular	
+Macrophage	central nervous system macrophage	CL:0000878	central nervous system macrophage	CL:0000878
+macrophage	central nervous system macrophage	CL:0000878	central nervous system macrophage	CL:0000878
+microglial cell	microglial cell	CL:0000129	microglial cell	CL:0000129
+oligodendrocyte	oligodendrocyte	CL:0000128	oligodendrocyte	CL:0000128
+oligodendrocyte precursor cell	oligodendrocyte precursor cell	CL:0002453	oligodendrocyte precursor cell	CL:0002453
+brain pericyte	pericyte	CL:0000669	vascular	
+CD8-positive, alpha-beta T cell	T cell	CL:0000084	leukocyte	CL:0000738
+T cell	T cell	CL:0000084	leukocyte	CL:0000738
+mature NK T cell	T cell	CL:0000084	leukocyte	CL:0000738
+Prog/IP	neural stem cell	CL:0000047	neural stem cell	CL:0000047
+Vip	VIP GABAergic cortical interneuron	CL:4023016	VIP GABAergic cortical interneuron	CL:4023016
+Pvalb	pvalb GABAergic cortical interneuron	CL:4023018	pvalb GABAergic cortical interneuron	CL:4023018
+Sst	sst GABAergic cortical interneuron	CL:4023017	sst GABAergic cortical interneuron	CL:4023017
+Lamp5	lamp5 GABAergic cortical interneuron	CL:4023011	lamp5 GABAergic cortical interneuron	CL:4023011
+Sncg	sncg GABAergic cortical interneuron	CL:4023015	sncg GABAergic cortical interneuron	CL:4023015
+L5 IT	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L2/3 IT	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L6 CT	corticothalamic-projecting glutamatergic cortical neuron	CL:4023013	deep layer non-IT	
+L6 IT	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L5/6 NP	near-projecting glutamatergic cortical neuron	CL:4023012	deep layer non-IT	
+L5 ET	L5 extratelencephalic projecting glutamatergic cortical neuron	CL:4023041	deep layer non-IT	
+L6b	L6b glutamatergic cortical neuron	CL:4023038	deep layer non-IT	
+Astro	astrocyte	CL:0000127	astrocyte	CL:0000127
+Endo	endothelial cell	CL:0000115	vascular	
+VLMC	vascular leptomeningeal cell	CL:4023051	vascular	
+Micro	microglial cell	CL:0000129	microglial cell	CL:0000129
+Oligo	oligodendrocyte	CL:0000128	oligodendrocyte	CL:0000128
+Peri	pericyte	CL:0000669	vascular	
+SMC	smooth muscle cell	CL:0000192	vascular	
+Sst Chodl	sst GABAergic cortical interneuron	CL:4023017	sst GABAergic cortical interneuron	CL:4023017
+CR	Cajal-Retzius cell	CL:0000695	Cajal-Retzius cell	CL:0000695
+SUB-ProS	SUB-ProS		hippocampal neuron	CL:0002608
+Car3	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+CT SUB	corticothalamic-projecting glutamatergic cortical neuron	CL:4023013	deep layer non-IT	
+DG	dentate gyrus neuron	CL:4023062	hippocampal neuron	CL:0002608
+CA3	CA3		hippocampal neuron	CL:0002608
+CA2-IG-FC	CA2-IG-FC		hippocampal neuron	CL:0002608
+L3 IT ENT	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L2/3 IT CTX	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L2/3 IT PPP	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L2/3 IT ENTl	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L2 IT ENTl	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L2 IT ENTm	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L2/3 IT RHP	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L4/5 IT CTX	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L5 IT CTX	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L5 PT CTX	L5 extratelencephalic projecting glutamatergic cortical neuron	CL:4023041	deep layer non-IT	
+L5/6 IT TPE-ENT	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L5 PPP	L5 extratelencephalic projecting glutamatergic cortical neuron	CL:4023041	deep layer non-IT	
+L5/6 NP CTX	near-projecting glutamatergic cortical neuron	CL:4023012	deep layer non-IT	
+NP PPP	near-projecting glutamatergic cortical neuron	CL:4023012	deep layer non-IT	
+NP SUB	near-projecting glutamatergic cortical neuron	CL:4023012	deep layer non-IT	
+L6 CT CTX	corticothalamic-projecting glutamatergic cortical neuron	CL:4023013	deep layer non-IT	
+L6 IT CTX	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L6 IT ENTl	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040
+L6b/CT ENT	L6b glutamatergic cortical neuron	CL:4023038	deep layer non-IT	
+L6b CTX	L6b glutamatergic cortical neuron	CL:4023038	deep layer non-IT	
+CA1-ProS	CA1-ProS		hippocampal neuron	CL:0002608
+Micro-PVM	central nervous system macrophage	CL:0000878	central nervous system macrophage	CL:0000878
+SMC-Peri	smooth muscle cell	CL:0000192	vascular	
