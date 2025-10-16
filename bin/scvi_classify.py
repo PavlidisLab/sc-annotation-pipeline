@@ -84,12 +84,10 @@ def main():
         query[f"{key}_uri"] = f"http://purl.obolibrary.org/obo/" + query[f"{key}_ontology_term_id"].str.replace(":","_")
         # drop original ontology term id column
         query.drop(columns=[f"{key}_ontology_term_id"], inplace=True)
-        
-    os.makedirs(query_name, exist_ok=True)
-
-    columns_to_keep = ["sample_id", "cell_id"] + [key for key in ref_keys] + [f"{key}_uri" for key in ref_keys]
-    filtered_obs = query[columns_to_keep]
-    filtered_obs.to_csv(f"{query_name}_predicted_celltype.tsv", sep="\t", index=False)
+    
+        columns_to_keep = ["sample_id", "cell_id"] + [key] + [f"{key}_uri"]
+        filtered_obs = query[columns_to_keep]
+        filtered_obs.to_csv(f"{query_name}_{key}_predicted_celltype.tsv", sep="\t", index=False)
 
 if __name__ == "__main__":
     main()
