@@ -117,7 +117,7 @@ process rfClassify{
     input:
     tuple val(study_name), val(query_name), val(query_path), val(ref_path)
 
-    output:
+    output: // change to account for multiple levels of granularity
     tuple val{study_name}, val(query_name), path("${query_name}_predicted_celltype.tsv"), emit : celltype_file_channel
 
     script:
