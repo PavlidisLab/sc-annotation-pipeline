@@ -341,7 +341,7 @@ def rfc_pred(ref, query, ref_keys, seed):
 
 
 
-def classify_cells(query, cutoff, probabilities, ref_keys=["subclass_cell_type"], mapping_df=None):
+def classify_cells(query, cutoff, probabilities, ref_keys=["subclass_cell_type","class_cell_type"], mapping_df=None):
     
     # Only use the first ref_key
     # must be ordered from most granular to highest level
@@ -369,27 +369,28 @@ def classify_cells(query, cutoff, probabilities, ref_keys=["subclass_cell_type"]
     
     # Store predictions in `query`
     query[key] = predicted_classes
-    
-    query = aggregate_preds(query, ref_keys, mapping_df)
-    
+
+    query = aggregate_labels(query=query, mapping_df=mapping_df, ref_keys=ref_keys, predicted=False)
+
     return query
 
-def aggregate_preds(query, ref_keys, mapping_df):
-    # ref keys must be ordered from most granular to highest level
-    # e.g. ["subclass_cell_type","class_cell_type","family_cell_type"]
+
+def aggregate_labels(query: pd.DataFrame, mapping_df: pd.DataFrame, ref_keys: list, predicted=False):
+    """
+    Aggregate subclass labels or predicted labels to higher levels using mapping_df.
+    If predicted=True, operates on columns like 'predicted_subclass', otherwise on obs columns.
+    """
     query.index = query.index.astype(int)
-
-    for higher_level_key in ref_keys[1:]:  # Skip the first (most granular) level
-        # Get mapping from subclass to higher-level class
-        mapping = mapping_df.set_index(ref_keys[0])[higher_level_key].to_dict()
-
-        # Assign higher-level labels based on mapping
-        query[higher_level_key] = query["predicted_" + ref_keys[0]].map(mapping)
-
-        # Fill NA values with original subclass labels
-        # not sure why this is needed, remove
-      #  query[higher_level_key] = query[higher_level_key].fillna(query[ref_keys[0]])
-
+    for i in range(1, len(ref_keys)):
+        lower_key = ref_keys[i-1]
+        higher_level_key = ref_keys[i]
+        mapping = mapping_df.set_index(lower_key)[higher_level_key].to_dict()
+        if predicted:
+            query["predicted_" + higher_level_key] = query["predicted_" + lower_key].map(mapping)
+            query["predicted_" + higher_level_key] = query["predicted_" + higher_level_key].fillna(query["predicted_" + lower_key])
+        else:
+            query[higher_level_key] = query[lower_key].map(mapping)
+            query[higher_level_key] = query[higher_level_key].fillna(query[lower_key])
     return query
     
     
