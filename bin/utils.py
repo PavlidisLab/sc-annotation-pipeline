@@ -60,7 +60,7 @@ def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotatio
     # change to handle author_cell_type as first column name of rename df (distinguishes between author and cellxgene annotations)
     rename_df = pd.read_csv(rename_file, sep=None)
     rename_key = rename_df.columns[0]
-
+    rename_cell_type = rename_df.columns[1]
     # Filter cells to keep only those with valid new cell types
     # this replaces the "restricted cell types" command line argument
     # not working for "glutamatergic neuron" in human
@@ -68,13 +68,13 @@ def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotatio
     obs = obs[obs[rename_key].isin(rename_df[rename_key])]
  
     # Create mapping dictionaries
-    rename_mapping = dict(zip(rename_df[rename_key], rename_df['new_cell_type']))
-    ontology_mapping = dict(zip(rename_df['new_cell_type'], rename_df['cell_type_ontology_term_id']))
+    rename_mapping = dict(zip(rename_df[rename_key], rename_df[rename_cell_type]))
+    ontology_mapping = dict(zip(rename_df[rename_cell_type], rename_df[rename_cell_type + "_uri"]))
     
     # Apply renaming
-    obs['cell_type'] = obs[rename_key].replace(rename_mapping)  
-    obs["cell_type_ontology_term_id"] = obs["cell_type"].map(ontology_mapping)
-    
+    obs[rename_cell_type] = obs[rename_key].replace(rename_mapping)  
+    obs[rename_cell_type + "_uri"] = obs[rename_cell_type].map(ontology_mapping)
+
     return obs
 
 
