@@ -21,6 +21,9 @@ from pathlib import Path
 import subprocess
 from scipy.stats import median_abs_deviation
 from statsmodels.formula.api import ols
+import warnings
+# silence warnings
+warnings.filterwarnings("ignore")
 
 
 def setup(organism="homo_sapiens", version="2024-07-01"):
@@ -341,7 +344,7 @@ def rfc_pred(ref, query, ref_keys, seed):
 
 
 
-def classify_cells(query, cutoff, probabilities, ref_keys=["subclass_cell_type","class_cell_type"], mapping_df=None):
+def classify_cells(query:pd.DataFrame, cutoff: float, probabilities: pd.DataFrame, ref_keys=["subclass_cell_type","class_cell_type"], mapping_df=None):
     
     # Only use the first ref_key
     # must be ordered from most granular to highest level
@@ -380,7 +383,6 @@ def aggregate_labels(query: pd.DataFrame, mapping_df: pd.DataFrame, ref_keys: li
     Aggregate subclass labels or predicted labels to higher levels using mapping_df.
     If predicted=True, operates on columns like 'predicted_subclass', otherwise on obs columns.
     """
-    query.index = query.index.astype(int)
     for i in range(1, len(ref_keys)):
         lower_key = ref_keys[i-1]
         higher_level_key = ref_keys[i]
@@ -555,14 +557,14 @@ def get_gene_to_celltype_map(df, organism="mus_musculus"):
     return gene_ct_dict
 
 
-def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_name=""):
+def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_name="", cell_type_key="subclass_cell_type"):
     # Drop vars with NaN feature names
     query = query[:, ~query.var["feature_name"].isnull()]
     query.var_names = query.var["feature_name"]
     
     markers_df = pd.read_csv(markers_file, sep="\t")
     markers_df = markers_df[markers_df["organism"] == organism]
-    ontology_mapping = markers_df.set_index("cell_type")["shortname"].to_dict()
+    ontology_mapping = markers_df.set_index(cell_type_key)["shortname"].to_dict()
    
     #Make raw index match processed var index
     query.raw.var.index = query.raw.var["feature_name"]
@@ -577,7 +579,7 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
     expr_matrix = query.raw.X.toarray()
     expr_matrix = pd.DataFrame(expr_matrix, index=query.obs.index, columns=query.raw.var.index)
     
-    avg_expr = expr_matrix.groupby(query.obs["cell_type"]).mean()
+    avg_expr = expr_matrix.groupby(query.obs[cell_type_key]).mean()
     avg_expr = avg_expr.loc[:, valid_markers]
     
     # Scale expression across genes

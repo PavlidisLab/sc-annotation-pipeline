@@ -117,13 +117,19 @@ process rfClassify{
     input:
     tuple val(study_name), val(query_name), val(query_path), val(ref_path)
 
-    output: // change to account for multiple levels of granularity
-    tuple val{study_name}, val(query_name), path("${query_name}_predicted_celltype.tsv"), emit : celltype_file_channel
+    output:
+    tuple val(study_name), val(query_name), path("${query_name}_*_cell_type.tsv"), emit: celltype_file_channel
 
     script:
+    ref_keys=params.ref_keys.join(" ")
     """
-    python $projectDir/bin/scvi_classify.py --query_path ${query_path} --ref_path ${ref_path} --cutoff ${params.cutoff}    
- 
+    python $projectDir/bin/scvi_classify.py \\
+            --query_path ${query_path} \\
+            --ref_path ${ref_path} \\
+            --cutoff ${params.cutoff} \\
+            --mapping_file ${params.rename_file} \\
+            --ref_keys ${ref_keys}
+
     """
 
 }
@@ -381,25 +387,25 @@ workflow {
     rfClassify(combos_adata)
 
     celltype_files = rfClassify.out.celltype_file_channel
-
     if (params.process_samples) {
-        // If process_samples is true, we will combine the celltype files
-        // for each study into one file
-        // need to combine celltype files for each study
-        celltype_file_channel = celltype_files.groupTuple(by: 0)
-            .set{ combined_celltype_files }
+        // Flatten all celltype files for each study/query, then group by study
+        celltype_file_channel = celltype_files.flatMap { study_name, query_name, files ->
+            files.collect { file -> tuple(study_name, query_name, file) }
+        }.groupTuple(by: 0)
+         .set{ combined_celltype_files }
         combineCTA(combined_celltype_files)
         predicted_celltypes = combineCTA.out.celltype_file_channel 
-
     } else {
-        // If process_samples is false, we will use the celltype files as they are
-        predicted_celltypes = celltype_files
-    } 
-    
-    loadCTA(predicted_celltypes)
+        // Use the celltype files as they are, flattening the list
+        predicted_celltypes = celltype_files.flatMap { study_name, query_name, files ->
+            files.collect { file -> tuple(study_name, query_name, file) }
+        }
+    }
+    // loadCTA(predicted_celltypes)
 
-
-    celltype_files.join(raw_queries, by: [0, 1])
+    celltype_files.flatMap { study_name, query_name, files ->
+        files.collect { file -> tuple(study_name, query_name, file) }
+    }.join(raw_queries, by: [0, 1])
     .set{qc_channel}
 
     getMeta(study_channel)
@@ -434,10 +440,10 @@ workflow {
     // view
     celltype_mask_files.view()
 
-    if (params.mask) {
-        //// If mask is true, we will load the cell-level characteristics
-        loadCLC(celltype_mask_files)
-    } 
+    //if (params.mask) {
+        ////// If mask is true, we will load the cell-level characteristics
+        //loadCLC(celltype_mask_files)
+    //} 
 
 
     if (params.process_samples) {
@@ -456,7 +462,7 @@ workflow {
     if (params.process_samples == false) {
         runMultiQC(multiqc_channel)
         multiqc_channel = runMultiQC.out.multiqc_html
-        publishMultiQC(multiqc_channel)
+       // publishMultiQC(multiqc_channel)
     }
     //save_params_to_file()
 }

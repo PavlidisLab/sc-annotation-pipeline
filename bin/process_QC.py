@@ -36,6 +36,7 @@ def parse_arguments():
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
     parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/GSE223423_sample_meta.tsv")
+    parser.add_argument('--ref_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type"], help="levels of granularity to classify corresponding to column names of rename_cells file")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -116,7 +117,7 @@ def plot_joint_umap(query, study_name, sample_name):
 
 
 def plot_ct_umap(query, study_name):
-    colors = ["cell_type","leiden","sample_name"]
+    colors = [ref_keys[0],"leiden","sample_name"]
     
     fig = sc.pl.umap(
             query,
@@ -194,7 +195,9 @@ def main():
     markers_file = args.markers_file
     gene_mapping_path = args.gene_mapping 
     organism = args.organism
+    ref_keys = args.ref_keys    
     
+    # Load gene mapping file 
     gene_mapping = pd.read_csv(gene_mapping_path, sep=None, header=0)
     # Drop rows with missing values in the relevant columns
     gene_mapping = gene_mapping.dropna(subset=["ENSEMBL_ID", "OFFICIAL_SYMBOL"])
@@ -213,7 +216,7 @@ def main():
     query = read_query(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
     query.obs.index = query.obs["index"]
     query.raw = query.copy()
-    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name)
+    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key=ref_keys[0])
 
     query = qc_preprocess(query)
  
@@ -234,7 +237,7 @@ def main():
     # Count occurrences
     celltype_counts = (
         query.obs
-        .groupby(["sample_name", "cell_type"])
+        .groupby(["sample_name", ref_keys[0]])
         .size()                             # count cells per (sample, cell_type)
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_name a column
@@ -245,7 +248,7 @@ def main():
     
     cluster_celltypes = (
         query_combined.obs
-        .groupby(["leiden", "cell_type"])
+        .groupby(["leiden", ref_keys[0]])
         .size() # count cells per (sample, cell_type)
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_name a column
