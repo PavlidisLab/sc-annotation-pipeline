@@ -564,7 +564,7 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
     
     markers_df = pd.read_csv(markers_file, sep="\t")
     markers_df = markers_df[markers_df["organism"] == organism]
-    ontology_mapping = markers_df.set_index(cell_type_key)["shortname"].to_dict()
+    ontology_mapping = markers_df.set_index("cell_type")["shortname"].to_dict()
    
     #Make raw index match processed var index
     query.raw.var.index = query.raw.var["feature_name"]

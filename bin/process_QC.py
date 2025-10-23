@@ -216,7 +216,7 @@ def main():
     query = read_query(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
     query.obs.index = query.obs["index"]
     query.raw = query.copy()
-    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key=ref_keys[0])
+    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key=assigned_celltypes.columns[2])
 
     query = qc_preprocess(query)
  
