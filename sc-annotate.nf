@@ -246,7 +246,7 @@ process processQC {
     )
 
     input:
-        tuple val(study_name), val(query_name), path(predicted_meta), path(study_path), path(sample_meta)
+        tuple val(study_name), val(query_name), path(predicted_meta_files), path(study_path), path(sample_meta)
 
     output:
     path "**png"
@@ -257,13 +257,14 @@ process processQC {
     script:
     """
     python $projectDir/bin/process_QC.py --query_path ${study_path} \\
-        --assigned_celltypes_path ${predicted_meta} \\
+        --assigned_celltypes_paths ${predicted_meta_files.join(' ')} \\
         --gene_mapping ${params.gene_mapping} \\
         --rename_file ${params.rename_file} \\
         --nmads ${params.nmads} \\
         --sample_meta ${sample_meta} \\
         --organism ${params.organism} \\
-        --markers_file ${params.markers_file}
+        --markers_file ${params.markers_file} \\
+        --cell_type_key ${params.cell_type_key}
     """ 
 }
 
@@ -403,53 +404,49 @@ workflow {
     }
     // loadCTA(predicted_celltypes)
 
-    celltype_files.flatMap { study_name, query_name, files ->
-        files.collect { file -> tuple(study_name, query_name, file) }
-    }.join(raw_queries, by: [0, 1])
-    .set{qc_channel}
-
+    predicted_celltypes.groupTuple(by: [0,1])
+    .set { grouped_predicted_celltypes }
     getMeta(study_channel)
     meta_channel = getMeta.out.meta_channel
-    qc_channel.combine(meta_channel, by: 0)
-    .set { qc_channel_with_meta }
 
-    processQC(qc_channel_with_meta)
+    // need to combine all three of these into one channel with study name, query names, raw query paths, predicted celltype paths, and meta paths
+    combined_channel = grouped_predicted_celltypes.join(raw_queries, by: [0,1])
+    combined_channel = combined_channel.join(meta_channel, by: 0)
+
+    processQC(combined_channel)
     qc_channel = processQC.out.qc_channel
     mask_files = processQC.out.mask_files
 
-    if (params.process_samples) {
-        // If process_samples is true, we will combine the mask files
-        // for each study into one file
-        // need to combine mask files for each study
-      //  mask_files.flatMap { study_name, query_name, mask_files ->
-            // Rename the mask file to include the query name
-            //mask_files.collect { mask_file ->
-            //def metric = mask_file.getName().split("_")[2]
-            //[ study_name, query_name, metric, mask_file ]
-            //}
-       // }.set { mask_files }
-        mask_files.groupTuple(by: 0)
-        .set{ combined_mask_files }
-        combineCLC(combined_mask_files)
-        celltype_mask_files = combineCLC.out.celltype_mask_files
-    } else {
-        // If process_samples is false, we will use the mask files as they are
+    //if (params.process_samples) {
+        //// If process_samples is true, we will combine the mask files
+        //// for each study into one file
+        //// need to combine mask files for each study
+      ////  mask_files.flatMap { study_name, query_name, mask_files ->
+            //// Rename the mask file to include the query name
+            ////mask_files.collect { mask_file ->
+            ////def metric = mask_file.getName().split("_")[2]
+            ////[ study_name, query_name, metric, mask_file ]
+            ////}
+       //// }.set { mask_files }
+        //mask_files.groupTuple(by: 0)
+        //.set{ combined_mask_files }
+        //combineCLC(combined_mask_files)
+        //celltype_mask_files = combineCLC.out.celltype_mask_files
+    //} else {
+        //// If process_samples is false, we will use the mask files as they are
         celltype_mask_files = mask_files
-    } 
-
-    // view
-    celltype_mask_files.view()
-
-    //if (params.mask) {
-        ////// If mask is true, we will load the cell-level characteristics
-        //loadCLC(celltype_mask_files)
     //} 
+
+
+    ////if (params.mask) {
+        //////// If mask is true, we will load the cell-level characteristics
+        ////loadCLC(celltype_mask_files)
+    ////} 
 
 
     if (params.process_samples) {
         qc_channel.groupTuple(by: 0)
         .set { qc_dir_channel }
-        qc_dir_channel.view()
         combineQC(qc_dir_channel)
         multiqc_channel = combineQC.out.qc_dir_combined
     } else {
@@ -457,14 +454,14 @@ workflow {
         multiqc_channel = qc_channel
     }
 
- 
-    // Run MultiQC on the combined qc directory
+
+    //// Run MultiQC on the combined qc directory
     if (params.process_samples == false) {
         runMultiQC(multiqc_channel)
         multiqc_channel = runMultiQC.out.multiqc_html
        // publishMultiQC(multiqc_channel)
     }
-    //save_params_to_file()
+    save_params_to_file()
 }
 
 workflow.onComplete {
