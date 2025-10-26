@@ -108,6 +108,7 @@ process getCensusAdata {
 
 process rfClassify{
   //  conda '/home/rschwartz/anaconda3/envs/scanpyenv'
+    tag "$query_name"
 
     publishDir (
         path: "${params.outdir}/${study_name}/predicted_celltypes",
@@ -241,6 +242,8 @@ process getMeta {
 
 
 process processQC {
+    tag "$query_name"
+
     publishDir (
         "${params.outdir}/${study_name}/qc", mode: 'copy'
     )
@@ -291,6 +294,8 @@ process combineQC {
 }
 
 process runMultiQC {
+    tag "$study_name"
+    
     publishDir (
         "${params.outdir}/multiqc/${study_name}", mode: 'copy'
     )
@@ -412,16 +417,9 @@ workflow {
     meta_channel = getMeta.out.meta_channel
 
 
-    // view all 3
-    grouped_predicted_celltypes.view()
-    raw_queries.view()
-    meta_channel.view()
-
     // need to combine all three of these into one channel with study name, query names, raw query paths, predicted celltype paths, and meta paths
     combined_channel = grouped_predicted_celltypes.combine(raw_queries, by: 0)
     combined_channel = combined_channel.combine(meta_channel, by: 0)
-
-    combined_channel.view()
 
     // put combined channel in the right order if process_samples is true
     if (params.process_samples) {
