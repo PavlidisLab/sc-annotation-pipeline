@@ -139,20 +139,20 @@ process combineCTA {
         "${params.outdir}/${study_name}/predicted_celltypes", mode: 'copy'
     )
      input:
-        tuple val(study_name), val(query_names), path(combined_celltype_files)
+        tuple val(study_name), val(level),val(query_names), path(combined_celltype_files)
 
     output:
-        tuple val(study_name), val(query_names), path("${study_name}_combined_celltypes.tsv"), emit: celltype_file_channel
+        tuple val(study_name), path("${study_name}_${level}_combined_celltypes.tsv"), emit: celltype_file_channel
 
     script:
     """
     # Combine all celltype files into one and only take header from the first file
      # Extract header from first file
-    head -n 1 \$(ls ${combined_celltype_files} | head -n 1) > ${study_name}_combined_celltypes.tsv
+    head -n 1 \$(ls ${combined_celltype_files} | head -n 1) > ${study_name}_${level}_combined_celltypes.tsv
 
     # Append all lines excluding header from all files
     for f in ${combined_celltype_files}; do
-        tail -n +2 "\$f" >> ${study_name}_combined_celltypes.tsv
+        tail -n +2 "\$f" >> ${study_name}_${level}_combined_celltypes.tsv
     done
     """
 
@@ -391,57 +391,72 @@ workflow {
     if (params.process_samples) {
         // Flatten all celltype files for each study/query, then group by study
         celltype_file_channel = celltype_files.flatMap { study_name, query_name, files ->
-            files.collect { file -> tuple(study_name, query_name, file) }
-        }.groupTuple(by: 0)
+            files.collect { file -> 
+            level = file.getName().split("_")[-3]
+            tuple(study_name, level, query_name, file) }
+        }.groupTuple(by: [0,1])
          .set{ combined_celltype_files }
         combineCTA(combined_celltype_files)
         predicted_celltypes = combineCTA.out.celltype_file_channel 
     } else {
         // Use the celltype files as they are, flattening the list
         predicted_celltypes = celltype_files.flatMap { study_name, query_name, files ->
-            files.collect { file -> tuple(study_name, query_name, file) }
+            files.collect { file -> tuple(study_name, file) }
         }
     }
     // loadCTA(predicted_celltypes)
-
-    predicted_celltypes.groupTuple(by: [0,1])
+    predicted_celltypes.groupTuple(by: 0)
     .set { grouped_predicted_celltypes }
+ 
     getMeta(study_channel)
     meta_channel = getMeta.out.meta_channel
 
+
+    // view all 3
+    grouped_predicted_celltypes.view()
+    raw_queries.view()
+    meta_channel.view()
+
     // need to combine all three of these into one channel with study name, query names, raw query paths, predicted celltype paths, and meta paths
-    combined_channel = grouped_predicted_celltypes.join(raw_queries, by: [0,1])
-    combined_channel = combined_channel.join(meta_channel, by: 0)
+    combined_channel = grouped_predicted_celltypes.combine(raw_queries, by: 0)
+    combined_channel = combined_channel.combine(meta_channel, by: 0)
+
+    combined_channel.view()
+
+    // put combined channel in the right order if process_samples is true
+    if (params.process_samples) {
+        combined_channel = combined_channel.map { study_name, predicted_celltypes_paths, query_name, raw_query_path, meta_path ->
+            return tuple(study_name, query_name, predicted_celltypes_paths, raw_query_path, meta_path)
+        }
+    } else {
+        combined_channel = combined_channel.map { study_name, predicted_celltypes_paths, query_name, raw_query_path, meta_path ->
+            tuple(study_name, query_name, predicted_celltypes_paths, raw_query_path, meta_path)
+        }
+    }
+     
 
     processQC(combined_channel)
+
     qc_channel = processQC.out.qc_channel
     mask_files = processQC.out.mask_files
-
-    //if (params.process_samples) {
-        //// If process_samples is true, we will combine the mask files
-        //// for each study into one file
-        //// need to combine mask files for each study
-      ////  mask_files.flatMap { study_name, query_name, mask_files ->
-            //// Rename the mask file to include the query name
-            ////mask_files.collect { mask_file ->
-            ////def metric = mask_file.getName().split("_")[2]
-            ////[ study_name, query_name, metric, mask_file ]
-            ////}
-       //// }.set { mask_files }
-        //mask_files.groupTuple(by: 0)
-        //.set{ combined_mask_files }
-        //combineCLC(combined_mask_files)
-        //celltype_mask_files = combineCLC.out.celltype_mask_files
-    //} else {
-        //// If process_samples is false, we will use the mask files as they are
+    if (params.process_samples) {
+        // If process_samples is true, we will combine the mask files
+        // for each study into one file
+        // need to combine mask files for each study
+        mask_files.groupTuple(by: 0)
+        .set{ combined_mask_files }
+        combineCLC(combined_mask_files)
+        celltype_mask_files = combineCLC.out.celltype_mask_files
+    } else {
+        // If process_samples is false, we will use the mask files as they are
         celltype_mask_files = mask_files
+    } 
+
+
+    //if (params.mask) {
+        // If mask is true, we will load the cell-level characteristics
+        //loadCLC(celltype_mask_files)
     //} 
-
-
-    ////if (params.mask) {
-        //////// If mask is true, we will load the cell-level characteristics
-        ////loadCLC(celltype_mask_files)
-    ////} 
 
 
     if (params.process_samples) {
