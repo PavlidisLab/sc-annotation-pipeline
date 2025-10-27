@@ -160,6 +160,7 @@ process combineCTA {
 }
 
 process loadCTA {
+    tag "$study_name"
 
      input:
         tuple val(study_name), path(celltype_file)
@@ -227,7 +228,7 @@ process loadCLC {
 }
 
 process getMeta {
-
+    tag "$study_name"
     input:
         tuple val(study_name), path(study_path)
 
@@ -472,7 +473,7 @@ workflow {
     if (params.process_samples == false) {
         runMultiQC(multiqc_channel)
         multiqc_channel = runMultiQC.out.multiqc_html
-        publishMultiQC(multiqc_channel)
+      //  publishMultiQC(multiqc_channel)
     }
     save_params_to_file()
 }
