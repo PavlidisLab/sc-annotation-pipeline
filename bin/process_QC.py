@@ -186,10 +186,17 @@ def combine_celltype_files(file_paths):
     all_dfs = []
     for file_path in file_paths:
         df = pd.read_csv(file_path, sep=None, header=0)
+        # Get prefix from file name (e.g. class_cell_type from GSE278619_class_cell_type.tsv)
+        prefix = os.path.basename(file_path).split("_")[-3]
+        # Rename the third column to prefix
+        ct_column = df.columns[2]
+        uri_column = df.columns[3]
+        df = df.rename(columns={ct_column: f"{prefix}_cell_type", uri_column: f"{prefix}_uri"})  
+        print(df.columns) 
         all_dfs.append(df)
-        
     # join on sample_id and cell_id
     combined_df = all_dfs[0]
+    
     for df in all_dfs[1:]:
         combined_df = combined_df.merge(df, on=["sample_id", "cell_id"], how="inner")
     return combined_df
