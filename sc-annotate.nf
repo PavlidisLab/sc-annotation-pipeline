@@ -173,11 +173,12 @@ process loadCTA {
 
     script:
     def gemma_cmd = params.use_staging ? "gemma-cli-staging" : "gemma-cli"
+    def level = celltype_file.getName().split("_")[-3]
+    def preferredCtaFlag = (level == "class") ? "-preferredCta" : ""
     """
-
    ${gemma_cmd} loadSingleCellData -loadCta -e ${study_name} \\
-               -ctaFile ${celltype_file} -preferredCta \\
-               -ctaName "sc-pipeline-${params.version}" \\
+               -ctaFile ${celltype_file} ${preferredCtaFlag} \\
+               -ctaName "sc-pipeline-${params.version}-${level}" \\
                -ctaProtocol "sc-pipeline-${params.version}" \\
                -ignoreSamplesLackingData 2> "message.txt"
     """
@@ -473,7 +474,7 @@ workflow {
     if (params.process_samples == false) {
         runMultiQC(multiqc_channel)
         multiqc_channel = runMultiQC.out.multiqc_html
-      //  publishMultiQC(multiqc_channel)
+        publishMultiQC(multiqc_channel)
     }
     save_params_to_file()
 }
