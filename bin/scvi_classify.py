@@ -91,6 +91,9 @@ def main():
     
         columns_to_keep = ["sample_id", "cell_id"] + [key] + [f"{key}_uri"]
         filtered_obs = query[columns_to_keep]
+        # rename columns
+        filtered_obs.rename(columns={key: "cell_type",
+                                     f"{key}_uri": "cell_type_uri"}, inplace=True)
         filtered_obs.to_csv(f"{query_name}_{key}.tsv", sep="\t", index=False)
 
 if __name__ == "__main__":
