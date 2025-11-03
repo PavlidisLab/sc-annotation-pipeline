@@ -435,6 +435,8 @@ def is_outlier(query, metric: str, nmads=3):
 
 
 def qc_preprocess(query):
+    # add an option to compute doublets since this step is failing?
+    
     # check if any sample_id has fewer than 30 associated cells
     sample_counts = query.obs["sample_id"].value_counts()
     if (sample_counts < 30).any():
