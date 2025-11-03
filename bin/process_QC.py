@@ -31,11 +31,12 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
     parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
     parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/1373636_5M_Tim3_cKO.5XFAD_rep2_raw.h5ad")
-    parser.add_argument('--assigned_celltypes_path', type=str, default="//space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/1373636_5M_Tim3_cKO.5XFAD_rep2_predicted_celltype.tsv")
+    parser.add_argument('--assigned_celltypes_paths', type=str, nargs="+") 
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
     parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/GSE223423_sample_meta.tsv")
+    parser.add_argument('--cell_type_key', type=str, default=None, help='Column name in assigned celltypes to use for cell type')
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -115,19 +116,17 @@ def plot_joint_umap(query, study_name, sample_name):
 
 
 
-def plot_ct_umap(query, study_name):
-    colors = ["cell_type","leiden","sample_name"]
-    
+def plot_ct_umap(query, study_name, cell_type_key):
+    colors = [cell_type_key,"leiden","sample_name"]
     fig = sc.pl.umap(
-            query,
-            color=colors,
-            use_raw=False,
-            show=False,
-            title="",
-            ncols=1,
-            return_fig=True
-        )
-
+        query,
+        color=colors,
+        use_raw=False,
+        show=False,
+        title="",
+        ncols=1,
+        return_fig=True
+    )
     out_path = os.path.join(study_name,"celltype_umap_mqc.png")
     fig.savefig(out_path, bbox_inches='tight')
     plt.close(fig)
@@ -181,18 +180,40 @@ def plot_upset_by_group(obs, outlier_cols, group_col, outdir):
         plt.savefig(os.path.join(outdir, f"{group}_upset_mqc.png"))
         plt.close()
     
+def combine_celltype_files(file_paths):
+    all_dfs = []
+    for file_path in file_paths:
+        df = pd.read_csv(file_path, sep=None, header=0)
+        # Get prefix from file name (e.g. class_cell_type from GSE278619_class_cell_type.tsv)
+        prefix = os.path.basename(file_path).split("_")[-3]
+        # Rename the third column to prefix
+        ct_column = df.columns[2]
+        uri_column = df.columns[3]
+        df = df.rename(columns={ct_column: f"{prefix}_cell_type", uri_column: f"{prefix}_uri"})  
+        print(df.columns) 
+        all_dfs.append(df)
+    # join on sample_id and cell_id
+    combined_df = all_dfs[0]
+    
+    for df in all_dfs[1:]:
+        combined_df = combined_df.merge(df, on=["sample_id", "cell_id"], how="inner")
+    return combined_df
+
 
 def main():
     # Parse command line arguments
     args = parse_arguments()
     # Set variables from arguments
     query_path = args.query_path
-    assigned_celltypes_path = args.assigned_celltypes_path
+    assigned_celltypes_paths = args.assigned_celltypes_paths
     sample_meta = args.sample_meta
     markers_file = args.markers_file
     gene_mapping_path = args.gene_mapping 
     organism = args.organism
-    
+   # ref_keys = args.ref_keys   
+    cell_type_key = args.cell_type_key
+    print(cell_type_key)
+    # Load gene mapping file 
     gene_mapping = pd.read_csv(gene_mapping_path, sep=None, header=0)
     # Drop rows with missing values in the relevant columns
     gene_mapping = gene_mapping.dropna(subset=["ENSEMBL_ID", "OFFICIAL_SYMBOL"])
@@ -204,14 +225,20 @@ def main():
     study_name = os.path.basename(query_path).replace("_raw.h5ad", "")
     os.makedirs(study_name, exist_ok=True)
 
-    assigned_celltypes = pd.read_csv(assigned_celltypes_path, sep=None, header=0)
+
+
+    # load and combine assigned celltypes files by cell_id + sample_id columns
+    assigned_celltypes = combine_celltype_files(assigned_celltypes_paths)
+    
     sample_meta = pd.read_csv(sample_meta, sep=None, header=0)
    # markers = pd.read_csv(markers_file, sep=None, header=0)
      
     query = read_query(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
     query.obs.index = query.obs["index"]
     query.raw = query.copy()
-    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name)
+    if cell_type_key is None:
+        cell_type_key = assigned_celltypes.columns[2]
+    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key=cell_type_key)
 
     query = qc_preprocess(query)
  
@@ -232,18 +259,18 @@ def main():
     # Count occurrences
     celltype_counts = (
         query.obs
-        .groupby(["sample_name", "cell_type"])
+        .groupby(["sample_name", cell_type_key])
         .size()                             # count cells per (sample, cell_type)
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_name a column
     )
     celltype_counts.to_csv(os.path.join(study_name,"celltype_counts_mqc.tsv"), sep="\t", index=False)
  
-    plot_ct_umap(query_combined, study_name=study_name)
+    plot_ct_umap(query_combined, study_name=study_name, cell_type_key=cell_type_key)
     
     cluster_celltypes = (
         query_combined.obs
-        .groupby(["leiden", "cell_type"])
+        .groupby(["leiden", cell_type_key])
         .size() # count cells per (sample, cell_type)
         .unstack(fill_value=0)              # pivot cell types into columns
         .reset_index()                      # make sample_name a column

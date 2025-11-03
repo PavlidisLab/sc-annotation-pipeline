@@ -108,6 +108,7 @@ process getCensusAdata {
 
 process rfClassify{
   //  conda '/home/rschwartz/anaconda3/envs/scanpyenv'
+    tag "$query_name"
 
     publishDir (
         path: "${params.outdir}/${study_name}/predicted_celltypes",
@@ -118,12 +119,18 @@ process rfClassify{
     tuple val(study_name), val(query_name), val(query_path), val(ref_path)
 
     output:
-    tuple val{study_name}, val(query_name), path("${query_name}_predicted_celltype.tsv"), emit : celltype_file_channel
+    tuple val(study_name), val(query_name), path("${query_name}_*_cell_type.tsv"), emit: celltype_file_channel
 
     script:
+    ref_keys=params.ref_keys.join(" ")
     """
-    python $projectDir/bin/scvi_classify.py --query_path ${query_path} --ref_path ${ref_path} --cutoff ${params.cutoff}    
- 
+    python $projectDir/bin/scvi_classify.py \\
+            --query_path ${query_path} \\
+            --ref_path ${ref_path} \\
+            --cutoff ${params.cutoff} \\
+            --mapping_file ${params.rename_file} \\
+            --ref_keys ${ref_keys}
+
     """
 
 }
@@ -133,43 +140,43 @@ process combineCTA {
         "${params.outdir}/${study_name}/predicted_celltypes", mode: 'copy'
     )
      input:
-        tuple val(study_name), val(query_names), path(combined_celltype_files)
+        tuple val(study_name), val(level),val(query_names), path(combined_celltype_files)
 
     output:
-        tuple val(study_name), val(query_names), path("${study_name}_combined_celltypes.tsv"), emit: celltype_file_channel
+        tuple val(study_name), path("${study_name}_${level}_combined_celltypes.tsv"), emit: celltype_file_channel
 
     script:
     """
     # Combine all celltype files into one and only take header from the first file
      # Extract header from first file
-    head -n 1 \$(ls ${combined_celltype_files} | head -n 1) > ${study_name}_combined_celltypes.tsv
+    head -n 1 \$(ls ${combined_celltype_files} | head -n 1) > ${study_name}_${level}_combined_celltypes.tsv
 
     # Append all lines excluding header from all files
     for f in ${combined_celltype_files}; do
-        tail -n +2 "\$f" >> ${study_name}_combined_celltypes.tsv
+        tail -n +2 "\$f" >> ${study_name}_${level}_combined_celltypes.tsv
     done
     """
 
 }
 
 process loadCTA {
+    tag "$study_name"
 
      input:
-        tuple val(study_name), val(query_names), path(celltype_file)
+        tuple val(study_name), path(celltype_file)
 
 
     output :
         path "message.txt"
 
-
-
     script:
     def gemma_cmd = params.use_staging ? "gemma-cli-staging" : "gemma-cli"
+    def level = celltype_file.getName().split("_")[-3]
+    def preferredCtaFlag = (level == "class") ? "-preferredCta" : ""
     """
-
    ${gemma_cmd} loadSingleCellData -loadCta -e ${study_name} \\
-               -ctaFile ${celltype_file} -preferredCta \\
-               -ctaName "sc-pipeline-${params.version}" \\
+               -ctaFile ${celltype_file} ${preferredCtaFlag} \\
+               -ctaName "sc-pipeline-${params.version}-${level}" \\
                -ctaProtocol "sc-pipeline-${params.version}" \\
                --data-type NULL \\
                -ignoreSamplesLackingData 2> "message.txt"
@@ -215,14 +222,14 @@ process loadCLC {
         -clcFile "${mask_file}" \\
         -replaceClc \\
         -ignoreSamplesLackingData \\
-        -data-type NULL \\
+        --data-type NULL \\
         -clcName counts_outlier,genes_outlier,hb_outlier,mito_outlier,predicted_doublet,ribo_outlier,umi_outlier \\
         2>> "message.txt"
     """
 }
 
 process getMeta {
-
+    tag "$study_name"
     input:
         tuple val(study_name), path(study_path)
 
@@ -237,12 +244,14 @@ process getMeta {
 
 
 process processQC {
+    tag "$query_name"
+
     publishDir (
         "${params.outdir}/${study_name}/qc", mode: 'copy'
     )
 
     input:
-        tuple val(study_name), val(query_name), path(predicted_meta), path(study_path), path(sample_meta)
+        tuple val(study_name), val(query_name), path(predicted_meta_files), path(study_path), path(sample_meta)
 
     output:
     path "**png"
@@ -253,13 +262,14 @@ process processQC {
     script:
     """
     python $projectDir/bin/process_QC.py --query_path ${study_path} \\
-        --assigned_celltypes_path ${predicted_meta} \\
+        --assigned_celltypes_paths ${predicted_meta_files.join(' ')} \\
         --gene_mapping ${params.gene_mapping} \\
         --rename_file ${params.rename_file} \\
         --nmads ${params.nmads} \\
         --sample_meta ${sample_meta} \\
         --organism ${params.organism} \\
-        --markers_file ${params.markers_file}
+        --markers_file ${params.markers_file} \\
+        --cell_type_key ${params.cell_type_key}
     """ 
 }
 
@@ -286,6 +296,8 @@ process combineQC {
 }
 
 process runMultiQC {
+    tag "$study_name"
+    
     publishDir (
         "${params.outdir}/multiqc/${study_name}", mode: 'copy'
     )
@@ -383,47 +395,54 @@ workflow {
     rfClassify(combos_adata)
 
     celltype_files = rfClassify.out.celltype_file_channel
-
     if (params.process_samples) {
-        // If process_samples is true, we will combine the celltype files
-        // for each study into one file
-        // need to combine celltype files for each study
-        celltype_file_channel = celltype_files.groupTuple(by: 0)
-            .set{ combined_celltype_files }
+        // Flatten all celltype files for each study/query, then group by study
+        celltype_file_channel = celltype_files.flatMap { study_name, query_name, files ->
+            files.collect { file -> 
+            level = file.getName().split("_")[-3]
+            tuple(study_name, level, query_name, file) }
+        }.groupTuple(by: [0,1])
+         .set{ combined_celltype_files }
         combineCTA(combined_celltype_files)
         predicted_celltypes = combineCTA.out.celltype_file_channel 
-
     } else {
-        // If process_samples is false, we will use the celltype files as they are
-        predicted_celltypes = celltype_files
-    } 
-    
+        // Use the celltype files as they are, flattening the list
+        predicted_celltypes = celltype_files.flatMap { study_name, query_name, files ->
+            files.collect { file -> tuple(study_name, file) }
+        }
+    }
     loadCTA(predicted_celltypes)
-
-
-    celltype_files.join(raw_queries, by: [0, 1])
-    .set{qc_channel}
-
+    predicted_celltypes.groupTuple(by: 0)
+    .set { grouped_predicted_celltypes }
+ 
     getMeta(study_channel)
     meta_channel = getMeta.out.meta_channel
-    qc_channel.combine(meta_channel, by: 0)
-    .set { qc_channel_with_meta }
 
-    processQC(qc_channel_with_meta)
+
+    // need to combine all three of these into one channel with study name, query names, raw query paths, predicted celltype paths, and meta paths
+    combined_channel = grouped_predicted_celltypes.combine(raw_queries, by: 0)
+    combined_channel = combined_channel.combine(meta_channel, by: 0)
+
+    // put combined channel in the right order if process_samples is true
+    if (params.process_samples) {
+        combined_channel = combined_channel.map { study_name, predicted_celltypes_paths, query_name, raw_query_path, meta_path ->
+            return tuple(study_name, query_name, predicted_celltypes_paths, raw_query_path, meta_path)
+        }
+    } else {
+        combined_channel = combined_channel.map { study_name, predicted_celltypes_paths, query_name, raw_query_path, meta_path ->
+            tuple(study_name, query_name, predicted_celltypes_paths, raw_query_path, meta_path)
+        }
+    }
+     
+
+    processQC(combined_channel)
+
     qc_channel = processQC.out.qc_channel
     mask_files = processQC.out.mask_files
-
     if (params.process_samples) {
         // If process_samples is true, we will combine the mask files
         // for each study into one file
         // need to combine mask files for each study
-      //  mask_files.flatMap { study_name, query_name, mask_files ->
-            // Rename the mask file to include the query name
-            //mask_files.collect { mask_file ->
-            //def metric = mask_file.getName().split("_")[2]
-            //[ study_name, query_name, metric, mask_file ]
-            //}
-       // }.set { mask_files }
         mask_files.groupTuple(by: 0)
         .set{ combined_mask_files }
         combineCLC(combined_mask_files)
@@ -433,19 +452,16 @@ workflow {
         celltype_mask_files = mask_files
     } 
 
-    // view
-    celltype_mask_files.view()
 
-    if (params.mask) {
-        //// If mask is true, we will load the cell-level characteristics
-        loadCLC(celltype_mask_files)
-    } 
+    //if (params.mask) {
+        // If mask is true, we will load the cell-level characteristics
+        //loadCLC(celltype_mask_files)
+    //} 
 
 
     if (params.process_samples) {
         qc_channel.groupTuple(by: 0)
         .set { qc_dir_channel }
-        qc_dir_channel.view()
         combineQC(qc_dir_channel)
         multiqc_channel = combineQC.out.qc_dir_combined
     } else {
@@ -453,14 +469,14 @@ workflow {
         multiqc_channel = qc_channel
     }
 
- 
-    // Run MultiQC on the combined qc directory
+
+    //// Run MultiQC on the combined qc directory
     if (params.process_samples == false) {
         runMultiQC(multiqc_channel)
         multiqc_channel = runMultiQC.out.multiqc_html
         publishMultiQC(multiqc_channel)
     }
-    //save_params_to_file()
+    save_params_to_file()
 }
 
 workflow.onComplete {
