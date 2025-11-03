@@ -171,6 +171,7 @@ process loadCTA {
                -ctaFile ${celltype_file} -preferredCta \\
                -ctaName "sc-pipeline-${params.version}" \\
                -ctaProtocol "sc-pipeline-${params.version}" \\
+               --data-type NULL \\
                -ignoreSamplesLackingData 2> "message.txt"
     """
 }
