@@ -169,8 +169,6 @@ process loadCTA {
     output :
         path "message.txt"
 
-
-
     script:
     def gemma_cmd = params.use_staging ? "gemma-cli-staging" : "gemma-cli"
     def level = celltype_file.getName().split("_")[-3]
@@ -180,6 +178,7 @@ process loadCTA {
                -ctaFile ${celltype_file} ${preferredCtaFlag} \\
                -ctaName "sc-pipeline-${params.version}-${level}" \\
                -ctaProtocol "sc-pipeline-${params.version}" \\
+               --data-type NULL \\
                -ignoreSamplesLackingData 2> "message.txt"
     """
 }
@@ -223,6 +222,7 @@ process loadCLC {
         -clcFile "${mask_file}" \\
         -replaceClc \\
         -ignoreSamplesLackingData \\
+        --data-type NULL \\
         -clcName counts_outlier,genes_outlier,hb_outlier,mito_outlier,predicted_doublet,ribo_outlier,umi_outlier \\
         2>> "message.txt"
     """
