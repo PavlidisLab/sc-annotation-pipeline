@@ -417,10 +417,13 @@ def qc_preprocess(query):
     # check if any sample_id has fewer than 30 associated cells
     sample_counts = query.obs["sample_id"].value_counts()
     if (sample_counts < 30).any():
-        batch_key=None
+        batch_key = None
     else:
-        batch_key="sample_id"
-    sc.pp.scrublet(query, batch_key=batch_key)
+        batch_key = "sample_id"
+    try:
+        sc.pp.scrublet(query, batch_key=batch_key)
+    except Exception as e:
+        print(f"scrublet failed: {e}")
     # log normalize, comput neighbors and umap
     sc.pp.normalize_total(query, target_sum=1e4)
     sc.pp.log1p(query)
@@ -484,10 +487,11 @@ def get_qc_metrics(query, nmads):
       #  query.obs["umi_outlier"] ) | (query.obs["genes_outlier"])
         
 
-    query.obs["total_outlier"] = (
-        query.obs["counts_outlier"] | query.obs["mito_outlier"] | query.obs["ribo_outlier"] | query.obs["hb_outlier"] | query.obs["predicted_doublet"] 
-        | query.obs["umi_outlier"] | query.obs["genes_outlier"]
-    )
+    metrics = ["counts_outlier", "mito_outlier", "ribo_outlier", "hb_outlier", "umi_outlier", "genes_outlier", "predicted_doublet"]
+    # Ensure all metrics exist as boolean columns
+    existing_metrics = [m for m in metrics if m in query.obs.columns] 
+    # Calculate total_outlier efficiently
+    query.obs["total_outlier"] = query.obs[existing_metrics].any(axis=1)
     
     query.obs["non_outlier"] = ~query.obs["total_outlier"]
 
