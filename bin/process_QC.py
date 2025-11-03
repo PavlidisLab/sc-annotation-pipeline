@@ -133,8 +133,6 @@ def plot_ct_umap(query, study_name):
     plt.close(fig)
  
 def write_clc_files(query_combined, study_name, metrics=["counts_outlier", "mito_outlier", "ribo_outlier", "hb_outlier", "predicted_doublet", "umi_outlier", "genes_outlier"]):
-    # change to long format
-   # for metric in metrics:
     CLC_df = query_combined.obs[["sample_id", "cell_id"] + metrics].copy()
 
     
@@ -264,9 +262,11 @@ def main():
         "hb_outlier", 
         "predicted_doublet"
     ]
-    plot_upset_by_group(query_combined.obs, outlier_cols, "sample_name", study_name)
-    
-    write_clc_files(query_combined, study_name, metrics=["counts_outlier", "mito_outlier", "ribo_outlier", "hb_outlier", "predicted_doublet", "umi_outlier", "genes_outlier"])
+    # check if outlier cols exist
+    existing_outlier_cols = [col for col in outlier_cols if col in query_combined.obs.columns]
+    plot_upset_by_group(query_combined.obs, existing_outlier_cols, "sample_name", study_name)
+
+    write_clc_files(query_combined, study_name, metrics=existing_outlier_cols)
     
 if __name__ == "__main__":
     main()
