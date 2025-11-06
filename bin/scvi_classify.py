@@ -27,15 +27,18 @@ import argparse
 import os
 import json
 from types import SimpleNamespace
+import warnings
+# silence warnings
+warnings.filterwarnings("ignore")
 
 # Function to parse command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
-   # parser.add_argument('--organism', type=str, default='homo_sapiens', help='Organism name (e.g., homo_sapiens)')
-  #  parser.add_argument('--census_version', type=str, default='2024-07-01', help='Census version (e.g., 2024-07-01)')
     parser.add_argument('--query_path', type=str, default="")
     parser.add_argument('--ref_path', type=str, default="/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/refs/whole_cortex.h5ad") #nargs ="+")
     parser.add_argument('--cutoff', type=float, default=0, help="Cutoff probability for classification, else cell will be assigned unknown")
+    parser.add_argument('--ref_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type"], help="levels of granularity to classify corresponding to column names of rename_cells file")
+    parser.add_argument('--mapping_file', type=str, default="/space/grp/Pipelines/sc-annotation-pipeline/meta/rename_cells_mmus_author.tsv", help="cell type taxonomy mapping file")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -54,28 +57,44 @@ def main():
     # Set variables from arguments
     query_path = args.query_path
     ref_path = args.ref_path
-    cutoff = args.cutoff 
+    cutoff = args.cutoff
+    ref_keys = args.ref_keys
+    mapping_df = pd.read_csv(args.mapping_file, sep='\t')
 
     # Load query and reference datasets
-    query = ad.read_h5ad(query_path)
+    query_h5ad = sc.read_h5ad(query_path)
     query_name = os.path.basename(query_path).replace(".h5ad", "")
     ref = ad.read_h5ad(ref_path, backed="r")
 
     # Fit a random forest classifier to the reference scvi embeddings and cell type annotations
+    # Training on the subclass level of granularity
+    rename_cell_type = ref_keys[0]
     rfc = RandomForestClassifier(class_weight='balanced', random_state=SEED)
-    rfc.fit(ref.obsm["scvi"], ref.obs["cell_type"].values)
-    
+    rfc.fit(ref.obsm["scvi"], ref.obs[rename_cell_type].values)
+
     # Predict cell type using embeddings generated from scvi model
-    probs = rfc.predict_proba(query.obsm["scvi"])
+    probs = rfc.predict_proba(query_h5ad.obsm["scvi"])
     prob_df = pd.DataFrame(probs, columns=rfc.classes_)
-    query = classify_cells(query, cutoff, prob_df)
-    mapping = dict(ref.obs[["cell_type", "cell_type_ontology_term_id"]].drop_duplicates().values)
-    query.obs["cell_type_ontology_term_id"] = query.obs["cell_type"].map(mapping)
-    query.obs["cell_type_uri"] = f"http://purl.obolibrary.org/obo/" + query.obs["cell_type_ontology_term_id"].str.replace(":","_") 
-    os.makedirs(query_name, exist_ok=True)
+
+
+    query = query_h5ad.obs
+    # Classify cells based on probability cutoff and aggregate results at different levels of granularity
+    query = classify_cells(query, cutoff, prob_df, ref_keys=ref_keys, mapping_df=mapping_df)
     
-    filtered_obs = query.obs[["sample_id","cell_id","cell_type", "cell_type_uri"]]
-    filtered_obs.to_csv(f"{query_name}_predicted_celltype.tsv", sep="\t", index=False)
+    # map to ontology terms at each level
+    for key in ref_keys:
+        mapping = dict(mapping_df[[key, f"{key}_uri"]].drop_duplicates().values)
+        query[f"{key}_ontology_term_id"] = query[key].map(mapping)
+        query[f"{key}_uri"] = f"http://purl.obolibrary.org/obo/" + query[f"{key}_ontology_term_id"].str.replace(":","_")
+        # drop original ontology term id column
+        query.drop(columns=[f"{key}_ontology_term_id"], inplace=True)
+    
+        columns_to_keep = ["sample_id", "cell_id"] + [key] + [f"{key}_uri"]
+        filtered_obs = query[columns_to_keep]
+        # rename columns
+        filtered_obs.rename(columns={key: "cell_type",
+                                     f"{key}_uri": "cell_type_uri"}, inplace=True)
+        filtered_obs.to_csv(f"{query_name}_{key}.tsv", sep="\t", index=False)
 
 if __name__ == "__main__":
     main()
