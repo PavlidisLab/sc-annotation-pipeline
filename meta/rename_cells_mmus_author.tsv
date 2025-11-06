@@ -1,18 +1,4 @@
 author_cell_type	subclass_cell_type	subclass_cell_type_uri	class_cell_type	class_cell_type_uri
-neural stem cell	neural stem cell	CL:0000047	neural stem cell	CL:0000047
-neuroepithelial stem cell	neural stem cell	CL:0000047	neural stem cell	CL:0000047
-astrocyte	astrocyte	CL:0000127	astrocyte	CL:0000127
-endothelial cell	endothelial cell	CL:0000115	vascular	
-ependymal cell	ependymal cell	CL:0000065	vascular	
-Macrophage	central nervous system macrophage	CL:0000878	central nervous system macrophage	CL:0000878
-macrophage	central nervous system macrophage	CL:0000878	central nervous system macrophage	CL:0000878
-microglial cell	microglial cell	CL:0000129	microglial cell	CL:0000129
-oligodendrocyte	oligodendrocyte	CL:0000128	oligodendrocyte	CL:0000128
-oligodendrocyte precursor cell	oligodendrocyte precursor cell	CL:0002453	oligodendrocyte precursor cell	CL:0002453
-brain pericyte	pericyte	CL:0000669	vascular	
-CD8-positive, alpha-beta T cell	T cell	CL:0000084	leukocyte	CL:0000738
-T cell	T cell	CL:0000084	leukocyte	CL:0000738
-mature NK T cell	T cell	CL:0000084	leukocyte	CL:0000738
 Prog/IP	neural stem cell	CL:0000047	neural stem cell	CL:0000047
 Vip	VIP GABAergic cortical interneuron	CL:4023016	VIP GABAergic cortical interneuron	CL:4023016
 Pvalb	pvalb GABAergic cortical interneuron	CL:4023018	pvalb GABAergic cortical interneuron	CL:4023018
