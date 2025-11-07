@@ -21,6 +21,9 @@ from pathlib import Path
 import subprocess
 from scipy.stats import median_abs_deviation
 from statsmodels.formula.api import ols
+import warnings
+# silence warnings
+warnings.filterwarnings("ignore")
 
 
 def setup(organism="homo_sapiens", version="2024-07-01"):
@@ -60,7 +63,7 @@ def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotatio
     # change to handle author_cell_type as first column name of rename df (distinguishes between author and cellxgene annotations)
     rename_df = pd.read_csv(rename_file, sep=None)
     rename_key = rename_df.columns[0]
-
+    rename_cell_type = rename_df.columns[1]
     # Filter cells to keep only those with valid new cell types
     # this replaces the "restricted cell types" command line argument
     # not working for "glutamatergic neuron" in human
@@ -68,13 +71,13 @@ def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotatio
     obs = obs[obs[rename_key].isin(rename_df[rename_key])]
  
     # Create mapping dictionaries
-    rename_mapping = dict(zip(rename_df[rename_key], rename_df['new_cell_type']))
-    ontology_mapping = dict(zip(rename_df['new_cell_type'], rename_df['cell_type_ontology_term_id']))
+    rename_mapping = dict(zip(rename_df[rename_key], rename_df[rename_cell_type]))
+    ontology_mapping = dict(zip(rename_df[rename_cell_type], rename_df[rename_cell_type + "_uri"]))
     
     # Apply renaming
-    obs['cell_type'] = obs[rename_key].replace(rename_mapping)  
-    obs["cell_type_ontology_term_id"] = obs["cell_type"].map(ontology_mapping)
-    
+    obs[rename_cell_type] = obs[rename_key].replace(rename_mapping)  
+    obs[rename_cell_type + "_uri"] = obs[rename_cell_type].map(ontology_mapping)
+
     return obs
 
 
@@ -341,12 +344,11 @@ def rfc_pred(ref, query, ref_keys, seed):
 
 
 
-def classify_cells(query, cutoff, probabilities):
-    class_metrics = {}
+def classify_cells(query:pd.DataFrame, cutoff: float, probabilities: pd.DataFrame, ref_keys=["subclass_cell_type","class_cell_type"], mapping_df=None):
     
     # Only use the first ref_key
-    key = "cell_type" 
-    #class_metrics[key] = {}
+    # must be ordered from most granular to highest level
+    key = ref_keys[0]
 
     # Extract the class labels and probabilities (DataFrame structure)
     class_labels = probabilities.columns.values  # Class labels are the column names
@@ -368,13 +370,32 @@ def classify_cells(query, cutoff, probabilities):
         # Direct prediction without threshold filtering
         predicted_classes = class_labels[np.argmax(class_probs, axis=1)]
     
-    # Store predictions and confidence in `query`
-    query.obs[key] = predicted_classes
-    #query["confidence"] = np.max(class_probs, axis=1)  # Store max probability as confidence
-    
+    # Store predictions in `query`
+    query[key] = predicted_classes
+
+    query = aggregate_labels(query=query, mapping_df=mapping_df, ref_keys=ref_keys, predicted=False)
+
     return query
 
 
+def aggregate_labels(query: pd.DataFrame, mapping_df: pd.DataFrame, ref_keys: list, predicted=False):
+    """
+    Aggregate subclass labels or predicted labels to higher levels using mapping_df.
+    If predicted=True, operates on columns like 'predicted_subclass', otherwise on obs columns.
+    """
+    for i in range(1, len(ref_keys)):
+        lower_key = ref_keys[i-1]
+        higher_level_key = ref_keys[i]
+        mapping = mapping_df.set_index(lower_key)[higher_level_key].to_dict()
+        if predicted:
+            query["predicted_" + higher_level_key] = query["predicted_" + lower_key].map(mapping)
+            query["predicted_" + higher_level_key] = query["predicted_" + higher_level_key].fillna(query["predicted_" + lower_key])
+        else:
+            query[higher_level_key] = query[lower_key].map(mapping)
+            query[higher_level_key] = query[higher_level_key].fillna(query[lower_key])
+    return query
+    
+    
 # functions for QC plotting --------------------------
 
 def read_query(query_path, gene_mapping, new_meta, sample_meta):
@@ -414,6 +435,8 @@ def is_outlier(query, metric: str, nmads=3):
 
 
 def qc_preprocess(query):
+    # add an option to compute doublets since this step is failing?
+    
     # check if any sample_id has fewer than 30 associated cells
     sample_counts = query.obs["sample_id"].value_counts()
     if (sample_counts < 30).any():
@@ -540,7 +563,7 @@ def get_gene_to_celltype_map(df, organism="mus_musculus"):
     return gene_ct_dict
 
 
-def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_name=""):
+def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_name="", cell_type_key="subclass_cell_type"):
     # Drop vars with NaN feature names
     query = query[:, ~query.var["feature_name"].isnull()]
     query.var_names = query.var["feature_name"]
@@ -562,7 +585,7 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
     expr_matrix = query.raw.X.toarray()
     expr_matrix = pd.DataFrame(expr_matrix, index=query.obs.index, columns=query.raw.var.index)
     
-    avg_expr = expr_matrix.groupby(query.obs["cell_type"]).mean()
+    avg_expr = expr_matrix.groupby(query.obs[cell_type_key]).mean()
     avg_expr = avg_expr.loc[:, valid_markers]
     
     # Scale expression across genes
