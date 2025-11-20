@@ -256,15 +256,26 @@ def main():
     #combine query subsets
     query_combined = ad.concat(query_subsets.values(), axis=0) 
      
-    # Count occurrences
-    celltype_counts = (
+
+    # Count occurrences: cell types by sample (original orientation)
+    celltype_counts_by_sample = (
         query.obs
         .groupby(["sample_name", cell_type_key])
-        .size()                             # count cells per (sample, cell_type)
-        .unstack(fill_value=0)              # pivot cell types into columns
-        .reset_index()                      # make sample_name a column
+        .size()
+        .unstack(fill_value=0)
+        .reset_index()
     )
-    celltype_counts.to_csv(os.path.join(study_name,"celltype_counts_mqc.tsv"), sep="\t", index=False)
+    celltype_counts_by_sample.to_csv(os.path.join(study_name, "sample_counts_mqc.tsv"), sep="\t", index=False)
+
+    # Count occurrences: samples by cell type (reversed orientation)
+    sample_counts_by_celltype = (
+        query.obs
+        .groupby([cell_type_key, "sample_name"])
+        .size()
+        .unstack(fill_value=0)
+        .reset_index()
+    )
+    sample_counts_by_celltype.to_csv(os.path.join(study_name, "celltype_counts_mqc.tsv"), sep="\t", index=False)
  
     plot_ct_umap(query_combined, study_name=study_name, cell_type_key=cell_type_key)
     
