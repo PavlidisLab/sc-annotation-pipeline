@@ -225,85 +225,79 @@ def main():
     study_name = os.path.basename(query_path).replace("_raw.h5ad", "")
     os.makedirs(study_name, exist_ok=True)
 
-
-
     # load and combine assigned celltypes files by cell_id + sample_id columns
     assigned_celltypes = combine_celltype_files(assigned_celltypes_paths)
-    
     sample_meta = pd.read_csv(sample_meta, sep=None, header=0)
-   # markers = pd.read_csv(markers_file, sep=None, header=0)
-     
     query = read_query(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
     query.obs.index = query.obs["index"]
     query.raw = query.copy()
-    if cell_type_key is None:
-        cell_type_key = assigned_celltypes.columns[2]
-    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key=cell_type_key)
 
-    query = qc_preprocess(query)
- 
-    query_subsets = {}
-    for sample_name in query.obs["sample_name"].unique():
-        query_subset = query[query.obs["sample_name"] == sample_name]
-        
-        query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
-        
-        query_subsets[sample_name] = query_subset
-        
-       # plot_umap_qc(query_subset, study_name=study_name, sample_name=sample_name)
-        plot_joint_umap(query_subset, study_name=study_name, sample_name=sample_name)
-  
-    #combine query subsets
-    query_combined = ad.concat(query_subsets.values(), axis=0) 
-     
+    # List of cell type keys to process
+    cell_type_keys = ["class_cell_type", "subclass_cell_type"]
+    for cell_type_key in cell_type_keys:
+        # If the key doesn't exist, skip
+        if cell_type_key not in query.obs.columns:
+            print(f"Warning: {cell_type_key} not found in query.obs.columns, skipping.")
+            continue
+        make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key=cell_type_key)
 
-    # Count occurrences: cell types by sample (original orientation)
-    celltype_counts_by_sample = (
-        query.obs
-        .groupby(["sample_name", cell_type_key])
-        .size()
-        .unstack(fill_value=0)
-        .reset_index()
-    )
-    celltype_counts_by_sample.to_csv(os.path.join(study_name, "sample_counts_mqc.tsv"), sep="\t", index=False)
+        query_proc = qc_preprocess(query.copy())
 
-    # Count occurrences: samples by cell type (reversed orientation)
-    sample_counts_by_celltype = (
-        query.obs
-        .groupby([cell_type_key, "sample_name"])
-        .size()
-        .unstack(fill_value=0)
-        .reset_index()
-    )
-    sample_counts_by_celltype.to_csv(os.path.join(study_name, "celltype_counts_mqc.tsv"), sep="\t", index=False)
- 
-    plot_ct_umap(query_combined, study_name=study_name, cell_type_key=cell_type_key)
-    
-    cluster_celltypes = (
-        query_combined.obs
-        .groupby(["leiden", cell_type_key])
-        .size() # count cells per (sample, cell_type)
-        .unstack(fill_value=0)              # pivot cell types into columns
-        .reset_index()                      # make sample_name a column
-    )
-    cluster_celltypes.to_csv(os.path.join(study_name,"cluster_celltypes_mqc.tsv"), sep="\t", index=False)
+        query_subsets = {}
+        for sample_name in query_proc.obs["sample_name"].unique():
+            query_subset = query_proc[query_proc.obs["sample_name"] == sample_name]
+            query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
+            query_subsets[sample_name] = query_subset
+            plot_joint_umap(query_subset, study_name=study_name, sample_name=sample_name)
 
-    # plot upset plots by sample and cell type
-    
+        # Combine query subsets
+        query_combined = ad.concat(query_subsets.values(), axis=0)
+
+        # Count occurrences: cell types by sample (original orientation)
+        celltype_counts_by_sample = (
+            query_proc.obs
+            .groupby(["sample_name", cell_type_key])
+            .size()
+            .unstack(fill_value=0)
+            .reset_index()
+        )
+        celltype_counts_by_sample.to_csv(os.path.join(study_name, f"sample_counts_mqc_{cell_type_key}.tsv"), sep="\t", index=False)
+
+        # Count occurrences: samples by cell type (reversed orientation)
+        sample_counts_by_celltype = (
+            query_proc.obs
+            .groupby([cell_type_key, "sample_name"])
+            .size()
+            .unstack(fill_value=0)
+            .reset_index()
+        )
+        sample_counts_by_celltype.to_csv(os.path.join(study_name, f"celltype_counts_mqc_{cell_type_key}.tsv"), sep="\t", index=False)
+
+        plot_ct_umap(query_combined, study_name=study_name, cell_type_key=cell_type_key)
+
+        cluster_celltypes = (
+            query_combined.obs
+            .groupby(["leiden", cell_type_key])
+            .size()
+            .unstack(fill_value=0)
+            .reset_index()
+        )
+        cluster_celltypes.to_csv(os.path.join(study_name, f"cluster_celltypes_mqc_{cell_type_key}.tsv"), sep="\t", index=False)
+
+    # plot upset plots by sample and cell type (not cell type key dependent)
     outlier_cols = [
         "non_outlier",
-        "counts_outlier", 
-        "umi_outlier", 
+        "counts_outlier",
+        "umi_outlier",
         "genes_outlier",
-        "mito_outlier", 
-        "ribo_outlier", 
-        "hb_outlier", 
+        "mito_outlier",
+        "ribo_outlier",
+        "hb_outlier",
         "predicted_doublet"
     ]
     # check if outlier cols exist
     existing_outlier_cols = [col for col in outlier_cols if col in query_combined.obs.columns]
     plot_upset_by_group(query_combined.obs, existing_outlier_cols, "sample_name", study_name)
-
     write_clc_files(query_combined, study_name, metrics=existing_outlier_cols)
     
 if __name__ == "__main__":
