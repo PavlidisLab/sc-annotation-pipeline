@@ -20,6 +20,11 @@ custom_data:
     file_format: 'tsv'
     plot_type: 'barplot'
 
+  celltype_sample_composition:
+    section_name: 'Cell type sample composition'
+    description: 'Composition per cell type of samples'
+    file_format: 'tsv'
+    plot_type: 'barplot' 
 
   markers_heatmap:
     section_name: 'Cell type markers'
@@ -51,11 +56,15 @@ sp:
     fn: "*cell_type_markers_mqc.tsv"
 
   sample_celltype_composition:
-    fn: "*celltype_counts_mqc.tsv"
+    fn: "*sample_counts_mqc.tsv"
+
+  celltype_sample_composition:
+    fn "*celltype_counts_mqc.tsv"
 
 
 custom_content:
   order:
+    - celltype_sample_composition
     - sample_celltype_composition
     - cluster_celltype_composition
     - markers_heatmap
