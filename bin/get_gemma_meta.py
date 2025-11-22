@@ -24,7 +24,7 @@ def main():
 
     gemma_username = args.gemma_username
     gemma_password = args.gemma_password
-    client = gemmapy.GemmaPy(auth=[gemma_username,gemma_password], path='dev')
+    client = gemmapy.GemmaPy(auth=[gemma_username,gemma_password], path='staging')
     study_name = args.study_name
     samples_raw = client.raw.get_dataset_samples(study_name)
   

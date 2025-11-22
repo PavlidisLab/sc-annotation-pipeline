@@ -14,9 +14,22 @@ custom_data:
     description: 'UMAP of the cell type labels, sample names and leiden clusters'
     file_format: 'png'
 
+
   sample_celltype_composition:
     section_name: 'Sample cell type composition'
     description: 'Composition per sample of predicted cell types'
+    file_format: 'tsv'
+    plot_type: 'barplot'
+
+  sample_celltype_composition_class:
+    section_name: 'Sample cell type composition (class)'
+    description: 'Composition per sample of predicted class cell types'
+    file_format: 'tsv'
+    plot_type: 'barplot'
+
+  sample_celltype_composition_subclass:
+    section_name: 'Sample cell type composition (subclass)'
+    description: 'Composition per sample of predicted subclass cell types'
     file_format: 'tsv'
     plot_type: 'barplot'
 
@@ -24,7 +37,19 @@ custom_data:
     section_name: 'Cell type sample composition'
     description: 'Composition per cell type of samples'
     file_format: 'tsv'
-    plot_type: 'barplot' 
+    plot_type: 'barplot'
+
+  celltype_sample_composition_class:
+    section_name: 'Cell type sample composition (class)'
+    description: 'Composition per class cell type of samples'
+    file_format: 'tsv'
+    plot_type: 'barplot'
+
+  celltype_sample_composition_subclass:
+    section_name: 'Cell type sample composition (subclass)'
+    description: 'Composition per subclass cell type of samples'
+    file_format: 'tsv'
+    plot_type: 'barplot'
 
   markers_heatmap:
     section_name: 'Cell type markers'
@@ -37,6 +62,18 @@ custom_data:
     description: >
       Leiden clustering performed on log-transformed data with top 2000 variable genes,
       10 PCs, 30 neighbors, resolution = 0.3
+    file_format: 'tsv'
+    plot_type: 'barplot'
+
+  cluster_celltype_composition_class:
+    section_name: 'Leiden cluster composition (class)'
+    description: 'Leiden clustering composition for class cell types'
+    file_format: 'tsv'
+    plot_type: 'barplot'
+
+  cluster_celltype_composition_subclass:
+    section_name: 'Leiden cluster composition (subclass)'
+    description: 'Leiden clustering composition for subclass cell types'
     file_format: 'tsv'
     plot_type: 'barplot'
 
@@ -55,11 +92,27 @@ sp:
   markers_table:
     fn: "*cell_type_markers_mqc.tsv"
 
+
   sample_celltype_composition:
     fn: "*sample_counts_mqc.tsv"
+  sample_celltype_composition_class:
+    fn: "*sample_counts_mqc_class_cell_type.tsv"
+  sample_celltype_composition_subclass:
+    fn: "*sample_counts_mqc_subclass_cell_type.tsv"
 
   celltype_sample_composition:
-    fn "*celltype_counts_mqc.tsv"
+    fn: "*celltype_counts_mqc.tsv"
+  celltype_sample_composition_class:
+    fn: "*celltype_counts_mqc_class_cell_type.tsv"
+  celltype_sample_composition_subclass:
+    fn: "*celltype_counts_mqc_subclass_cell_type.tsv"
+
+  cluster_celltype_composition:
+    fn: "*cluster_celltypes_mqc.tsv"
+  cluster_celltype_composition_class:
+    fn: "*cluster_celltypes_mqc_class_cell_type.tsv"
+  cluster_celltype_composition_subclass:
+    fn: "*cluster_celltypes_mqc_subclass_cell_type.tsv"
 
 
 custom_content:
