@@ -1,7 +1,7 @@
 {
     "organism": "mus_musculus",
     "census_version": "2024-07-01",
-    "cutoff": 0.2,
+    "cutoff": 0,
     "seed": 42,
     "subsample_ref": 500,
     "study_names": null,
