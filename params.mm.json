@@ -12,7 +12,6 @@
         "Tabula Muris Senis"
     ],
     "organ": "brain",
-    "rename_file": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus_author.tsv",
     "nmads": 5,
     "author_annotations_path": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/author_cell_annotations",
     "original_celltype_columns": "/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/original_celltype_columns.tsv",
