@@ -36,7 +36,7 @@ def parse_arguments():
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
     parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/GSE223423_sample_meta.tsv")
-    parser.add_argument('--cell_type_key', type=str, default=None, help='Column name in assigned celltypes to use for cell type')
+    #parser.add_argument('--cell_type_key', type=str, default=None, help='Column name in assigned celltypes to use for cell type')
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -211,8 +211,8 @@ def main():
     gene_mapping_path = args.gene_mapping 
     organism = args.organism
    # ref_keys = args.ref_keys   
-    cell_type_key = args.cell_type_key
-    print(cell_type_key)
+    #cell_type_key = args.cell_type_key
+   # print(cell_type_key)
     # Load gene mapping file 
     gene_mapping = pd.read_csv(gene_mapping_path, sep=None, header=0)
     # Drop rows with missing values in the relevant columns
