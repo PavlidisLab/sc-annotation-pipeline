@@ -36,7 +36,7 @@ def parse_arguments():
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
     parser.add_argument('--nmads',type=int, default=5)
     parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/GSE223423_sample_meta.tsv")
-    #parser.add_argument('--cell_type_key', type=str, default=None, help='Column name in assigned celltypes to use for cell type')
+    parser.add_argument('--cell_type_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type","family_cell_type"], help='Column names in assigned celltypes to use for cell type')
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -210,6 +210,7 @@ def main():
     markers_file = args.markers_file
     gene_mapping_path = args.gene_mapping 
     organism = args.organism
+    cell_type_keys = args.cell_type_keys
    # ref_keys = args.ref_keys   
     #cell_type_key = args.cell_type_key
    # print(cell_type_key)
@@ -233,7 +234,6 @@ def main():
     query.raw = query.copy()
 
     # List of cell type keys to process
-    cell_type_keys = ["class_cell_type", "subclass_cell_type"]
     for cell_type_key in cell_type_keys:
         # If the key doesn't exist, skip
         if cell_type_key not in query.obs.columns:
