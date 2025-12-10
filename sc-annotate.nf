@@ -260,6 +260,7 @@ process processQC {
 
 
     script:
+    cell_type_keys=params.ref_keys.join(" ")
     """
     python $projectDir/bin/process_QC.py --query_path ${study_path} \\
         --assigned_celltypes_paths ${predicted_meta_files.join(' ')} \\
@@ -269,7 +270,7 @@ process processQC {
         --sample_meta ${sample_meta} \\
         --organism ${params.organism} \\
         --markers_file ${params.markers_file} \\
-        --cell_type_key ${params.cell_type_key}
+        --cell_type_keys ${cell_type_keys}
     """ 
 }
 
@@ -411,7 +412,7 @@ workflow {
             files.collect { file -> tuple(study_name, file) }
         }
     }
-    loadCTA(predicted_celltypes)
+    //loadCTA(predicted_celltypes)
     predicted_celltypes.groupTuple(by: 0)
     .set { grouped_predicted_celltypes }
  
@@ -474,7 +475,7 @@ workflow {
     if (params.process_samples == false) {
         runMultiQC(multiqc_channel)
         multiqc_channel = runMultiQC.out.multiqc_html
-        publishMultiQC(multiqc_channel)
+        //publishMultiQC(multiqc_channel)
     }
     save_params_to_file()
 }
