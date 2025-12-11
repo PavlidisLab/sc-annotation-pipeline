@@ -117,7 +117,7 @@ def plot_joint_umap(query, study_name, sample_name):
 
 
 def plot_ct_umap(query, study_name, cell_type_key):
-    colors = [cell_type_key,"leiden","sample_name"]
+    colors = [cell_type_key,"sample_name"]
     fig = sc.pl.umap(
         query,
         color=colors,
@@ -239,19 +239,26 @@ def main():
         if cell_type_key not in query.obs.columns:
             print(f"Warning: {cell_type_key} not found in query.obs.columns, skipping.")
             continue
-        make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key=cell_type_key)
+        
 
         query_proc = qc_preprocess(query.copy())
+        
 
-        query_subsets = {}
-        for sample_name in query_proc.obs["sample_name"].unique():
-            query_subset = query_proc[query_proc.obs["sample_name"] == sample_name]
-            query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
-            query_subsets[sample_name] = query_subset
-            plot_joint_umap(query_subset, study_name=study_name, sample_name=sample_name)
+        #query_subsets = {}
+        #for sample_name in query_proc.obs["sample_name"].unique():
+            #query_subset = query_proc[query_proc.obs["sample_name"] == sample_name]
+            #query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
+            #query_subsets[sample_name] = query_subset
+            #plot_joint_umap(query_subset, study_name=study_name, sample_name=sample_name)
 
         # Combine query subsets
-        query_combined = ad.concat(query_subsets.values(), axis=0)
+     #   query_combined = ad.concat(query_subsets.values(), axis=0)
+     
+     #  Instead of per-sample QC, do QC on the whole query
+        query_combined = get_qc_metrics(query_proc, nmads=args.nmads)
+        plot_joint_umap(query_combined, study_name=study_name, sample_name="all_samples")
+        
+       # for sample_name in query_combined.obs["sample_name"].unique():
 
         # Count occurrences: cell types by sample (original orientation)
         celltype_counts_by_sample = (
@@ -275,14 +282,14 @@ def main():
 
         plot_ct_umap(query_combined, study_name=study_name, cell_type_key=cell_type_key)
 
-        cluster_celltypes = (
-            query_combined.obs
-            .groupby(["leiden", cell_type_key])
-            .size()
-            .unstack(fill_value=0)
-            .reset_index()
-        )
-        cluster_celltypes.to_csv(os.path.join(study_name, f"cluster_celltypes_mqc_{cell_type_key}.tsv"), sep="\t", index=False)
+        #cluster_celltypes = (
+            #query_combined.obs
+            #.groupby(["leiden", cell_type_key])
+            #.size()
+            #.unstack(fill_value=0)
+            #.reset_index()
+        #)
+        #cluster_celltypes.to_csv(os.path.join(study_name, f"cluster_celltypes_mqc_{cell_type_key}.tsv"), sep="\t", index=False)
 
     # plot upset plots by sample and cell type (not cell type key dependent)
     outlier_cols = [
@@ -297,9 +304,11 @@ def main():
     ]
     # check if outlier cols exist
     existing_outlier_cols = [col for col in outlier_cols if col in query_combined.obs.columns]
-    plot_upset_by_group(query_combined.obs, existing_outlier_cols, "sample_name", study_name)
+    plot_upset_by_group(query_combined.obs, existing_outlier_cols, group_col=None, outdir=study_name)
     write_clc_files(query_combined, study_name, metrics=existing_outlier_cols)
     
+    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key="subclass_cell_type")
+
 if __name__ == "__main__":
     main()
  

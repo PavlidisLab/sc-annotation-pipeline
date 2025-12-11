@@ -28,7 +28,7 @@ custom_data:
     plot_type: 'barplot'
 
   sample_celltype_composition_family:
-    section_name: 'Sample cell type composition'
+    section_name: 'Sample cell type composition (family)'
     description: 'Composition per sample of predicted cell types'
     file_format: 'tsv'
     plot_type: 'barplot'
