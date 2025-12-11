@@ -116,8 +116,8 @@ def plot_joint_umap(query, study_name, sample_name):
 
 
 
-def plot_ct_umap(query, study_name, cell_type_key):
-    colors = [cell_type_key,"sample_name"]
+def plot_ct_umap(query, study_name, cell_type_keys):
+    colors = list(cell_type_keys) + ["sample_name"]
     fig = sc.pl.umap(
         query,
         color=colors,
@@ -211,10 +211,7 @@ def main():
     gene_mapping_path = args.gene_mapping 
     organism = args.organism
     cell_type_keys = args.cell_type_keys
-   # ref_keys = args.ref_keys   
-    #cell_type_key = args.cell_type_key
-   # print(cell_type_key)
-    # Load gene mapping file 
+
     gene_mapping = pd.read_csv(gene_mapping_path, sep=None, header=0)
     # Drop rows with missing values in the relevant columns
     gene_mapping = gene_mapping.dropna(subset=["ENSEMBL_ID", "OFFICIAL_SYMBOL"])
@@ -242,24 +239,10 @@ def main():
         
 
         query_proc = qc_preprocess(query.copy())
-        
-
-        #query_subsets = {}
-        #for sample_name in query_proc.obs["sample_name"].unique():
-            #query_subset = query_proc[query_proc.obs["sample_name"] == sample_name]
-            #query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
-            #query_subsets[sample_name] = query_subset
-            #plot_joint_umap(query_subset, study_name=study_name, sample_name=sample_name)
-
-        # Combine query subsets
-     #   query_combined = ad.concat(query_subsets.values(), axis=0)
-     
-     #  Instead of per-sample QC, do QC on the whole query
+        #  Instead of per-sample QC, do QC on the whole query
         query_combined = get_qc_metrics(query_proc, nmads=args.nmads)
         plot_joint_umap(query_combined, study_name=study_name, sample_name="all_samples")
         
-       # for sample_name in query_combined.obs["sample_name"].unique():
-
         # Count occurrences: cell types by sample (original orientation)
         celltype_counts_by_sample = (
             query_proc.obs
@@ -280,17 +263,8 @@ def main():
         )
         sample_counts_by_celltype.to_csv(os.path.join(study_name, f"celltype_counts_mqc_{cell_type_key}.tsv"), sep="\t", index=False)
 
-        plot_ct_umap(query_combined, study_name=study_name, cell_type_key=cell_type_key)
 
-        #cluster_celltypes = (
-            #query_combined.obs
-            #.groupby(["leiden", cell_type_key])
-            #.size()
-            #.unstack(fill_value=0)
-            #.reset_index()
-        #)
-        #cluster_celltypes.to_csv(os.path.join(study_name, f"cluster_celltypes_mqc_{cell_type_key}.tsv"), sep="\t", index=False)
-
+    plot_ct_umap(query_combined, study_name=study_name, cell_type_keys=cell_type_keys)
     # plot upset plots by sample and cell type (not cell type key dependent)
     outlier_cols = [
         "non_outlier",
