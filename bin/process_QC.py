@@ -229,6 +229,16 @@ def main():
     query = read_query(query_path, gene_mapping, new_meta=assigned_celltypes, sample_meta=sample_meta)
     query.obs.index = query.obs["index"]
     query.raw = query.copy()
+    query_proc = qc_preprocess(query.copy())
+
+    query_subsets = {}
+    for sample_name in query_proc.obs["sample_name"].unique():
+      query_subset = query_proc[query_proc.obs["sample_name"] == sample_name]
+      query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
+      query_subsets[sample_name] = query_subset
+      plot_joint_umap(query_subset, study_name=study_name, sample_name=sample_name)
+
+    query_combined = ad.concat(query_subsets.values(), axis=0)
 
     # List of cell type keys to process
     for cell_type_key in cell_type_keys:
@@ -236,13 +246,6 @@ def main():
         if cell_type_key not in query.obs.columns:
             print(f"Warning: {cell_type_key} not found in query.obs.columns, skipping.")
             continue
-        
-
-        query_proc = qc_preprocess(query.copy())
-        #  Instead of per-sample QC, do QC on the whole query
-        query_combined = get_qc_metrics(query_proc, nmads=args.nmads)
-        plot_joint_umap(query_combined, study_name=study_name, sample_name="all_samples")
-        
         # Count occurrences: cell types by sample (original orientation)
         celltype_counts_by_sample = (
             query_proc.obs
