@@ -14,5 +14,6 @@
     "nmads": 5,
     "mask": true,
     "process_samples": false,
-    "use_staging": true
+    "use_staging": true,
+    "preferredCtaLevel": "class"
 }
