@@ -17,5 +17,6 @@
     "original_celltype_columns": "/space/grp/Pipelines/sc-annotation-pipeline/meta/original_celltype_columns.tsv",
     "mask": true,
     "process_samples": false,
-    "use_staging": true
+    "use_staging": true,
+    "preferredCtaLevel": "family"
 }

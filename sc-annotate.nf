@@ -172,7 +172,7 @@ process loadCTA {
     script:
     def gemma_cmd = params.use_staging ? "gemma-cli-staging" : "gemma-cli"
     def level = celltype_file.getName().split("_")[-3]
-    def preferredCtaFlag = (level == "class") ? "-preferredCta" : ""
+    def preferredCtaFlag = (level == params.preferredCtaLevel) ? "-preferredCta" : ""
     """
    ${gemma_cmd} loadSingleCellData -loadCta -e ${study_name} \\
                -ctaFile ${celltype_file} ${preferredCtaFlag} \\
