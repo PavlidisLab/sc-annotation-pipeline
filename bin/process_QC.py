@@ -236,10 +236,9 @@ def main():
       query_subset = query_proc[query_proc.obs["sample_name"] == sample_name]
       query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
       query_subsets[sample_name] = query_subset
-      plot_joint_umap(query_subset, study_name=study_name, sample_name=sample_name)
 
     query_combined = ad.concat(query_subsets.values(), axis=0)
-
+    plot_joint_umap(query_combined, study_name=study_name, sample_name="all_samples")
     # List of cell type keys to process
     for cell_type_key in cell_type_keys:
         # If the key doesn't exist, skip
