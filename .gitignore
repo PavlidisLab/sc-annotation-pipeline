@@ -98,3 +98,9 @@ ipython_config.py
 test_human/
 study_name**
 **psychencode**
+
+# Ignore large author annotation files
+assets/author_cell_annotations/An_integrated_transcriptomic_and_epigenomic_atlas_of_mouse_primary_motor_cortex_cell_types.obs.tsv
+assets/author_cell_annotations/Single-cell_RNA-seq_for_all_cortical__hippocampal_regions_10x.obs.tsv
+deprecated/meta/author_cell_annotations/An_integrated_transcriptomic_and_epigenomic_atlas_of_mouse_primary_motor_cortex_cell_types.obs.tsv
+deprecated/meta/author_cell_annotations/Single-cell_RNA-seq_for_all_cortical__hippocampal_regions_10x.obs.tsv
