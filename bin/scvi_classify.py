@@ -38,7 +38,7 @@ def parse_arguments():
     parser.add_argument('--ref_path', type=str, default="/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/refs/whole_cortex.h5ad") #nargs ="+")
     parser.add_argument('--cutoff', type=float, default=0, help="Cutoff probability for classification, else cell will be assigned unknown")
     parser.add_argument('--ref_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type"], help="levels of granularity to classify corresponding to column names of rename_cells file")
-    parser.add_argument('--mapping_file', type=str, default="/space/grp/Pipelines/sc-annotation-pipeline/meta/rename_cells_mmus_author.tsv", help="cell type taxonomy mapping file")
+    parser.add_argument('--mapping_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mus_musculus.tsv", help="cell type taxonomy mapping file")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args

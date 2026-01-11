@@ -6,6 +6,6 @@ nextflow sc-annotate.nf \
 	--study_names /space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/tests/study_names_human.txt \
 	-process.executor local \
 	--process_samples false \
-	--mask false \
+	--mask true \
 	-resume
 	
