@@ -37,6 +37,14 @@ def parse_arguments():
     parser.add_argument('--nmads',type=int, default=5)
     parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/GSE223423_sample_meta.tsv")
     parser.add_argument('--cell_type_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type","family_cell_type"], help='Column names in assigned celltypes to use for cell type')
+    parser.add_argument('--outlier_cols', type=str, nargs="+", default=[
+        "non_outlier",
+        "counts_outlier",
+        "umi_outlier",
+        "genes_outlier",
+        "mito_outlier",
+        "predicted_doublet"
+    ], help='List of outlier columns to use')
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -131,7 +139,17 @@ def plot_ct_umap(query, study_name, cell_type_keys):
     fig.savefig(out_path, bbox_inches='tight')
     plt.close(fig)
  
-def write_clc_files(query_combined, study_name, metrics=["counts_outlier", "mito_outlier", "ribo_outlier", "hb_outlier", "predicted_doublet", "umi_outlier", "genes_outlier"]):
+def write_clc_files(query_combined, study_name, metrics=None):
+    if metrics is None:
+        metrics = [
+            "counts_outlier",
+            "mito_outlier",
+            #"ribo_outlier",
+            #"hb_outlier",
+            "predicted_doublet",
+            "umi_outlier",
+            "genes_outlier"
+        ]
     CLC_df = query_combined.obs[["sample_id", "cell_id"] + metrics].copy()
 
     
@@ -148,7 +166,18 @@ def write_clc_files(query_combined, study_name, metrics=["counts_outlier", "mito
     CLC_df.to_csv(f"{study_name}_mask.tsv", sep="\t", index=False)
 
 
-def plot_upset_by_group(obs, outlier_cols, group_col, outdir):
+def plot_upset_by_group(obs, outlier_cols=None, group_col=None, outdir=None):
+    if outlier_cols is None:
+        outlier_cols = [
+            "non_outlier",
+            "counts_outlier",
+            "umi_outlier",
+            "genes_outlier",
+            "mito_outlier",
+            #"ribo_outlier",
+            #"hb_outlier",
+            "predicted_doublet"
+        ]
     os.makedirs(outdir, exist_ok=True)
     obs = obs.copy()
     obs["membership"] = obs[outlier_cols].apply(lambda row: tuple(c for c in outlier_cols if row[c]), axis=1)
@@ -268,19 +297,10 @@ def main():
 
     plot_ct_umap(query_combined, study_name=study_name, cell_type_keys=cell_type_keys)
     # plot upset plots by sample and cell type (not cell type key dependent)
-    outlier_cols = [
-        "non_outlier",
-        "counts_outlier",
-        "umi_outlier",
-        "genes_outlier",
-        "mito_outlier",
-      #  "ribo_outlier",
-     #   "hb_outlier",
-        "predicted_doublet"
-    ]
+    outlier_cols = args.outlier_cols
     # check if outlier cols exist
     existing_outlier_cols = [col for col in outlier_cols if col in query_combined.obs.columns]
-    plot_upset_by_group(query_combined.obs, existing_outlier_cols, group_col=None, outdir=study_name)
+    plot_upset_by_group(query_combined.obs, outlier_cols=existing_outlier_cols, group_col=None, outdir=study_name)
     write_clc_files(query_combined, study_name, metrics=existing_outlier_cols)
     
     make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key="subclass_cell_type")
