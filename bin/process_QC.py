@@ -47,8 +47,8 @@ def plot_joint_umap(query, study_name, sample_name):
     metrics = {
         "log1p_total_counts": ["counts_outlier", "umi_outlier", "genes_outlier"],
         "pct_counts_mito": "mito_outlier",
-        "pct_counts_ribo": "ribo_outlier",
-        "pct_counts_hb": "hb_outlier",
+     #   "pct_counts_ribo": "ribo_outlier",
+      #  "pct_counts_hb": "hb_outlier",
     }
     
     data = query.obs
@@ -274,8 +274,8 @@ def main():
         "umi_outlier",
         "genes_outlier",
         "mito_outlier",
-        "ribo_outlier",
-        "hb_outlier",
+      #  "ribo_outlier",
+     #   "hb_outlier",
         "predicted_doublet"
     ]
     # check if outlier cols exist
