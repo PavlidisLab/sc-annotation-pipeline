@@ -1,0 +1,31 @@
+name: combine_cta
+description: Combines cell type annotation files from multiple samples into a single file
+keywords:
+  - combine
+  - cell-type
+  - annotation
+
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing study metadata
+  - level:
+      type: string
+      description: Cell type annotation level (subclass, class, family)
+  - query_names:
+      type: list
+      description: List of query sample names
+  - celltype_files:
+      type: file
+      description: Cell type TSV files to combine
+
+output:
+  - combined_celltypes:
+      type: file
+      description: Combined cell type annotations
+      pattern: "*_combined_celltypes.tsv"
+
+authors:
+  - "@rachadele"
+maintainers:
+  - "@rachadele"

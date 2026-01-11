@@ -1,0 +1,46 @@
+name: process_query_sample
+description: Processes individual query samples through scVI model to generate embeddings
+keywords:
+  - scvi
+  - embeddings
+  - single-cell
+  - query
+tools:
+  - scvi:
+      description: scVI for generating latent representations
+      homepage: https://scvi-tools.org/
+      licence: ["BSD-3-Clause"]
+
+input:
+  - model_path:
+      type: directory
+      description: Path to scVI model directory
+  - meta:
+      type: map
+      description: Groovy Map containing sample metadata
+      pattern: "[ study_name: string, query_name: string ]"
+  - study_path:
+      type: directory
+      description: Path to study data directory
+  - seed:
+      type: integer
+      description: Random seed for reproducibility
+
+output:
+  - processed_query:
+      type: file
+      description: Processed AnnData with embeddings
+      pattern: "*.h5ad"
+  - raw_query:
+      type: file
+      description: Raw AnnData file
+      pattern: "*_raw.h5ad"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@rachadele"
+maintainers:
+  - "@rachadele"

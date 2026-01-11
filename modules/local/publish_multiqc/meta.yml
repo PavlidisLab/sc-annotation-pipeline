@@ -1,0 +1,35 @@
+name: publish_multiqc
+description: Uploads MultiQC report to Gemma database
+keywords:
+  - gemma
+  - multiqc
+  - report
+  - upload
+
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing study metadata
+  - multiqc_html:
+      type: file
+      description: MultiQC HTML report
+  - use_staging:
+      type: boolean
+      description: Whether to use Gemma staging environment
+  - version:
+      type: string
+      description: Pipeline version
+  - nmads:
+      type: integer
+      description: Number of MADs used for outlier detection
+
+output:
+  - message:
+      type: file
+      description: Gemma CLI output message
+      pattern: "message.txt"
+
+authors:
+  - "@rachadele"
+maintainers:
+  - "@rachadele"

@@ -1,0 +1,51 @@
+name: rf_classify
+description: Performs random forest classification on scVI embeddings for cell type prediction
+keywords:
+  - random-forest
+  - classification
+  - cell-type
+  - single-cell
+tools:
+  - scikit-learn:
+      description: Machine learning library for Python
+      homepage: https://scikit-learn.org/
+      documentation: https://scikit-learn.org/stable/documentation.html
+      licence: ["BSD-3-Clause"]
+
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing sample metadata
+      pattern: "[ study_name: string, query_name: string ]"
+  - query_path:
+      type: file
+      description: Query AnnData file with embeddings
+      pattern: "*.h5ad"
+  - ref_path:
+      type: file
+      description: Reference AnnData file
+      pattern: "*.h5ad"
+  - cutoff:
+      type: float
+      description: Minimum classification probability threshold
+  - mapping_file:
+      type: file
+      description: Cell type mapping/renaming file
+  - ref_keys:
+      type: list
+      description: List of reference annotation keys to classify
+
+output:
+  - celltype_files:
+      type: file
+      description: Predicted cell type TSV files
+      pattern: "*_cell_type.tsv"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@rachadele"
+maintainers:
+  - "@rachadele"

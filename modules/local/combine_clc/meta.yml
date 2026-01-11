@@ -1,0 +1,26 @@
+name: combine_clc
+description: Combines cell-level characteristic (outlier mask) files from multiple samples
+keywords:
+  - combine
+  - cell-level
+  - outlier
+  - mask
+
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing study metadata
+  - mask_files:
+      type: file
+      description: Mask TSV files to combine
+
+output:
+  - combined_mask:
+      type: file
+      description: Combined cell-level characteristics
+      pattern: "*_combined_celltype_mask.tsv"
+
+authors:
+  - "@rachadele"
+maintainers:
+  - "@rachadele"

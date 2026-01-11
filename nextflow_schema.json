@@ -1,0 +1,333 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/PavlidisLab/sc-annotation-pipeline/master/nextflow_schema.json",
+    "title": "nf-core/scannotate pipeline parameters",
+    "description": "Nextflow pipeline for automated single-cell cell type annotation using scVI embeddings and random forest classification",
+    "type": "object",
+    "definitions": {
+        "input_output_options": {
+            "title": "Input/output options",
+            "type": "object",
+            "fa_icon": "fas fa-terminal",
+            "description": "Define where the pipeline should find input data and save output data.",
+            "required": [],
+            "properties": {
+                "study_names": {
+                    "type": "string",
+                    "description": "Study names to process from Gemma database.",
+                    "help_text": "Either a space-separated list of study names (e.g., 'GSE123456 GSE789012') or a path to a text file with one study name per line.",
+                    "fa_icon": "fas fa-file-alt"
+                },
+                "study_paths": {
+                    "type": "string",
+                    "description": "Paths to pre-downloaded study data directories.",
+                    "help_text": "Either a space-separated list of paths or a path to a text file with one directory path per line. Use this if you have already downloaded MEX files.",
+                    "fa_icon": "fas fa-folder-open"
+                },
+                "outdir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "The output directory where the results will be saved.",
+                    "default": "results",
+                    "fa_icon": "fas fa-folder-open"
+                },
+                "publish_dir_mode": {
+                    "type": "string",
+                    "default": "copy",
+                    "description": "Method used to save pipeline results to output directory.",
+                    "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files.",
+                    "fa_icon": "fas fa-copy",
+                    "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
+                    "hidden": true
+                }
+            }
+        },
+        "reference_options": {
+            "title": "Reference data options",
+            "type": "object",
+            "fa_icon": "fas fa-database",
+            "description": "Options for reference data from CellxGene Census.",
+            "properties": {
+                "organism": {
+                    "type": "string",
+                    "default": "mus_musculus",
+                    "description": "Organism for analysis.",
+                    "enum": ["mus_musculus", "homo_sapiens"],
+                    "fa_icon": "fas fa-dna"
+                },
+                "census_version": {
+                    "type": "string",
+                    "default": "2024-07-01",
+                    "description": "CellxGene Census version for scVI model and reference data.",
+                    "fa_icon": "fas fa-code-branch"
+                },
+                "organ": {
+                    "type": "string",
+                    "default": "brain",
+                    "description": "Organ to sample from CellxGene Census.",
+                    "fa_icon": "fas fa-brain"
+                },
+                "subsample_ref": {
+                    "type": "integer",
+                    "default": 500,
+                    "description": "Number of cells per cell type to subsample from reference.",
+                    "minimum": 10,
+                    "fa_icon": "fas fa-random"
+                },
+                "ref_collections": {
+                    "type": "array",
+                    "description": "Reference collection names from CellxGene Census.",
+                    "help_text": "List of collection names to use as reference data for cell type annotation.",
+                    "fa_icon": "fas fa-layer-group",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ref_keys": {
+                    "type": "array",
+                    "default": ["subclass_cell_type", "class_cell_type", "family_cell_type"],
+                    "description": "Reference annotation keys for multi-level classification.",
+                    "fa_icon": "fas fa-key",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "classification_options": {
+            "title": "Classification options",
+            "type": "object",
+            "fa_icon": "fas fa-cogs",
+            "description": "Options for cell type classification.",
+            "properties": {
+                "cutoff": {
+                    "type": "number",
+                    "default": 0,
+                    "description": "Minimum classification probability to assign a label.",
+                    "help_text": "Cells with classification probability below this threshold will be labeled as 'Unknown'. Set to 0 to disable thresholding.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "fa_icon": "fas fa-sliders-h"
+                },
+                "seed": {
+                    "type": "integer",
+                    "default": 42,
+                    "description": "Random seed for reproducibility.",
+                    "fa_icon": "fas fa-seedling"
+                },
+                "process_samples": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Process individual samples separately instead of combined.",
+                    "help_text": "When true, each sample within a study is processed independently. When false, all samples in a study are processed together.",
+                    "fa_icon": "fas fa-cubes"
+                },
+                "preferredCtaLevel": {
+                    "type": "string",
+                    "default": "class",
+                    "description": "Preferred cell type annotation level for Gemma upload.",
+                    "enum": ["subclass", "class", "family"],
+                    "fa_icon": "fas fa-star"
+                }
+            }
+        },
+        "qc_options": {
+            "title": "QC options",
+            "type": "object",
+            "fa_icon": "fas fa-chart-bar",
+            "description": "Options for quality control and outlier detection.",
+            "properties": {
+                "nmads": {
+                    "type": "integer",
+                    "default": 5,
+                    "description": "Number of MADs for outlier detection.",
+                    "help_text": "Cells are marked as outliers if their QC metrics deviate by more than this many Median Absolute Deviations from the median.",
+                    "minimum": 1,
+                    "fa_icon": "fas fa-exclamation-triangle"
+                },
+                "mask": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Generate cell-level outlier masks.",
+                    "fa_icon": "fas fa-mask"
+                }
+            }
+        },
+        "asset_files": {
+            "title": "Asset files",
+            "type": "object",
+            "fa_icon": "fas fa-file",
+            "description": "Paths to asset files used by the pipeline.",
+            "properties": {
+                "rename_file": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "TSV file for renaming/mapping cell types.",
+                    "fa_icon": "fas fa-file-csv"
+                },
+                "gene_mapping": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Gene ID mapping file (NCBI to Ensembl/HGNC).",
+                    "fa_icon": "fas fa-dna"
+                },
+                "markers_file": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "TSV file containing cell type marker genes.",
+                    "fa_icon": "fas fa-marker"
+                },
+                "multiqc_config": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "MultiQC configuration file.",
+                    "fa_icon": "fas fa-cog"
+                },
+                "original_celltype_columns": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Optional TSV file specifying original cell type columns.",
+                    "fa_icon": "fas fa-columns"
+                },
+                "author_annotations_path": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Optional directory containing author-provided annotations.",
+                    "fa_icon": "fas fa-folder"
+                }
+            }
+        },
+        "gemma_options": {
+            "title": "Gemma database options",
+            "type": "object",
+            "fa_icon": "fas fa-cloud-upload-alt",
+            "description": "Options for Gemma database integration.",
+            "properties": {
+                "use_staging": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Use Gemma staging environment instead of production.",
+                    "fa_icon": "fas fa-flask"
+                },
+                "GEMMA_USERNAME": {
+                    "type": "string",
+                    "description": "Gemma API username (from environment variable).",
+                    "fa_icon": "fas fa-user",
+                    "hidden": true
+                },
+                "GEMMA_PASSWORD": {
+                    "type": "string",
+                    "description": "Gemma API password (from environment variable).",
+                    "fa_icon": "fas fa-lock",
+                    "hidden": true
+                },
+                "upload_cta": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Upload cell type annotations to Gemma.",
+                    "fa_icon": "fas fa-upload"
+                },
+                "upload_clc": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Upload cell-level characteristics to Gemma.",
+                    "fa_icon": "fas fa-upload"
+                },
+                "upload_multiqc": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Upload MultiQC report to Gemma.",
+                    "fa_icon": "fas fa-upload"
+                }
+            }
+        },
+        "max_job_request_options": {
+            "title": "Max job request options",
+            "type": "object",
+            "fa_icon": "fab fa-acquisitions-incorporated",
+            "description": "Set the top limit for requested resources for any single job.",
+            "help_text": "If you are running on a smaller system, a pipeline step requesting more resources than are available may cause the Nextflow to stop the run with an error. These options allow you to cap the maximum resources requested by any single job so that the pipeline will run on your system.",
+            "properties": {
+                "max_cpus": {
+                    "type": "integer",
+                    "description": "Maximum number of CPUs that can be requested for any single job.",
+                    "default": 16,
+                    "fa_icon": "fas fa-microchip",
+                    "hidden": true
+                },
+                "max_memory": {
+                    "type": "string",
+                    "description": "Maximum amount of memory that can be requested for any single job.",
+                    "default": "128.GB",
+                    "fa_icon": "fas fa-memory",
+                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
+                    "hidden": true
+                },
+                "max_time": {
+                    "type": "string",
+                    "description": "Maximum amount of time that can be requested for any single job.",
+                    "default": "240.h",
+                    "fa_icon": "far fa-clock",
+                    "pattern": "^(\\d+\\.?\\s*(s|m|h|d|day)\\s*)+$",
+                    "hidden": true
+                }
+            }
+        },
+        "generic_options": {
+            "title": "Generic options",
+            "type": "object",
+            "fa_icon": "fas fa-file-import",
+            "description": "Less common options for the pipeline, typically set in a config file.",
+            "hidden": true,
+            "properties": {
+                "help": {
+                    "type": "boolean",
+                    "description": "Display help text.",
+                    "fa_icon": "fas fa-question-circle",
+                    "hidden": true
+                },
+                "version": {
+                    "type": "boolean",
+                    "description": "Display version and exit.",
+                    "fa_icon": "fas fa-code-branch",
+                    "hidden": true
+                },
+                "validate_params": {
+                    "type": "boolean",
+                    "description": "Boolean whether to validate parameters against the schema at runtime.",
+                    "default": true,
+                    "fa_icon": "fas fa-check-square",
+                    "hidden": true
+                },
+                "validationShowHiddenParams": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-eye-slash",
+                    "description": "Show all params when using `--help`.",
+                    "hidden": true
+                },
+                "validationFailUnrecognisedParams": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-check-circle",
+                    "description": "Validation of parameters fails when an unrecognised parameter is found.",
+                    "hidden": true
+                },
+                "validationLenientMode": {
+                    "type": "boolean",
+                    "fa_icon": "far fa-check-circle",
+                    "description": "Validation of parameters in lenient mode.",
+                    "hidden": true
+                }
+            }
+        }
+    },
+    "allOf": [
+        { "$ref": "#/definitions/input_output_options" },
+        { "$ref": "#/definitions/reference_options" },
+        { "$ref": "#/definitions/classification_options" },
+        { "$ref": "#/definitions/qc_options" },
+        { "$ref": "#/definitions/asset_files" },
+        { "$ref": "#/definitions/gemma_options" },
+        { "$ref": "#/definitions/max_job_request_options" },
+        { "$ref": "#/definitions/generic_options" }
+    ]
+}

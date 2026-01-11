@@ -1,0 +1,29 @@
+name: load_clc
+description: Uploads cell-level characteristics (outlier masks) to Gemma database
+keywords:
+  - gemma
+  - upload
+  - cell-level
+  - characteristics
+
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing study metadata
+  - mask_file:
+      type: file
+      description: Cell-level characteristics TSV file
+  - use_staging:
+      type: boolean
+      description: Whether to use Gemma staging environment
+
+output:
+  - message:
+      type: file
+      description: Gemma CLI output message
+      pattern: "message.txt"
+
+authors:
+  - "@rachadele"
+maintainers:
+  - "@rachadele"

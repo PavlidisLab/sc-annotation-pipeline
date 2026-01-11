@@ -1,0 +1,51 @@
+name: run_multiqc
+description: Generates MultiQC report from QC metrics
+keywords:
+  - multiqc
+  - report
+  - qc
+  - quality-control
+tools:
+  - multiqc:
+      description: Aggregate results from multiple tools into a single report
+      homepage: https://multiqc.info/
+      documentation: https://multiqc.info/docs/
+      licence: ["GPL-3.0"]
+
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing study metadata
+  - qc_dir:
+      type: directory
+      description: QC output directory
+  - multiqc_config:
+      type: file
+      description: MultiQC configuration file
+  - census_version:
+      type: string
+      description: CellxGene census version
+  - cutoff:
+      type: float
+      description: Classification probability cutoff
+  - nmads:
+      type: integer
+      description: Number of MADs for outlier detection
+  - process_samples:
+      type: boolean
+      description: Whether samples are processed individually
+
+output:
+  - report:
+      type: file
+      description: MultiQC HTML report
+      pattern: "**/multiqc_report.html"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@rachadele"
+maintainers:
+  - "@rachadele"

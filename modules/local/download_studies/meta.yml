@@ -1,0 +1,26 @@
+name: download_studies
+description: Downloads single-cell data matrix from Gemma in MEX format
+keywords:
+  - gemma
+  - download
+  - mex
+  - single-cell
+
+input:
+  - study_name:
+      type: string
+      description: Gemma study identifier
+  - use_staging:
+      type: boolean
+      description: Whether to use Gemma staging environment
+
+output:
+  - study_dir:
+      type: directory
+      description: Directory containing MEX files
+      pattern: "*/"
+
+authors:
+  - "@rachadele"
+maintainers:
+  - "@rachadele"

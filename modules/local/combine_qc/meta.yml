@@ -1,0 +1,25 @@
+name: combine_qc
+description: Combines QC output directories from multiple samples into a single directory
+keywords:
+  - combine
+  - qc
+  - quality-control
+
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing study metadata
+  - qc_dirs:
+      type: directory
+      description: QC output directories to combine
+
+output:
+  - combined_qc:
+      type: directory
+      description: Combined QC directory
+      pattern: "*/"
+
+authors:
+  - "@rachadele"
+maintainers:
+  - "@rachadele"

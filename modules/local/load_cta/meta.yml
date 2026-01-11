@@ -1,0 +1,35 @@
+name: load_cta
+description: Uploads cell type annotations to Gemma database
+keywords:
+  - gemma
+  - upload
+  - cell-type
+  - annotation
+
+input:
+  - meta:
+      type: map
+      description: Groovy Map containing study metadata
+  - celltype_file:
+      type: file
+      description: Cell type annotation TSV file
+  - use_staging:
+      type: boolean
+      description: Whether to use Gemma staging environment
+  - version:
+      type: string
+      description: Pipeline version for annotation naming
+  - preferred_cta_level:
+      type: string
+      description: Preferred cell type annotation level
+
+output:
+  - message:
+      type: file
+      description: Gemma CLI output message
+      pattern: "message.txt"
+
+authors:
+  - "@rachadele"
+maintainers:
+  - "@rachadele"

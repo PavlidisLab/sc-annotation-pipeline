@@ -1,0 +1,58 @@
+name: get_census_adata
+description: Fetches and subsamples reference AnnData objects from CellxGene census collections
+keywords:
+  - cellxgene
+  - census
+  - reference
+  - anndata
+  - single-cell
+tools:
+  - cellxgene_census:
+      description: API to access CellxGene census data
+      homepage: https://chanzuckerberg.github.io/cellxgene-census/
+      documentation: https://chanzuckerberg.github.io/cellxgene-census/
+      licence: ["MIT"]
+
+input:
+  - ref_collections:
+      type: string
+      description: Space-separated quoted list of reference collection names
+  - organism:
+      type: string
+      description: Organism name (e.g., mus_musculus, homo_sapiens)
+  - organ:
+      type: string
+      description: Organ to sample from (e.g., brain)
+  - census_version:
+      type: string
+      description: CellxGene census version
+  - subsample_ref:
+      type: integer
+      description: Number of cells per cell type to subsample
+  - rename_file:
+      type: file
+      description: TSV file for renaming cell types
+  - seed:
+      type: integer
+      description: Random seed for reproducibility
+  - original_celltype_columns:
+      type: file
+      description: Optional TSV file specifying original cell type columns
+  - author_annotations_path:
+      type: directory
+      description: Optional directory containing author annotations
+
+output:
+  - ref_paths:
+      type: file
+      description: Reference AnnData files
+      pattern: "refs/*.h5ad"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@rachadele"
+maintainers:
+  - "@rachadele"
