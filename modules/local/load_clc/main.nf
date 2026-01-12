@@ -3,7 +3,7 @@ process LOAD_CLC {
     label 'process_single'
 
     input:
-    tuple val(study_name), path(mask_file)
+    tuple val(study_name), path(clc_file)
     val use_staging
 
     output:
@@ -17,11 +17,11 @@ process LOAD_CLC {
     """
     ${gemma_cmd} loadSingleCellData --load-cell-level-characteristics \\
         -e ${study_name} \\
-        -clcFile "${mask_file}" \\
+        -clcFile "${clc_file}" \\
         -replaceClc \\
         -ignoreSamplesLackingData \\
         --data-type NULL \\
-        -clcName counts_outlier,genes_outlier,hb_outlier,mito_outlier,predicted_doublet,ribo_outlier,umi_outlier \\
+        -clcName counts_outlier,genes_outlier,hb_outlier,mito_outlier,predicted_doublet,non_outlier,ribo_outlier,umi_outlier \\
         2>> "message.txt"
     """
 

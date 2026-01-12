@@ -23,6 +23,7 @@ process LOAD_CTA {
         -ctaFile ${celltype_file} ${preferred_flag} \\
         -ctaName "sc-pipeline-${version}-${level}" \\
         -ctaProtocol "sc-pipeline-${version}" \\
+        -replaceCta \\
         --data-type NULL \\
         -ignoreSamplesLackingData 2> "message.txt"
     """

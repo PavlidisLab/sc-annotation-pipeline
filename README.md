@@ -279,6 +279,14 @@ nextflow run main.nf -profile conda -work-dir /scratch/my_workdir ...
 | `--upload_clc` | Upload cell-level characteristics | `true` |
 | `--upload_multiqc` | Upload MultiQC report | `true` |
 
+#### Cell Type Assignment Protocols
+
+The specified `ctaProtocol` must exist in Gemma prior to upload. The ctaProtocol is determined by the pipeline version e.g. `sc-pipeline-2.0.0dev`. The corresponding ctaName is determined by a combintion of pipeline version and level of granularity, e.g. `sc-pipeline-2.0.0dev-class`. To create a ctaProtocol in gemma, run:
+
+```
+gemma-cli addProtocol --name "sc-pipeline-<new version>"
+```
+
 **Note:** Set `GEMMA_USERNAME` and `GEMMA_PASSWORD` environment variables for Gemma uploads.
 
 ### Parameter Files

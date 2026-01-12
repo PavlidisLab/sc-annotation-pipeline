@@ -19,7 +19,7 @@ process PROCESS_QC {
     output:
     path "**png"                                    , emit: plots
     tuple val(study_name), path("${query_name}/")   , emit: qc_dir
-    tuple val(study_name), path("${query_name}*mask.tsv"), emit: mask_files
+    tuple val(study_name), path("${query_name}*clc.tsv"), emit: mask_files
     path "versions.yml"                             , emit: versions
 
     when:

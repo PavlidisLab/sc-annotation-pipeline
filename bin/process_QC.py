@@ -163,7 +163,7 @@ def write_clc_files(query_combined, study_name, metrics=None):
     # change true and false to lower
     CLC_df["value"] = CLC_df["value"].astype(str).str.lower()
     # Save to TSV file
-    CLC_df.to_csv(f"{study_name}_mask.tsv", sep="\t", index=False)
+    CLC_df.to_csv(f"{study_name}_clc.tsv", sep="\t", index=False)
 
 
 def plot_upset_by_group(obs, outlier_cols=None, group_col=None, outdir=None):
