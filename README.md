@@ -38,27 +38,38 @@ This pipeline follows [nf-core best practices](https://nf-co.re/docs/contributin
 
 ### Directory Layout
 
+
 ```
-scannotate/
-├── main.nf                    # Entry point
-├── nextflow.config            # Main configuration
+sc-annotation-pipeline-rachel-dev/
+├── main.nf                      # Entry point
+├── nextflow.config              # Main configuration
+├── nextflow_schema.json         # Nextflow schema
 ├── workflows/
-│   └── scannotate.nf          # Main workflow orchestration
-├── subworkflows/local/
-│   ├── input_check/           # Input validation & study download
-│   ├── prepare_reference/     # scVI model & Census data setup
-│   ├── process_queries/       # Query embedding generation
-│   ├── classify_celltypes/    # Random forest classification
-│   ├── qc_reporting/          # QC metrics & MultiQC
-│   └── gemma_upload/          # Gemma database upload
-├── modules/local/             # Individual process modules
+│   └── scannotate.nf            # Main workflow orchestration
+├── subworkflows/
+│   └── local/
+│       ├── input_check/
+│       ├── prepare_reference/
+│       ├── process_queries/
+│       ├── classify_celltypes/
+│       ├── qc_reporting/
+│       └── gemma_upload/
+├── modules/
+│   └── local/
 ├── conf/
-│   ├── base.config            # Resource defaults (CPU/memory/time)
-│   ├── modules.config         # Module-specific settings
-│   └── test.config            # Test profile parameters
-├── assets/                    # Reference files and configs
-├── bin/                       # Python scripts
-└── params.*.json              # Parameter presets
+│   ├── base.config              # Resource defaults (CPU/memory/time)
+│   ├── modules.config           # Module-specific settings
+│   ├── test_mmus.config         # Mouse test profile
+│   └── test_hsap.config         # Human test profile
+├── assets/                      # Reference files and configs
+│   ├── samplesheet.csv
+│   ├── cell_type_markers.tsv
+│   └── ...
+├── bin/                         # Python scripts
+├── params.mm.json               # Mouse parameters
+├── params.hs.json               # Human parameters
+├── README.md
+└── ...
 ```
 
 ### Subworkflows
@@ -73,6 +84,14 @@ scannotate/
 | `GEMMA_UPLOAD` | Uploads cell type annotations and QC masks to Gemma |
 
 ---
+
+
+## Test Profiles
+
+Two test profiles are provided:
+- **test_mouse**: Runs a minimal pipeline test with mouse (Mus musculus) parameters.
+- **test_human**: Runs a minimal pipeline test with human (Homo sapiens) parameters.
+Use with `-profile test_mouse,conda` or `-profile test_human,conda`.
 
 ## Requirements
 
