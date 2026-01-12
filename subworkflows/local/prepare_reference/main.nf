@@ -4,8 +4,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { SETUP_SCVI       } from '../../../modules/local/setup_scvi/main'
-include { GET_CENSUS_ADATA } from '../../../modules/local/get_census_adata/main'
+include { SETUP_SCVI       } from "$projectDir/modules/local/setup_scvi/main"
+include { GET_CENSUS_ADATA } from "$projectDir/modules/local/get_census_adata/main"
 
 workflow PREPARE_REFERENCE {
 

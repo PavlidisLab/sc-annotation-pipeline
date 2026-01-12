@@ -4,12 +4,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { GET_META     } from '../../../modules/local/get_meta/main'
-include { PROCESS_QC   } from '../../../modules/local/process_qc/main'
-include { COMBINE_QC   } from '../../../modules/local/combine_qc/main'
-include { COMBINE_CLC  } from '../../../modules/local/combine_clc/main'
-include { RUN_MULTIQC  } from '../../../modules/local/run_multiqc/main'
-include { PUBLISH_MULTIQC } from '../../../modules/local/publish_multiqc/main'
+include { GET_META     } from "$projectDir/modules/local/get_meta/main"
+include { PROCESS_QC   } from "$projectDir/modules/local/process_qc/main"
+include { COMBINE_QC   } from "$projectDir/modules/local/combine_qc/main"
+include { COMBINE_CLC  } from "$projectDir/modules/local/combine_clc/main"
+include { RUN_MULTIQC  } from "$projectDir/modules/local/run_multiqc/main"
+include { PUBLISH_MULTIQC } from "$projectDir/modules/local/publish_multiqc/main"
 workflow QC_REPORTING {
 
     take:

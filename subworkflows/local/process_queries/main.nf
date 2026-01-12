@@ -4,8 +4,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { PROCESS_QUERY_SAMPLE   } from '../../../modules/local/process_query_sample/main'
-include { PROCESS_QUERY_COMBINED } from '../../../modules/local/process_query_combined/main'
+include { PROCESS_QUERY_SAMPLE   } from "$projectDir/modules/local/process_query_sample/main"
+include { PROCESS_QUERY_COMBINED } from "$projectDir/modules/local/process_query_combined/main"
 
 workflow PROCESS_QUERIES {
 

@@ -4,8 +4,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { RF_CLASSIFY  } from '../../../modules/local/rf_classify/main'
-include { COMBINE_CTA  } from '../../../modules/local/combine_cta/main'
+include { RF_CLASSIFY  } from "$projectDir/modules/local/rf_classify/main"
+include { COMBINE_CTA  } from "$projectDir/modules/local/combine_cta/main"
 
 workflow CLASSIFY_CELLTYPES {
 

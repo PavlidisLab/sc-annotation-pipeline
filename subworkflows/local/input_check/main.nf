@@ -4,7 +4,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { DOWNLOAD_STUDIES } from '../../../modules/local/download_studies/main'
+include { DOWNLOAD_STUDIES } from "$projectDir/modules/local/download_studies/main"
 
 workflow INPUT_CHECK {
 

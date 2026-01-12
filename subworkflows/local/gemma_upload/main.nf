@@ -4,9 +4,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { LOAD_CTA        } from '../../../modules/local/load_cta/main'
-include { LOAD_CLC        } from '../../../modules/local/load_clc/main'
-include { PUBLISH_MULTIQC } from '../../../modules/local/publish_multiqc/main'
+include { LOAD_CTA        } from "$projectDir/modules/local/load_cta/main"
+include { LOAD_CLC        } from "$projectDir/modules/local/load_clc/main"
+include { PUBLISH_MULTIQC } from "$projectDir/modules/local/publish_multiqc/main"
 
 workflow GEMMA_UPLOAD {
 
