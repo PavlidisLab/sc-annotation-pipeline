@@ -152,8 +152,7 @@ local_study,,/path/to/local/data
 **Example usage:**
 
 ```bash
-nextflow run main.nf -profile conda -params-file params.mm.json \
-    --input samplesheet.csv
+nextflow run main.nf -profile conda -params-file params.mm.json --input assets/samplesheet.csv
 ```
 
 An example samplesheet is provided at `assets/samplesheet.csv`.
