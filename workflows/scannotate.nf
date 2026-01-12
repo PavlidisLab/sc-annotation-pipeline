@@ -4,12 +4,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { INPUT_CHECK        } from '../subworkflows/local/input_check/main'
-include { PREPARE_REFERENCE  } from '../subworkflows/local/prepare_reference/main'
-include { PROCESS_QUERIES    } from '../subworkflows/local/process_queries/main'
-include { CLASSIFY_CELLTYPES } from '../subworkflows/local/classify_celltypes/main'
-include { QC_REPORTING       } from '../subworkflows/local/qc_reporting/main'
-include { GEMMA_UPLOAD       } from '../subworkflows/local/gemma_upload/main'
+include { INPUT_CHECK        } from "$projectDir/subworkflows/local/input_check/main"
+include { PREPARE_REFERENCE  } from "$projectDir/subworkflows/local/prepare_reference/main"
+include { PROCESS_QUERIES    } from "$projectDir/subworkflows/local/process_queries/main"
+include { CLASSIFY_CELLTYPES } from "$projectDir/subworkflows/local/classify_celltypes/main"
+include { QC_REPORTING       } from "$projectDir/subworkflows/local/qc_reporting/main"
+include { GEMMA_UPLOAD       } from "$projectDir/subworkflows/local/gemma_upload/main"
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -20,8 +20,9 @@ include { GEMMA_UPLOAD       } from '../subworkflows/local/gemma_upload/main'
 workflow SCANNOTATE {
 
     take:
-    study_names
-    study_paths
+    input         // path: samplesheet CSV (optional)
+    study_names   // string: space-separated or file (optional, legacy)
+    study_paths   // string: space-separated or file (optional, legacy)
 
     main:
     ch_versions = Channel.empty()
@@ -30,6 +31,7 @@ workflow SCANNOTATE {
     // SUBWORKFLOW: Validate inputs and download/prepare studies
     //
     INPUT_CHECK(
+        input,
         study_names,
         study_paths,
         params.use_staging

@@ -29,14 +29,16 @@ include { SCANNOTATE } from './workflows/scannotate'
 workflow NFCORE_SCANNOTATE {
 
     take:
-    study_names
-    study_paths
+    input         // path: samplesheet CSV (optional)
+    study_names   // string: space-separated or file (optional, legacy)
+    study_paths   // string: space-separated or file (optional, legacy)
 
     main:
     //
     // WORKFLOW: Run pipeline
     //
     SCANNOTATE(
+        input,
         study_names,
         study_paths
     )
@@ -59,6 +61,7 @@ workflow {
     // WORKFLOW: Run main workflow
     //
     NFCORE_SCANNOTATE(
+        params.input,
         params.study_names,
         params.study_paths
     )
