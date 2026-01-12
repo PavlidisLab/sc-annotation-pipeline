@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" width="720" height="900">
+  <defs>
+    <!-- Drop shadow filter -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="2" stdDeviation="2" flood-opacity="0.2"/>
+    </filter>
+
+    <!-- Gradient for header -->
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#24B064"/>
+      <stop offset="100%" style="stop-color:#1a8a4c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="720" height="900" fill="#ffffff"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="720" height="50" fill="url(#headerGrad)"/>
+  <text x="360" y="32" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white">PavlidisLab/sc-annotation-pipeline</text>
+
+  <!-- Main flow line -->
+  <path d="M 165 130 L 165 720" stroke="#24B064" stroke-width="4" fill="none"/>
+
+  <!-- ==================== INPUT ==================== -->
+  <g transform="translate(35, 100)" filter="url(#shadow)">
+    <rect x="0" y="0" width="260" height="50" rx="8" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
+    <text x="130" y="22" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#2E7D32">Input</text>
+    <text x="130" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#555">Samplesheet, study names, or paths</text>
+  </g>
+
+  <!-- ==================== INPUT_CHECK ==================== -->
+  <g transform="translate(35, 170)" filter="url(#shadow)">
+    <rect x="0" y="0" width="260" height="50" rx="8" fill="#E3F2FD" stroke="#2196F3" stroke-width="2"/>
+    <text x="130" y="22" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#1565C0">INPUT_CHECK</text>
+    <text x="130" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#555">Validate inputs &amp; download studies</text>
+  </g>
+
+  <!-- ==================== PREPARE_REFERENCE ==================== -->
+  <g transform="translate(35, 240)" filter="url(#shadow)">
+    <rect x="0" y="0" width="260" height="50" rx="8" fill="#E3F2FD" stroke="#2196F3" stroke-width="2"/>
+    <text x="130" y="22" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#1565C0">PREPARE_REFERENCE</text>
+    <text x="130" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#555">Download scVI model &amp; Census data</text>
+  </g>
+
+  <!-- ==================== PROCESS_QUERIES ==================== -->
+  <g transform="translate(35, 310)" filter="url(#shadow)">
+    <rect x="0" y="0" width="260" height="50" rx="8" fill="#FFF3E0" stroke="#FF9800" stroke-width="2"/>
+    <text x="130" y="22" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#E65100">PROCESS_QUERIES</text>
+    <text x="130" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#555">Generate scVI embeddings</text>
+  </g>
+
+  <!-- ==================== CLASSIFY_CELLTYPES ==================== -->
+  <g transform="translate(35, 380)" filter="url(#shadow)">
+    <rect x="0" y="0" width="260" height="50" rx="8" fill="#F3E5F5" stroke="#9C27B0" stroke-width="2"/>
+    <text x="130" y="22" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#6A1B9A">CLASSIFY_CELLTYPES</text>
+    <text x="130" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#555">Random forest classification</text>
+  </g>
+
+  <!-- Output: celltypes.tsv -->
+  <path d="M 295 405 L 350 405" stroke="#9C27B0" stroke-width="2" fill="none"/>
+  <g transform="translate(360, 375)" filter="url(#shadow)">
+    <rect x="0" y="0" width="200" height="60" rx="6" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
+    <text x="100" y="18" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2E7D32">celltypes.tsv</text>
+    <text x="100" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#555">Cell type predictions per cell</text>
+    <text x="100" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#555">(subclass, class, family levels)</text>
+  </g>
+
+  <!-- ==================== QC_REPORTING ==================== -->
+  <g transform="translate(35, 460)" filter="url(#shadow)">
+    <rect x="0" y="0" width="260" height="50" rx="8" fill="#FFEBEE" stroke="#F44336" stroke-width="2"/>
+    <text x="130" y="22" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#C62828">QC_REPORTING</text>
+    <text x="130" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#555">QC metrics, outliers &amp; MultiQC</text>
+  </g>
+
+  <!-- Output: masks.tsv -->
+  <path d="M 295 475 L 350 475" stroke="#F44336" stroke-width="2" fill="none"/>
+  <g transform="translate(360, 445)" filter="url(#shadow)">
+    <rect x="0" y="0" width="200" height="60" rx="6" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
+    <text x="100" y="18" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2E7D32">masks.tsv</text>
+    <text x="100" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#555">Outlier flags per cell (MAD-based)</text>
+    <text x="100" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#555">mito, ribo, hb, genes, UMI, doublets</text>
+  </g>
+
+  <!-- Output: multiqc_report.html -->
+  <path d="M 295 495 L 320 495 L 320 545 L 350 545" stroke="#F44336" stroke-width="2" fill="none"/>
+  <g transform="translate(360, 515)" filter="url(#shadow)">
+    <rect x="0" y="0" width="200" height="60" rx="6" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
+    <text x="100" y="18" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#2E7D32">multiqc_report.html</text>
+    <text x="100" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#555">Interactive QC summary</text>
+    <text x="100" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#555">per-sample metrics &amp; visualizations</text>
+  </g>
+
+  <!-- ==================== GEMMA_UPLOAD ==================== -->
+  <g transform="translate(35, 540)" filter="url(#shadow)">
+    <rect x="0" y="0" width="260" height="50" rx="8" fill="#ECEFF1" stroke="#607D8B" stroke-width="2" stroke-dasharray="5,3"/>
+    <text x="130" y="22" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#37474F">GEMMA_UPLOAD</text>
+    <text x="130" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#555">Upload to Gemma (optional)</text>
+  </g>
+
+  <!-- ==================== VERSIONS OUTPUT ==================== -->
+  <g transform="translate(35, 610)" filter="url(#shadow)">
+    <rect x="0" y="0" width="260" height="50" rx="8" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
+    <text x="130" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2E7D32">versions.yml</text>
+    <text x="130" y="38" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#555">Software versions for reproducibility</text>
+  </g>
+
+  <!-- Color Legend -->
+  <g transform="translate(35, 690)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#333">Legend</text>
+
+    <rect x="0" y="12" width="18" height="18" rx="3" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1"/>
+    <text x="25" y="26" font-family="Arial, sans-serif" font-size="10" fill="#333">Input / Output</text>
+
+    <rect x="140" y="12" width="18" height="18" rx="3" fill="#E3F2FD" stroke="#2196F3" stroke-width="1"/>
+    <text x="165" y="26" font-family="Arial, sans-serif" font-size="10" fill="#333">Data Preparation</text>
+
+    <rect x="310" y="12" width="18" height="18" rx="3" fill="#FFF3E0" stroke="#FF9800" stroke-width="1"/>
+    <text x="335" y="26" font-family="Arial, sans-serif" font-size="10" fill="#333">Processing</text>
+
+    <rect x="0" y="38" width="18" height="18" rx="3" fill="#F3E5F5" stroke="#9C27B0" stroke-width="1"/>
+    <text x="25" y="52" font-family="Arial, sans-serif" font-size="10" fill="#333">Classification</text>
+
+    <rect x="140" y="38" width="18" height="18" rx="3" fill="#FFEBEE" stroke="#F44336" stroke-width="1"/>
+    <text x="165" y="52" font-family="Arial, sans-serif" font-size="10" fill="#333">QC / Reporting</text>
+
+    <rect x="310" y="38" width="18" height="18" rx="3" fill="#ECEFF1" stroke="#607D8B" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="335" y="52" font-family="Arial, sans-serif" font-size="10" fill="#333">Optional</text>
+  </g>
+
+  <!-- Footer description -->
+  <text x="360" y="790" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">Cell types assigned using Random Forest on scVI embeddings</text>
+  <text x="360" y="805" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">from CellxGene Census reference data</text>
+
+  <!-- Pipeline info -->
+  <text x="360" y="840" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#999">v2.0.0dev</text>
+</svg>
