@@ -1,6 +1,7 @@
 process PROCESS_QUERY_SAMPLE {
     tag "$query_name"
-    label 'process_high'
+    // label 'process_high'
+    errorStrategy { task.exitStatus == 42 ? 'ignore' : 'terminate' }
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -9,11 +10,11 @@ process PROCESS_QUERY_SAMPLE {
 
     input:
     path model_path
-    tuple val(study_name), val(query_name), path(study_path)
+    tuple val(study_name), val(query_name), path(query_path)
     val seed
 
     output:
-    tuple val(study_name), val(query_name), path("${query_name}.h5ad")    , emit: processed_query
+    tuple val(study_name), val(query_name), path("${query_name}**.h5ad")    , emit: processed_query
     tuple val(study_name), val(query_name), path("${query_name}_raw.h5ad"), emit: raw_query
     path "versions.yml"                                                   , emit: versions
 
@@ -25,8 +26,8 @@ process PROCESS_QUERY_SAMPLE {
     """
     python ${projectDir}/bin/process_query_samples.py \\
         --model_path ${model_path} \\
-        --study_path ${study_path} \\
         --query_name ${query_name} \\
+        --query_path ${query_path} \\
         --seed ${seed} \\
         ${args}
 

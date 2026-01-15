@@ -1,6 +1,6 @@
 process DOWNLOAD_STUDIES {
     tag "$study_name"
-    label 'process_single'
+    // label 'process_single'
 
     input:
     val study_name

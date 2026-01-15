@@ -1,6 +1,6 @@
 process PROCESS_QC {
     tag "$query_name"
-    label 'process_medium'
+    // label 'process_medium'
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

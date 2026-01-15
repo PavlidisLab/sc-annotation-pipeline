@@ -1,6 +1,6 @@
 process COMBINE_QC {
     tag "$study_name"
-    label 'process_single'
+    // label 'process_single'
 
     input:
     tuple val(study_name), path(qc_dirs)
