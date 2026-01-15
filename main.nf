@@ -106,7 +106,7 @@ workflow.onComplete {
 }
 
 workflow.onError {
-    log.error "Pipeline execution stopped with error: ${workflow.errorMessage}"
+    log.error "Pipeline execution stopped with error"
     // show last working directory for debugging
 }
 
