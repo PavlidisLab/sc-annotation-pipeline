@@ -100,14 +100,12 @@ def main():
       raise Warning(f"Failed to process {sample_id} using both automatic and manual methods: {manual_e}")
 
   if has_expression_data(adata) is False:
-    adata = sc.AnnData(X=csr_matrix((0, 0)))
-    # write a fake h5ad to trick nextflow
-    adata.write_h5ad(f"{sample_id}_empty.h5ad")
-    raise Warning(f"Sample {sample_id} has no expression data. Skipping.")
+    print(f"Sample {sample_id} has no expression data. Skipping.", file=sys.stderr)
+    sys.exit(42)
+
   if check_size(adata) is False:
-    os.makedirs("small_samples", exist_ok=True)
-    adata.obs["cell_id"] = adata.obs.index
-    adata.write_h5ad(os.path.join("small_samples",f"{query_name}.h5ad"))
+    print(f"Sample {sample_id} has less than 50 cells. Skipping.", file=sys.stderr)
+    sys.exit(42)
   else:
     adata.obs["cell_id"] = adata.obs.index
     adata.write_h5ad(f"{query_name}_raw.h5ad")
