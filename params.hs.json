@@ -15,5 +15,7 @@
     "mask": true,
     "process_samples": false,
     "use_staging": true,
-    "preferredCtaLevel": "class"
+    "preferredCtaLevel": "class",
+    "original_celltype_columns": null,
+    "author_annotations_path": null
 }
