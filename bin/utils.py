@@ -447,6 +447,8 @@ def qc_preprocess(query):
         sc.pp.scrublet(query, batch_key=batch_key)
     except Exception as e:
         print(f"scrublet failed: {e}")
+        # add predicted_doublet column with all False
+        query.obs["predicted_doublet"] = False
     # log normalize, comput neighbors and umap
     sc.pp.normalize_total(query, target_sum=1e4)
     sc.pp.log1p(query)
