@@ -9,7 +9,6 @@ include { PROCESS_QC   } from "$projectDir/modules/local/process_qc/main"
 include { COMBINE_QC   } from "$projectDir/modules/local/combine_qc/main"
 include { COMBINE_CLC  } from "$projectDir/modules/local/combine_clc/main"
 include { RUN_MULTIQC  } from "$projectDir/modules/local/run_multiqc/main"
-include { PUBLISH_MULTIQC } from "$projectDir/modules/local/publish_multiqc/main"
 workflow QC_REPORTING {
 
     take:
@@ -40,6 +39,7 @@ workflow QC_REPORTING {
     // Group celltypes by study
     ch_celltypes_grouped = ch_celltypes.groupTuple(by: 0)
 
+
     // Combine channels for QC processing
     ch_qc_input = ch_celltypes_grouped
         .combine(ch_raw, by: 0)
@@ -60,6 +60,8 @@ workflow QC_REPORTING {
         markers_file,
         cell_type_keys
     )
+
+
     ch_qc_dirs   = PROCESS_QC.out.qc_dir
     ch_mask_files = PROCESS_QC.out.mask_files
     ch_versions  = ch_versions.mix(PROCESS_QC.out.versions.first())
@@ -98,9 +100,10 @@ workflow QC_REPORTING {
         ch_multiqc = Channel.empty()
     }
 
+
     emit:
-    qc_dirs   = ch_multiqc_input  // channel: [ study_name, qc_dir ]
-    masks     = ch_masks          // channel: [ study_name, mask.tsv ]
-    multiqc   = ch_multiqc        // channel: [ study_name, multiqc_report.html ]
-    versions  = ch_versions       // channel: [ versions.yml ]
+    qc_dirs   = ch_qc_dirs
+    masks     = ch_masks
+    multiqc   =  ch_multiqc
+    versions  = ch_versions
 }

@@ -21,6 +21,7 @@ workflow GEMMA_UPLOAD {
     upload_cta            // boolean: upload cell type annotations
     upload_clc            // boolean: upload cell-level characteristics
     upload_multiqc        // boolean: upload MultiQC report
+    process_samples       // boolean: process individual samples
 
     main:
     ch_messages = Channel.empty()
@@ -37,8 +38,8 @@ workflow GEMMA_UPLOAD {
         ch_messages = ch_messages.mix(LOAD_CLC.out.message)
     }
 
-    // Upload MultiQC reports
-    if (upload_multiqc) {
+    // Upload MultiQC reports (skip when processing samples individually)
+    if (upload_multiqc && !process_samples) {
         PUBLISH_MULTIQC(ch_multiqc, use_staging, version, nmads)
         ch_messages = ch_messages.mix(PUBLISH_MULTIQC.out.message)
     }
