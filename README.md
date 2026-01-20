@@ -132,11 +132,11 @@ nextflow run main.nf -profile conda -params-file params.mm.json \
 nextflow run main.nf -profile conda -params-file params.hs.json \
     --study_paths "/path/to/study1 /path/to/study2"
 
-# Run with test profile
-nextflow run main.nf -profile test,conda
+# Run with human test profile
+nextflow run main.nf -profile test_human,conda
 
-# Dry run with stubs
-nextflow run main.nf -profile test,conda -stub-run
+# Run with mouse test profile
+nextflow run main.nf -profile test_mouse,conda
 ```
 
 ---
