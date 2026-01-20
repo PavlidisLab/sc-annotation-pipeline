@@ -2,14 +2,7 @@
 import warnings
 warnings.filterwarnings("ignore")
 import pandas as pd
-import anndata as ad
-from scipy.sparse import csr_matrix
-from pathlib import Path
 import argparse
-import os
-import json
-import sys
-import numpy as np
 import gemmapy
 
 def argument_parser():

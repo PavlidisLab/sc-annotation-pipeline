@@ -1,27 +1,17 @@
 #!/user/bin/python3
 import warnings
 warnings.filterwarnings("ignore")
-from pathlib import Path
 import os
-import sys
 import scanpy as sc
-import numpy as np
 import pandas as pd
 import anndata as ad
 import re
-import warnings
-from collections import defaultdict
 import matplotlib.pyplot as plt
 import seaborn as sns
-import json
 import argparse
-import os
-import json
-from types import SimpleNamespace
 from utils import *
 from PIL import Image
 import io
-import os
 import math
 from upsetplot import UpSet, from_memberships
 

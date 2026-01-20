@@ -1,25 +1,17 @@
 #!/user/bin/python3
 
-from pathlib import Path
 import os
 import sys
 import scanpy as sc
 import numpy as np
 import pandas as pd
-import anndata as ad
-import cellxgene_census
-from scipy.sparse import csr_matrix
-import warnings
-import cellxgene_census
-import cellxgene_census.experimental
 import scvi
 from utils import *
-from pathlib import Path
 import argparse
-import os
-import json
 import scipy
 import gzip
+import warnings
+from scipy.sparse import csr_matrix
     
 def parse_arguments():
   parser = argparse.ArgumentParser(description="Download model file based on organism, census version, and tree file.")
