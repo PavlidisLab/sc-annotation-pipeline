@@ -111,7 +111,7 @@ workflow SCANNOTATE {
     //
     // SUBWORKFLOW: Upload results to Gemma (optional)
     //
-    //Uncomment to enable Gemma upload
+    
     GEMMA_UPLOAD(
         ch_celltypes,
         ch_masks,
@@ -122,9 +122,11 @@ workflow SCANNOTATE {
         params.nmads,
         params.upload_cta ?: false,
         params.upload_clc ?: false,
-        params.upload_multiqc ?: false
+        params.upload_multiqc ?: false,
+        params.process_samples
     )
     ch_messages = GEMMA_UPLOAD.out.messages
+    
 
     emit:
     celltypes = ch_celltypes
