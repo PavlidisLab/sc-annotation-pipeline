@@ -197,7 +197,7 @@ def write_mask_file(query_combined, study_name, metrics=None):
 def write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=None):
     """
     Write statistics about masked cells per sample and per cell type.
-    Output files for MultiQC custom content.
+    Output files for MultiQC stacked bar charts (masked vs unmasked).
     """
     if metrics is None:
         metrics = [
@@ -215,13 +215,11 @@ def write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=No
     obs = query_combined.obs.copy()
     obs["mask"] = obs[outlier_metrics].any(axis=1)
 
-    # Statistics by sample
+    # Statistics by sample (for stacked bar chart)
     sample_stats = obs.groupby("sample_name").agg(
-        total_cells=("mask", "count"),
-        masked_cells=("mask", "sum")
-    ).reset_index()
-    sample_stats["unmasked_cells"] = sample_stats["total_cells"] - sample_stats["masked_cells"]
-    sample_stats["pct_masked"] = (sample_stats["masked_cells"] / sample_stats["total_cells"] * 100).round(2)
+        Masked=("mask", "sum"),
+        Unmasked=("mask", lambda x: (~x).sum())
+    ).reset_index().rename(columns={"sample_name": "Sample"})
     sample_stats.to_csv(os.path.join(study_name, "mask_stats_by_sample_mqc.tsv"), sep="\t", index=False)
 
     # Statistics by cell type for each cell type key
@@ -229,11 +227,9 @@ def write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=No
         if ct_key not in obs.columns:
             continue
         ct_stats = obs.groupby(ct_key).agg(
-            total_cells=("mask", "count"),
-            masked_cells=("mask", "sum")
-        ).reset_index()
-        ct_stats["unmasked_cells"] = ct_stats["total_cells"] - ct_stats["masked_cells"]
-        ct_stats["pct_masked"] = (ct_stats["masked_cells"] / ct_stats["total_cells"] * 100).round(2)
+            Masked=("mask", "sum"),
+            Unmasked=("mask", lambda x: (~x).sum())
+        ).reset_index().rename(columns={ct_key: "Cell Type"})
         ct_stats.to_csv(os.path.join(study_name, f"mask_stats_by_{ct_key}_mqc.tsv"), sep="\t", index=False)
 
 

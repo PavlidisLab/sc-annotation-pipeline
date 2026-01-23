@@ -78,27 +78,27 @@ custom_data:
 
   mask_stats_by_sample:
     section_name: 'Outlier Masking by Sample'
-    description: 'Number and percentage of cells masked (flagged as outliers in at least one QC category) per sample'
+    description: 'Masked vs unmasked cells per sample (masked = outlier in at least one QC category)'
     file_format: 'tsv'
-    plot_type: 'table'
+    plot_type: 'bargraph'
 
   mask_stats_by_class:
     section_name: 'Outlier Masking by Cell Type (class)'
-    description: 'Number and percentage of cells masked per class cell type'
+    description: 'Masked vs unmasked cells per class cell type'
     file_format: 'tsv'
-    plot_type: 'table'
+    plot_type: 'bargraph'
 
   mask_stats_by_subclass:
     section_name: 'Outlier Masking by Cell Type (subclass)'
-    description: 'Number and percentage of cells masked per subclass cell type'
+    description: 'Masked vs unmasked cells per subclass cell type'
     file_format: 'tsv'
-    plot_type: 'table'
+    plot_type: 'bargraph'
 
   mask_stats_by_family:
     section_name: 'Outlier Masking by Cell Type (family)'
-    description: 'Number and percentage of cells masked per family cell type'
+    description: 'Masked vs unmasked cells per family cell type'
     file_format: 'tsv'
-    plot_type: 'table'
+    plot_type: 'bargraph'
 
 
 sp:
