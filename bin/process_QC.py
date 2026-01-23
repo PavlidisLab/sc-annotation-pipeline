@@ -142,18 +142,99 @@ def write_clc_files(query_combined, study_name, metrics=None):
         ]
     CLC_df = query_combined.obs[["sample_id", "cell_id"] + metrics].copy()
 
-    
+
     CLC_df = CLC_df.melt(
         id_vars=["sample_id", "cell_id"],
         value_vars=metrics,
         value_name="value",
         var_name="category"
     )
-        
+
     # change true and false to lower
     CLC_df["value"] = CLC_df["value"].astype(str).str.lower()
     # Save to TSV file
     CLC_df.to_csv(f"{study_name}_clc.tsv", sep="\t", index=False)
+
+
+def write_mask_file(query_combined, study_name, metrics=None):
+    """
+    Write a mask file indicating whether each cell is an outlier in ANY category.
+
+    Output format (tab-separated):
+    sample_id    cell_id    category    value
+
+    Where category is always "mask" and value is "true" if the cell is an outlier
+    in at least one category, "false" otherwise.
+    """
+    if metrics is None:
+        metrics = [
+            "counts_outlier",
+            "mito_outlier",
+            "predicted_doublet",
+            "umi_outlier",
+            "genes_outlier"
+        ]
+
+    # Filter to only existing metrics
+    existing_metrics = [m for m in metrics if m in query_combined.obs.columns]
+
+    # Create mask: True if outlier in ANY category (excluding non_outlier)
+    outlier_metrics = [m for m in existing_metrics if m != "non_outlier"]
+
+    mask_df = query_combined.obs[["sample_id", "cell_id"]].copy()
+    mask_df["category"] = "mask"
+
+    # Cell is masked (true) if it's an outlier in at least one category
+    mask_df["value"] = query_combined.obs[outlier_metrics].any(axis=1)
+    mask_df["value"] = mask_df["value"].map({True: "true", False: "false"})
+
+    # Save to TSV file
+    mask_df.to_csv(f"{study_name}_mask.tsv", sep="\t", index=False)
+
+    return mask_df
+
+
+def write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=None):
+    """
+    Write statistics about masked cells per sample and per cell type.
+    Output files for MultiQC custom content.
+    """
+    if metrics is None:
+        metrics = [
+            "counts_outlier",
+            "mito_outlier",
+            "predicted_doublet",
+            "umi_outlier",
+            "genes_outlier"
+        ]
+
+    # Filter to only existing metrics (excluding non_outlier)
+    outlier_metrics = [m for m in metrics if m in query_combined.obs.columns and m != "non_outlier"]
+
+    # Create mask column
+    obs = query_combined.obs.copy()
+    obs["mask"] = obs[outlier_metrics].any(axis=1)
+
+    # Statistics by sample
+    sample_stats = obs.groupby("sample_name").agg(
+        total_cells=("mask", "count"),
+        masked_cells=("mask", "sum")
+    ).reset_index()
+    sample_stats["unmasked_cells"] = sample_stats["total_cells"] - sample_stats["masked_cells"]
+    sample_stats["pct_masked"] = (sample_stats["masked_cells"] / sample_stats["total_cells"] * 100).round(2)
+    sample_stats.to_csv(os.path.join(study_name, "mask_stats_by_sample_mqc.tsv"), sep="\t", index=False)
+
+    # Statistics by cell type for each cell type key
+    for ct_key in cell_type_keys:
+        if ct_key not in obs.columns:
+            continue
+        ct_stats = obs.groupby(ct_key).agg(
+            total_cells=("mask", "count"),
+            masked_cells=("mask", "sum")
+        ).reset_index()
+        ct_stats["unmasked_cells"] = ct_stats["total_cells"] - ct_stats["masked_cells"]
+        ct_stats["pct_masked"] = (ct_stats["masked_cells"] / ct_stats["total_cells"] * 100).round(2)
+        ct_stats.to_csv(os.path.join(study_name, f"mask_stats_by_{ct_key}_mqc.tsv"), sep="\t", index=False)
 
 
 def plot_upset_by_group(obs, outlier_cols=None, group_col=None, outdir=None):
@@ -292,7 +373,13 @@ def main():
     existing_outlier_cols = [col for col in outlier_cols if col in query_combined.obs.columns]
     plot_upset_by_group(query_combined.obs, outlier_cols=existing_outlier_cols, group_col=None, outdir=study_name)
     write_clc_files(query_combined, study_name, metrics=existing_outlier_cols)
-    
+
+    # Write mask file (single boolean for any outlier)
+    write_mask_file(query_combined, study_name, metrics=existing_outlier_cols)
+
+    # Write mask statistics for QC report
+    write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=existing_outlier_cols)
+
     make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key="subclass_cell_type")
 
 if __name__ == "__main__":
