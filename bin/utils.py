@@ -427,10 +427,16 @@ def read_query(query_path, gene_mapping, new_meta, sample_meta):
 
 
 def is_outlier(query, metric: str, nmads=3):
-    M = query.obs[metric]
-    outlier = (M < np.median(M) - nmads * median_abs_deviation(M)) | (
-        np.median(M) + nmads * median_abs_deviation(M) < M
-    )
+    # for mito outliers, we don't want to filter cells that are below the threshold
+    if metric == "mito_outlier":
+        M = query.obs[metric]
+        outlier = M > np.median(M) + nmads * median_abs_deviation(M)
+        return outlier
+    else:
+        M = query.obs[metric]
+        outlier = (M < np.median(M) - nmads * median_abs_deviation(M)) | (
+            np.median(M) + nmads * median_abs_deviation(M) < M
+        )
     return outlier
 
 
@@ -492,8 +498,8 @@ def get_qc_metrics(query, nmads):
         "log1p_total_counts": "umi_outlier",
         "log1p_n_genes_by_counts": "genes_outlier",
         "pct_counts_mito": "mito_outlier",
-        "pct_counts_ribo": "ribo_outlier",
-        "pct_counts_hb": "hb_outlier",
+       # "pct_counts_ribo": "ribo_outlier",
+       # "pct_counts_hb": "hb_outlier",
     }
     
     for metric, col_name in metrics.items():
