@@ -76,29 +76,23 @@ custom_data:
     file_format: 'tsv'
     plot_type: 'heatmap'
 
-  mask_stats_by_sample:
-    section_name: 'Outlier Masking by Sample'
-    description: 'Masked vs unmasked cells per sample (masked = outlier in at least one QC category)'
-    file_format: 'tsv'
-    plot_type: 'bargraph'
-
   mask_stats_by_class:
-    section_name: 'Outlier Masking by Cell Type (class)'
-    description: 'Masked vs unmasked cells per class cell type'
+    section_name: 'Outlier Types by Cell Type (class)'
+    description: 'Count of each outlier type per class cell type (not mutually exclusive)'
     file_format: 'tsv'
-    plot_type: 'bargraph'
+    plot_type: 'table'
 
   mask_stats_by_subclass:
-    section_name: 'Outlier Masking by Cell Type (subclass)'
-    description: 'Masked vs unmasked cells per subclass cell type'
+    section_name: 'Outlier Types by Cell Type (subclass)'
+    description: 'Count of each outlier type per subclass cell type (not mutually exclusive)'
     file_format: 'tsv'
-    plot_type: 'bargraph'
+    plot_type: 'table'
 
   mask_stats_by_family:
-    section_name: 'Outlier Masking by Cell Type (family)'
-    description: 'Masked vs unmasked cells per family cell type'
+    section_name: 'Outlier Types by Cell Type (family)'
+    description: 'Count of each outlier type per family cell type (not mutually exclusive)'
     file_format: 'tsv'
-    plot_type: 'bargraph'
+    plot_type: 'table'
 
 
 sp:
@@ -134,8 +128,6 @@ sp:
   markers_heatmap_subclass:
     fn: "*subclass_cell_type_heatmap_mqc.tsv"
 
-  mask_stats_by_sample:
-    fn: "*mask_stats_by_sample_mqc.tsv"
   mask_stats_by_class:
     fn: "*mask_stats_by_class_cell_type_mqc.tsv"
   mask_stats_by_subclass:
@@ -145,7 +137,6 @@ sp:
 
 custom_content:
   order:
-    - mask_stats_by_sample
     - mask_stats_by_subclass
     - mask_stats_by_class
     - mask_stats_by_family
