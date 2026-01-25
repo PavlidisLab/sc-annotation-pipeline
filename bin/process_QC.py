@@ -196,8 +196,9 @@ def write_mask_file(query_combined, study_name, metrics=None):
 
 def write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=None):
     """
-    Write statistics about masked cells per sample and per cell type.
-    Output files for MultiQC stacked bar charts (masked vs unmasked).
+    Write statistics about outlier types per cell type.
+    Shows breakdown of which outlier categories contribute to masking.
+    Note: outlier types are not mutually exclusive (a cell can be flagged for multiple reasons).
     """
     if metrics is None:
         metrics = [
@@ -211,25 +212,40 @@ def write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=No
     # Filter to only existing metrics (excluding non_outlier)
     outlier_metrics = [m for m in metrics if m in query_combined.obs.columns and m != "non_outlier"]
 
-    # Create mask column
     obs = query_combined.obs.copy()
+
+    # Create mask column (True if outlier in any category)
     obs["mask"] = obs[outlier_metrics].any(axis=1)
 
-    # Statistics by sample (for stacked bar chart)
-    sample_stats = obs.groupby("sample_name").agg(
-        Masked=("mask", "sum"),
-        Unmasked=("mask", lambda x: (~x).sum())
-    ).reset_index().rename(columns={"sample_name": "Sample"})
-    sample_stats.to_csv(os.path.join(study_name, "mask_stats_by_sample_mqc.tsv"), sep="\t", index=False)
-
     # Statistics by cell type for each cell type key
+    # Shows count of each outlier type (not mutually exclusive)
     for ct_key in cell_type_keys:
         if ct_key not in obs.columns:
             continue
-        ct_stats = obs.groupby(ct_key).agg(
-            Masked=("mask", "sum"),
-            Unmasked=("mask", lambda x: (~x).sum())
-        ).reset_index().rename(columns={ct_key: "Cell Type"})
+
+        # Aggregate counts of each outlier type per cell type
+        agg_dict = {m: (m, "sum") for m in outlier_metrics}
+        agg_dict["Not Masked"] = ("mask", lambda x: (~x).sum())
+        ct_stats = obs.groupby(ct_key).agg(**agg_dict).reset_index()
+
+        # Rename columns for readability
+        col_rename = {
+            ct_key: "Cell Type",
+            "counts_outlier": "Counts",
+            "mito_outlier": "Mito",
+            "predicted_doublet": "Doublet",
+            "umi_outlier": "UMI",
+            "genes_outlier": "Genes"
+        }
+        ct_stats = ct_stats.rename(columns={k: v for k, v in col_rename.items() if k in ct_stats.columns})
+
+        # Reorder columns to put "Not Masked" first after "Cell Type"
+        cols = ct_stats.columns.tolist()
+        if "Not Masked" in cols:
+            cols.remove("Not Masked")
+            cols.insert(1, "Not Masked")
+            ct_stats = ct_stats[cols]
+
         ct_stats.to_csv(os.path.join(study_name, f"mask_stats_by_{ct_key}_mqc.tsv"), sep="\t", index=False)
 
 
