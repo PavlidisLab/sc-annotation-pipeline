@@ -427,17 +427,18 @@ def read_query(query_path, gene_mapping, new_meta, sample_meta):
 
 
 def is_outlier(query, metric: str, nmads=3):
-    # for mito outliers, we don't want to filter cells that are below the threshold
+    M = query.obs[metric]
+    median = np.median(M)
+    mad = median_abs_deviation(M)
+
+    upper_outlier = M > median + nmads * mad
+
+    # For mito, only flag high values (low mito is fine)
     if metric == "pct_counts_mito":
-        M = query.obs[metric]
-        outlier = M > np.median(M) + nmads * median_abs_deviation(M)
-        return outlier
-    else:
-        M = query.obs[metric]
-        outlier = (M < np.median(M) - nmads * median_abs_deviation(M)) | (
-            np.median(M) + nmads * median_abs_deviation(M) < M
-        )
-    return outlier
+        return upper_outlier
+
+    lower_outlier = M < median - nmads * mad
+    return upper_outlier | lower_outlier
 
 
 def qc_preprocess(query):
