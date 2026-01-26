@@ -174,12 +174,6 @@
                             "minimum": 1
                         }
                     }
-                },
-                "mask": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Generate cell-level outlier masks.",
-                    "fa_icon": "fas fa-mask"
                 }
             }
         },

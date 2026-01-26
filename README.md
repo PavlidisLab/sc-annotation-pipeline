@@ -276,7 +276,6 @@ nextflow run main.nf -profile conda -work-dir /scratch/my_workdir ...
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `--nmads` | MADs for outlier detection (map with per-metric thresholds) | `[mito: 20, umi: 5, genes: 5, counts: 5]` |
-| `--mask` | Generate outlier masks | `true` |
 
 The `nmads` parameter accepts a map with separate thresholds for each QC metric:
 - `mito`: Mitochondrial content outliers
@@ -306,7 +305,8 @@ nextflow run main.nf --nmads.mito 3 --nmads.counts 4
 |-----------|-------------|---------|
 | `--use_staging` | Use Gemma staging server | `true` |
 | `--upload_cta` | Upload cell type annotations | `true` |
-| `--upload_clc` | Upload cell-level characteristics | `true` |
+| `--upload_clc` | Upload cell-level characteristics | `false` |
+| `--upload_mask` | Upload outlier mask | `true` |
 | `--upload_multiqc` | Upload MultiQC report | `true` |
 
 #### Cell Type Assignment Protocols

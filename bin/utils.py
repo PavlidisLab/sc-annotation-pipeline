@@ -490,12 +490,8 @@ def get_qc_metrics(query, nmads):
 
     Parameters:
         query: AnnData object
-        nmads: int or dict. If int, applies to all metrics. If dict, keys are
-               'mito', 'umi', 'genes', 'counts' with per-metric NMAD values.
+        nmads: dict with keys 'mito', 'umi', 'genes', 'counts' for per-metric NMAD values.
     """
-    # Convert single value to dict
-    if isinstance(nmads, (int, float)):
-        nmads = {k: nmads for k in ["mito", "umi", "genes", "counts"]}
 
     query.var["mito"] = query.var["feature_name"].str.startswith(("MT", "mt", "Mt"))
     query.var["ribo"] = query.var["feature_name"].str.startswith(("RP", "Rp", "rp"))

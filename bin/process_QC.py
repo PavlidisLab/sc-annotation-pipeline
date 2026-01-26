@@ -345,11 +345,8 @@ def main():
     query_proc = qc_preprocess(query.copy())
 
     query_subsets = {}
-    # Parse nmads - can be JSON dict or single int
-    try:
-        nmads = json.loads(args.nmads)
-    except (json.JSONDecodeError, TypeError):
-        nmads = int(args.nmads)
+    # Parse nmads JSON dict
+    nmads = json.loads(args.nmads)
 
     for sample_name in query_proc.obs["sample_name"].unique():
       query_subset = query_proc[query_proc.obs["sample_name"] == sample_name]
