@@ -143,7 +143,7 @@
                     "help_text": "Map with per-metric NMAD thresholds. Keys: mito (mitochondrial), umi (UMI counts), genes (gene counts), counts (genes vs UMI relationship). Cells are marked as outliers if their QC metrics deviate by more than this many Median Absolute Deviations from the median.",
                     "fa_icon": "fas fa-exclamation-triangle",
                     "default": {
-                        "mito": 5,
+                        "mito": 20,
                         "umi": 5,
                         "genes": 5,
                         "counts": 5
@@ -151,7 +151,7 @@
                     "properties": {
                         "mito": {
                             "type": "integer",
-                            "default": 5,
+                            "default": 20,
                             "description": "MADs for mitochondrial content outliers",
                             "minimum": 1
                         },

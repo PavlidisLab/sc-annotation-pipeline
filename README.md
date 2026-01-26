@@ -275,7 +275,7 @@ nextflow run main.nf -profile conda -work-dir /scratch/my_workdir ...
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `--nmads` | MADs for outlier detection (map with per-metric thresholds) | `[mito: 5, umi: 5, genes: 5, counts: 5]` |
+| `--nmads` | MADs for outlier detection (map with per-metric thresholds) | `[mito: 20, umi: 5, genes: 5, counts: 5]` |
 | `--mask` | Generate outlier masks | `true` |
 
 The `nmads` parameter accepts a map with separate thresholds for each QC metric:
@@ -370,9 +370,11 @@ where $X$ is the NMAD threshold for that metric (configurable via `--nmads`) and
 
 | Metric | scanpy field | nmads key | Default |
 |--------|--------------|-----------|---------|
-| Mitochondrial | `pct_counts_mito` | `mito` | 5 |
+| Mitochondrial | `pct_counts_mito` | `mito` | 20 |
 | Gene content | `log1p_n_genes_by_counts` | `genes` | 5 |
 | UMI content | `log1p_total_counts` | `umi` | 5 |
+
+**Note on mitochondrial threshold:** The default `mito` threshold is set higher (20 MADs) than other metrics because certain cell types (e.g., astrocytes)  exhibit higher mitochondrial gene expression. A stricter threshold can lead to disproportionate false-positive outlier calls for these cell types.
 
 ### Counts Outliers
 
