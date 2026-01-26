@@ -275,8 +275,19 @@ nextflow run main.nf -profile conda -work-dir /scratch/my_workdir ...
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `--nmads` | MADs for outlier detection | `5` |
+| `--nmads` | MADs for outlier detection (map with per-metric thresholds) | `[mito: 5, umi: 5, genes: 5, counts: 5]` |
 | `--mask` | Generate outlier masks | `true` |
+
+The `nmads` parameter accepts a map with separate thresholds for each QC metric:
+- `mito`: Mitochondrial content outliers
+- `umi`: UMI count outliers
+- `genes`: Gene count outliers
+- `counts`: Counts relationship outliers (genes vs UMI linear model)
+
+Override specific metrics on the command line:
+```bash
+nextflow run main.nf --nmads.mito 3 --nmads.counts 4
+```
 
 ### Asset Files
 
@@ -355,15 +366,13 @@ $$
 \lvert M_i - \mathrm{median}(M) \rvert > X \cdot \mathrm{MAD}(M)
 $$
 
-where $X = \texttt{--nmads}$ (default 5) and $M_i$ is one of:
+where $X$ is the NMAD threshold for that metric (configurable via `--nmads`) and $M_i$ is one of:
 
-| Metric | scanpy field |
-|--------|--------------|
-| Mitochondrial | `pct_counts_mito` |
-| Ribosomal | `pct_counts_ribo` |
-| Hemoglobin | `pct_counts_hb` |
-| Gene content | `log1p_n_genes_by_counts` |
-| UMI content | `log1p_total_counts` |
+| Metric | scanpy field | nmads key | Default |
+|--------|--------------|-----------|---------|
+| Mitochondrial | `pct_counts_mito` | `mito` | 5 |
+| Gene content | `log1p_n_genes_by_counts` | `genes` | 5 |
+| UMI content | `log1p_total_counts` | `umi` | 5 |
 
 ### Counts Outliers
 
@@ -376,6 +385,8 @@ $$
 where fitted values come from: $\ln(\mathrm{genes}+1) \sim \ln(\mathrm{counts}+1)$
 
 Outliers: $\lvert r_i - \mathrm{median}(r) \rvert > X \cdot \mathrm{MAD}(r)$
+
+The threshold $X$ is controlled by `--nmads.counts` (default: 5).
 
 ### Doublet Detection
 

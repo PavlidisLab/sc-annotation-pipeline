@@ -30,13 +30,14 @@ process PROCESS_QC {
     def args = task.ext.args ?: ''
     def cell_type_keys_str = cell_type_keys.join(' ')
     def predicted_files_str = predicted_meta_files.join(' ')
+    def nmads_json = groovy.json.JsonOutput.toJson(nmads)
     """
     python ${projectDir}/bin/process_QC.py \\
         --query_path ${study_path} \\
         --assigned_celltypes_paths ${predicted_files_str} \\
         --gene_mapping ${gene_mapping} \\
         --rename_file ${rename_file} \\
-        --nmads ${nmads} \\
+        --nmads '${nmads_json}' \\
         --sample_meta ${sample_meta} \\
         --organism ${organism} \\
         --markers_file ${markers_file} \\

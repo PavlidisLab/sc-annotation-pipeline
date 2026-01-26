@@ -138,12 +138,42 @@
             "description": "Options for quality control and outlier detection.",
             "properties": {
                 "nmads": {
-                    "type": "integer",
-                    "default": 5,
-                    "description": "Number of MADs for outlier detection.",
-                    "help_text": "Cells are marked as outliers if their QC metrics deviate by more than this many Median Absolute Deviations from the median.",
-                    "minimum": 1,
-                    "fa_icon": "fas fa-exclamation-triangle"
+                    "type": "object",
+                    "description": "Number of MADs for outlier detection per metric.",
+                    "help_text": "Map with per-metric NMAD thresholds. Keys: mito (mitochondrial), umi (UMI counts), genes (gene counts), counts (genes vs UMI relationship). Cells are marked as outliers if their QC metrics deviate by more than this many Median Absolute Deviations from the median.",
+                    "fa_icon": "fas fa-exclamation-triangle",
+                    "default": {
+                        "mito": 5,
+                        "umi": 5,
+                        "genes": 5,
+                        "counts": 5
+                    },
+                    "properties": {
+                        "mito": {
+                            "type": "integer",
+                            "default": 5,
+                            "description": "MADs for mitochondrial content outliers",
+                            "minimum": 1
+                        },
+                        "umi": {
+                            "type": "integer",
+                            "default": 5,
+                            "description": "MADs for UMI count outliers",
+                            "minimum": 1
+                        },
+                        "genes": {
+                            "type": "integer",
+                            "default": 5,
+                            "description": "MADs for gene count outliers",
+                            "minimum": 1
+                        },
+                        "counts": {
+                            "type": "integer",
+                            "default": 5,
+                            "description": "MADs for genes vs UMI relationship outliers",
+                            "minimum": 1
+                        }
+                    }
                 },
                 "mask": {
                     "type": "boolean",
@@ -223,7 +253,7 @@
                 },
                 "upload_cta": {
                     "type": "boolean",
-                    "default": false,
+                    "default": true,
                     "description": "Upload cell type annotations to Gemma.",
                     "fa_icon": "fas fa-upload"
                 },
@@ -233,9 +263,15 @@
                     "description": "Upload cell-level characteristics to Gemma.",
                     "fa_icon": "fas fa-upload"
                 },
+                "upload_mask": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Upload outlier mask to Gemma.",
+                    "fa_icon": "fas fa-mask"
+                },
                 "upload_multiqc": {
                     "type": "boolean",
-                    "default": false,
+                    "default": true,
                     "description": "Upload MultiQC report to Gemma.",
                     "fa_icon": "fas fa-upload"
                 }

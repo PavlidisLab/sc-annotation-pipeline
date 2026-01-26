@@ -428,7 +428,7 @@ def read_query(query_path, gene_mapping, new_meta, sample_meta):
 
 def is_outlier(query, metric: str, nmads=3):
     # for mito outliers, we don't want to filter cells that are below the threshold
-    if metric == "mito_outlier":
+    if metric == "pct_counts_mito":
         M = query.obs[metric]
         outlier = M > np.median(M) + nmads * median_abs_deviation(M)
         return outlier
@@ -484,28 +484,38 @@ def get_lm(query, nmads=5, scale="normal"):
     
     
 def get_qc_metrics(query, nmads):
+    """
+    Calculate QC metrics and flag outliers.
+
+    Parameters:
+        query: AnnData object
+        nmads: int or dict. If int, applies to all metrics. If dict, keys are
+               'mito', 'umi', 'genes', 'counts' with per-metric NMAD values.
+    """
+    # Convert single value to dict
+    if isinstance(nmads, (int, float)):
+        nmads = {k: nmads for k in ["mito", "umi", "genes", "counts"]}
+
     query.var["mito"] = query.var["feature_name"].str.startswith(("MT", "mt", "Mt"))
     query.var["ribo"] = query.var["feature_name"].str.startswith(("RP", "Rp", "rp"))
     query.var["hb"] = query.var["feature_name"].str.startswith(("HB", "Hb","hb"))
     # fill NaN values with False
     query.var["mito"].fillna(False, inplace=True)
     query.var["ribo"].fillna(False, inplace=True)
-    query.var["hb"].fillna(False, inplace=True) 
+    query.var["hb"].fillna(False, inplace=True)
 
     sc.pp.calculate_qc_metrics(query, qc_vars=["mito", "ribo", "hb"], log1p=True, inplace=True, percent_top=[20], use_raw=True)
 
     metrics = {
-        "log1p_total_counts": "umi_outlier",
-        "log1p_n_genes_by_counts": "genes_outlier",
-        "pct_counts_mito": "mito_outlier",
-       # "pct_counts_ribo": "ribo_outlier",
-       # "pct_counts_hb": "hb_outlier",
+        "umi": "log1p_total_counts",
+        "genes": "log1p_n_genes_by_counts",
+        "mito": "pct_counts_mito",
     }
-    
-    for metric, col_name in metrics.items():
-        query.obs[col_name] = is_outlier(query, metric, nmads)
 
-    lm_dict = get_lm(query, nmads=nmads)
+    for key, metric in metrics.items():
+        query.obs[f"{key}_outlier"] = is_outlier(query, metric, nmads[key])
+
+    lm_dict = get_lm(query, nmads=nmads["counts"])
     intercept = lm_dict["model"].params[0]
     slope = lm_dict["model"].params[1]
     

@@ -9,6 +9,7 @@ import re
 import matplotlib.pyplot as plt
 import seaborn as sns
 import argparse
+import json
 from utils import *
 from PIL import Image
 import io
@@ -24,7 +25,7 @@ def parse_arguments():
     parser.add_argument('--assigned_celltypes_paths', type=str, nargs="+") 
     parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
     parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
-    parser.add_argument('--nmads',type=int, default=5)
+    parser.add_argument('--nmads', type=str, default='{"mito": 5, "umi": 5, "genes": 5, "counts": 5}')
     parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/GSE223423_sample_meta.tsv")
     parser.add_argument('--cell_type_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type","family_cell_type"], help='Column names in assigned celltypes to use for cell type')
     parser.add_argument('--outlier_cols', type=str, nargs="+", default=[
@@ -344,9 +345,15 @@ def main():
     query_proc = qc_preprocess(query.copy())
 
     query_subsets = {}
+    # Parse nmads - can be JSON dict or single int
+    try:
+        nmads = json.loads(args.nmads)
+    except (json.JSONDecodeError, TypeError):
+        nmads = int(args.nmads)
+
     for sample_name in query_proc.obs["sample_name"].unique():
       query_subset = query_proc[query_proc.obs["sample_name"] == sample_name]
-      query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
+      query_subset = get_qc_metrics(query_subset, nmads=nmads)
       query_subsets[sample_name] = query_subset
 
     query_combined = ad.concat(query_subsets.values(), axis=0)

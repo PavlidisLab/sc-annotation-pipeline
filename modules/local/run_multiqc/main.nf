@@ -25,10 +25,11 @@ process RUN_MULTIQC {
     script:
     def args = task.ext.args ?: ''
     def use_config_flag = process_samples ? "" : "--config new_config.yaml"
+    def nmads_str = nmads.collect { k, v -> "${k}=${v}" }.join(", ")
     """
     # Combine base config with dynamic title
     cp ${multiqc_config} new_config.yaml
-    echo 'title: "${study_name} CELLxGENE Census ${census_version} cutoff ${cutoff} MADs ${nmads}"' >> new_config.yaml
+    echo 'title: "${study_name} CELLxGENE Census ${census_version} cutoff ${cutoff} MADs: ${nmads_str}"' >> new_config.yaml
 
     multiqc ${qc_dir} -d ${use_config_flag} ${args}
 
