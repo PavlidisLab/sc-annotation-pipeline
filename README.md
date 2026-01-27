@@ -213,15 +213,10 @@ nextflow run main.nf -profile conda -params-file params.mm.json \
 | Profile | Description |
 |---------|-------------|
 | `conda` | Use Conda for environment management |
-| `mamba` | Use Mamba (faster Conda) |
-| `docker` | Use Docker containers |
-| `singularity` | Use Singularity containers |
-| `apptainer` | Use Apptainer containers |
-| `slurm` | Submit jobs to SLURM cluster |
-| `test` | Minimal test configuration |
-| `debug` | Enable debug output |
+| `test_human` | Test configuration for human data |
+| `test_mouse` | Test configuration for mouse data |
 
-Combine profiles as needed: `-profile conda,slurm`
+SLURM execution is enabled by default and does not require a separate profile.
 
 ### Resuming Pipelines
 
