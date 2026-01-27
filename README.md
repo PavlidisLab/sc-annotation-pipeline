@@ -275,8 +275,18 @@ nextflow run main.nf -profile conda -work-dir /scratch/my_workdir ...
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `--nmads` | MADs for outlier detection | `5` |
-| `--mask` | Generate outlier masks | `true` |
+| `--nmads` | MADs for outlier detection (map with per-metric thresholds) | `[mito: 20, umi: 5, genes: 5, counts: 5]` |
+
+The `nmads` parameter accepts a map with separate thresholds for each QC metric:
+- `mito`: Mitochondrial content outliers
+- `umi`: UMI count outliers
+- `genes`: Gene count outliers
+- `counts`: Counts relationship outliers (genes vs UMI linear model)
+
+Override specific metrics on the command line:
+```bash
+nextflow run main.nf --nmads.mito 3 --nmads.counts 4
+```
 
 ### Asset Files
 
@@ -296,6 +306,7 @@ nextflow run main.nf -profile conda -work-dir /scratch/my_workdir ...
 | `--use_staging` | Use Gemma staging server | `true` |
 | `--upload_cta` | Upload cell type annotations | `true` |
 | `--upload_clc` | Upload cell-level characteristics | `true` |
+| `--upload_mask` | Upload outlier mask | `true` |
 | `--upload_multiqc` | Upload MultiQC report | `true` |
 
 #### Cell Type Assignment Protocols
@@ -355,15 +366,15 @@ $$
 \lvert M_i - \mathrm{median}(M) \rvert > X \cdot \mathrm{MAD}(M)
 $$
 
-where $X = \texttt{--nmads}$ (default 5) and $M_i$ is one of:
+where $X$ is the NMAD threshold for that metric (configurable via `--nmads`) and $M_i$ is one of:
 
-| Metric | scanpy field |
-|--------|--------------|
-| Mitochondrial | `pct_counts_mito` |
-| Ribosomal | `pct_counts_ribo` |
-| Hemoglobin | `pct_counts_hb` |
-| Gene content | `log1p_n_genes_by_counts` |
-| UMI content | `log1p_total_counts` |
+| Metric | scanpy field | nmads key | Default |
+|--------|--------------|-----------|---------|
+| Mitochondrial | `pct_counts_mito` | `mito` | 20 |
+| Gene content | `log1p_n_genes_by_counts` | `genes` | 5 |
+| UMI content | `log1p_total_counts` | `umi` | 5 |
+
+**Note on mitochondrial threshold:** The default `mito` threshold is set higher (20 MADs) than other metrics because certain cell types (e.g., astrocytes)  exhibit higher mitochondrial gene expression. A stricter threshold can lead to disproportionate false-positive outlier calls for these cell types.
 
 ### Counts Outliers
 
@@ -376,6 +387,8 @@ $$
 where fitted values come from: $\ln(\mathrm{genes}+1) \sim \ln(\mathrm{counts}+1)$
 
 Outliers: $\lvert r_i - \mathrm{median}(r) \rvert > X \cdot \mathrm{MAD}(r)$
+
+The threshold $X$ is controlled by `--nmads.counts` (default: 5).
 
 ### Doublet Detection
 

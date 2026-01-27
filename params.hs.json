@@ -11,8 +11,7 @@
         "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"
     ],
     "organ": "brain",
-    "nmads": 5,
-    "mask": true,
+    "nmads": {"mito": 20, "umi": 5, "genes": 5, "counts": 5},
     "process_samples": false,
     "use_staging": true,
     "preferredCtaLevel": "class",

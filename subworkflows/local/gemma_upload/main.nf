@@ -6,13 +6,15 @@
 
 include { LOAD_CTA        } from "$projectDir/modules/local/load_cta/main"
 include { LOAD_CLC        } from "$projectDir/modules/local/load_clc/main"
+include { LOAD_MASK       } from "$projectDir/modules/local/load_mask/main"
 include { PUBLISH_MULTIQC } from "$projectDir/modules/local/publish_multiqc/main"
 
 workflow GEMMA_UPLOAD {
 
     take:
     ch_celltypes          // channel: [ study_name, celltype.tsv ]
-    ch_masks              // channel: [ study_name, mask.tsv ]
+    ch_clc                // channel: [ study_name, clc.tsv ] - individual outlier categories
+    ch_masks              // channel: [ study_name, mask.tsv ] - single boolean mask
     ch_multiqc            // channel: [ study_name, multiqc_report.html ]
     use_staging           // boolean: use Gemma staging environment
     version               // string: pipeline version
@@ -20,6 +22,7 @@ workflow GEMMA_UPLOAD {
     nmads                 // integer: MADs used
     upload_cta            // boolean: upload cell type annotations
     upload_clc            // boolean: upload cell-level characteristics
+    upload_mask           // boolean: upload combined mask
     upload_multiqc        // boolean: upload MultiQC report
     process_samples       // boolean: process individual samples
 
@@ -32,10 +35,16 @@ workflow GEMMA_UPLOAD {
         ch_messages = ch_messages.mix(LOAD_CTA.out.message)
     }
 
-    // Upload cell-level characteristics (outlier masks)
+    // Upload cell-level characteristics (individual outlier categories)
     if (upload_clc) {
-        LOAD_CLC(ch_masks, use_staging)
+        LOAD_CLC(ch_clc, use_staging)
         ch_messages = ch_messages.mix(LOAD_CLC.out.message)
+    }
+
+    // Upload combined mask (single boolean for any outlier)
+    if (upload_mask) {
+        LOAD_MASK(ch_masks, use_staging)
+        ch_messages = ch_messages.mix(LOAD_MASK.out.message)
     }
 
     // Upload MultiQC reports (skip when processing samples individually)

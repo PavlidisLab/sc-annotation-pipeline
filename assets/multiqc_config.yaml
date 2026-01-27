@@ -75,7 +75,24 @@ custom_data:
     description: 'Expression of select markers. Count are averaged across cell-type labels and z-score normalized across genes.'
     file_format: 'tsv'
     plot_type: 'heatmap'
- 
+
+  mask_stats_by_class:
+    section_name: 'Outlier Types by Cell Type (class)'
+    description: 'Count of each outlier type per class cell type (not mutually exclusive)'
+    file_format: 'tsv'
+    plot_type: 'table'
+
+  mask_stats_by_subclass:
+    section_name: 'Outlier Types by Cell Type (subclass)'
+    description: 'Count of each outlier type per subclass cell type (not mutually exclusive)'
+    file_format: 'tsv'
+    plot_type: 'table'
+
+  mask_stats_by_family:
+    section_name: 'Outlier Types by Cell Type (family)'
+    description: 'Count of each outlier type per family cell type (not mutually exclusive)'
+    file_format: 'tsv'
+    plot_type: 'table'
 
 
 sp:
@@ -111,8 +128,18 @@ sp:
   markers_heatmap_subclass:
     fn: "*subclass_cell_type_heatmap_mqc.tsv"
 
+  mask_stats_by_class:
+    fn: "*mask_stats_by_class_cell_type_mqc.tsv"
+  mask_stats_by_subclass:
+    fn: "*mask_stats_by_subclass_cell_type_mqc.tsv"
+  mask_stats_by_family:
+    fn: "*mask_stats_by_family_cell_type_mqc.tsv"
+
 custom_content:
   order:
+    - mask_stats_by_subclass
+    - mask_stats_by_class
+    - mask_stats_by_family
     - celltype_sample_composition_subclass
     - sample_celltype_composition_subclass
     - celltype_sample_composition_class

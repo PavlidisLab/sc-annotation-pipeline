@@ -17,10 +17,11 @@ process PROCESS_QC {
     val cell_type_keys
 
     output:
-    path "**png"                                    , emit: plots
-    tuple val(study_name), path("${query_name}/")   , emit: qc_dir
-    tuple val(study_name), path("${query_name}*clc.tsv"), emit: mask_files
-    path "versions.yml"                             , emit: versions
+    path "**png"                                        , emit: plots
+    tuple val(study_name), path("${query_name}/")       , emit: qc_dir
+    tuple val(study_name), path("${query_name}*clc.tsv"), emit: clc_files
+    tuple val(study_name), path("${query_name}_mask.tsv"), emit: mask_file
+    path "versions.yml"                                 , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -29,13 +30,14 @@ process PROCESS_QC {
     def args = task.ext.args ?: ''
     def cell_type_keys_str = cell_type_keys.join(' ')
     def predicted_files_str = predicted_meta_files.join(' ')
+    def nmads_json = groovy.json.JsonOutput.toJson(nmads)
     """
     python ${projectDir}/bin/process_QC.py \\
         --query_path ${study_path} \\
         --assigned_celltypes_paths ${predicted_files_str} \\
         --gene_mapping ${gene_mapping} \\
         --rename_file ${rename_file} \\
-        --nmads ${nmads} \\
+        --nmads '${nmads_json}' \\
         --sample_meta ${sample_meta} \\
         --organism ${organism} \\
         --markers_file ${markers_file} \\
@@ -53,7 +55,8 @@ process PROCESS_QC {
     """
     mkdir -p ${query_name}
     touch ${query_name}/qc_metrics.tsv
-    touch ${query_name}_mask.tsv
+    touch ${query_name}_clc.tsv
+    echo -e "sample_id\tcell_id\tcategory\tvalue" > ${query_name}_mask.tsv
     touch ${query_name}_plot.png
 
     cat <<-END_VERSIONS > versions.yml

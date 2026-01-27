@@ -9,6 +9,7 @@ import re
 import matplotlib.pyplot as plt
 import seaborn as sns
 import argparse
+import json
 from utils import *
 from PIL import Image
 import io
@@ -19,13 +20,17 @@ from upsetplot import UpSet, from_memberships
 # Function to parse command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
-    parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/1373636_5M_Tim3_cKO.5XFAD_rep2_raw.h5ad")
-    parser.add_argument('--assigned_celltypes_paths', type=str, nargs="+") 
-    parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
-    parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
-    parser.add_argument('--nmads',type=int, default=5)
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/GSE223423_sample_meta.tsv")
+    parser.add_argument('--organism', type=str, default='homo_sapiens', help='Organism name (e.g., homo_sapiens)')
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/1203472_HQ4T_raw.h5ad")
+    parser.add_argument('--assigned_celltypes_paths', type=str, nargs="+", default=[
+        "/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_family_combined_celltypes.tsv",
+        "/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_subclass_combined_celltypes.tsv",
+        "/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_class_combined_celltypes.tsv"
+    ])
+    parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/cell_type_markers.tsv")
+    parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/gemma_genes.tsv")
+    parser.add_argument('--nmads', type=str, default='{"mito":20,"umi":5,"genes":5,"counts":5}')
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_sample_meta.tsv")
     parser.add_argument('--cell_type_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type","family_cell_type"], help='Column names in assigned celltypes to use for cell type')
     parser.add_argument('--outlier_cols', type=str, nargs="+", default=[
         "non_outlier",
@@ -142,32 +147,115 @@ def write_clc_files(query_combined, study_name, metrics=None):
         ]
     CLC_df = query_combined.obs[["sample_id", "cell_id"] + metrics].copy()
 
-    
+
     CLC_df = CLC_df.melt(
         id_vars=["sample_id", "cell_id"],
         value_vars=metrics,
         value_name="value",
         var_name="category"
     )
-        
+
     # change true and false to lower
     CLC_df["value"] = CLC_df["value"].astype(str).str.lower()
     # Save to TSV file
     CLC_df.to_csv(f"{study_name}_clc.tsv", sep="\t", index=False)
 
 
-def plot_upset_by_group(obs, outlier_cols=None, group_col=None, outdir=None):
-    if outlier_cols is None:
-        outlier_cols = [
-            "non_outlier",
+def write_mask_file(query_combined, study_name, metrics=None):
+    """
+    Write a mask file indicating whether each cell is an outlier in ANY category.
+
+    Output format (tab-separated):
+    sample_id    cell_id    category    value
+
+    Where category is always "mask" and value is "true" if the cell is an outlier
+    in at least one category, "false" otherwise.
+    """
+    if metrics is None:
+        metrics = [
             "counts_outlier",
-            "umi_outlier",
-            "genes_outlier",
             "mito_outlier",
-            #"ribo_outlier",
-            #"hb_outlier",
-            "predicted_doublet"
+            "predicted_doublet",
+            "umi_outlier",
+            "genes_outlier"
         ]
+
+    # Filter to only existing metrics
+    existing_metrics = [m for m in metrics if m in query_combined.obs.columns]
+
+    # Create mask: True if outlier in ANY category (excluding non_outlier)
+    outlier_metrics = [m for m in existing_metrics if m != "non_outlier"]
+
+    mask_df = query_combined.obs[["sample_id", "cell_id"]].copy()
+    mask_df["category"] = "mask"
+
+    # Cell is masked (true) if it's an outlier in at least one category
+    mask_df["value"] = query_combined.obs[outlier_metrics].any(axis=1)
+    mask_df["value"] = mask_df["value"].map({True: "true", False: "false"})
+
+    # Save to TSV file
+    mask_df.to_csv(f"{study_name}_mask.tsv", sep="\t", index=False)
+
+    return mask_df
+
+
+def write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=None):
+    """
+    Write statistics about outlier types per cell type.
+    Shows breakdown of which outlier categories contribute to masking.
+    Note: outlier types are not mutually exclusive (a cell can be flagged for multiple reasons).
+    """
+    if metrics is None:
+        metrics = [
+            "counts_outlier",
+            "mito_outlier",
+            "predicted_doublet",
+            "umi_outlier",
+            "genes_outlier"
+        ]
+
+    # Filter to only existing metrics (excluding non_outlier)
+    outlier_metrics = [m for m in metrics if m in query_combined.obs.columns and m != "non_outlier"]
+
+    obs = query_combined.obs.copy()
+
+    # Create mask column (True if outlier in any category)
+    obs["mask"] = obs[outlier_metrics].any(axis=1)
+
+    # Statistics by cell type for each cell type key
+    # Shows count of each outlier type (not mutually exclusive)
+    for ct_key in cell_type_keys:
+        if ct_key not in obs.columns:
+            continue
+
+        # Aggregate counts of each outlier type per cell type
+        agg_dict = {m: (m, "sum") for m in outlier_metrics}
+        agg_dict["Not Masked"] = ("mask", lambda x: (~x).sum())
+        ct_stats = obs.groupby(ct_key).agg(**agg_dict).reset_index()
+
+        # Rename columns for readability
+        col_rename = {
+            ct_key: "Cell Type",
+            "counts_outlier": "Counts",
+            "mito_outlier": "Mito",
+            "predicted_doublet": "Doublet",
+            "umi_outlier": "UMI",
+            "genes_outlier": "Genes"
+        }
+        ct_stats = ct_stats.rename(columns={k: v for k, v in col_rename.items() if k in ct_stats.columns})
+
+        # Reorder columns to put "Not Masked" first after "Cell Type"
+        cols = ct_stats.columns.tolist()
+        if "Not Masked" in cols:
+            cols.remove("Not Masked")
+            cols.insert(1, "Not Masked")
+            ct_stats = ct_stats[cols]
+
+        ct_stats.to_csv(os.path.join(study_name, f"mask_stats_by_{ct_key}_mqc.tsv"), sep="\t", index=False)
+
+
+def plot_upset_by_group(obs, outlier_cols=None, group_col=None, outdir="."):
+
     os.makedirs(outdir, exist_ok=True)
     obs = obs.copy()
     obs["membership"] = obs[outlier_cols].apply(lambda row: tuple(c for c in outlier_cols if row[c]), axis=1)
@@ -190,6 +278,10 @@ def plot_upset_by_group(obs, outlier_cols=None, group_col=None, outdir=None):
         group = "all"
         counts = obs["membership"].value_counts()
         if counts.empty:
+            return
+        # If only category is non_outlier, skip plot
+        if len(counts) == 1 and counts.index[0] == ("non_outlier",):
+            print(f"Only non_outlier category found for upset plot ({group_col}={group}), skipping plot.")
             return
         data = from_memberships(counts.index, data=counts.values)
         plt.figure(figsize=(8, 4))
@@ -251,9 +343,12 @@ def main():
     query_proc = qc_preprocess(query.copy())
 
     query_subsets = {}
+    # Parse nmads JSON dict
+    nmads = json.loads(args.nmads)
+
     for sample_name in query_proc.obs["sample_name"].unique():
       query_subset = query_proc[query_proc.obs["sample_name"] == sample_name]
-      query_subset = get_qc_metrics(query_subset, nmads=args.nmads)
+      query_subset = get_qc_metrics(query_subset, nmads=nmads)
       query_subsets[sample_name] = query_subset
 
     query_combined = ad.concat(query_subsets.values(), axis=0)
@@ -292,7 +387,13 @@ def main():
     existing_outlier_cols = [col for col in outlier_cols if col in query_combined.obs.columns]
     plot_upset_by_group(query_combined.obs, outlier_cols=existing_outlier_cols, group_col=None, outdir=study_name)
     write_clc_files(query_combined, study_name, metrics=existing_outlier_cols)
-    
+
+    # Write mask file (single boolean for any outlier)
+    write_mask_file(query_combined, study_name, metrics=existing_outlier_cols)
+
+    # Write mask statistics for QC report
+    write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=existing_outlier_cols)
+
     make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key="subclass_cell_type")
 
 if __name__ == "__main__":
