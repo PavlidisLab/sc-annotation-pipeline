@@ -20,13 +20,17 @@ from upsetplot import UpSet, from_memberships
 # Function to parse command line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
-    parser.add_argument('--organism', type=str, default='mus_musculus', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/1373636_5M_Tim3_cKO.5XFAD_rep2_raw.h5ad")
-    parser.add_argument('--assigned_celltypes_paths', type=str, nargs="+") 
-    parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv")
-    parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/gemma_genes.tsv")
-    parser.add_argument('--nmads', type=str, default='{"mito": 5, "umi": 5, "genes": 5, "counts": 5}')
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/40/4adf027a41b7292db2847d7435c0f6/GSE223423_sample_meta.tsv")
+    parser.add_argument('--organism', type=str, default='homo_sapiens', help='Organism name (e.g., homo_sapiens)')
+    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/1203472_HQ4T_raw.h5ad")
+    parser.add_argument('--assigned_celltypes_paths', type=str, nargs="+", default=[
+        "/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_family_combined_celltypes.tsv",
+        "/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_subclass_combined_celltypes.tsv",
+        "/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_class_combined_celltypes.tsv"
+    ])
+    parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/cell_type_markers.tsv")
+    parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/gemma_genes.tsv")
+    parser.add_argument('--nmads', type=str, default='{"mito":20,"umi":5,"genes":5,"counts":5}')
+    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_sample_meta.tsv")
     parser.add_argument('--cell_type_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type","family_cell_type"], help='Column names in assigned celltypes to use for cell type')
     parser.add_argument('--outlier_cols', type=str, nargs="+", default=[
         "non_outlier",
@@ -250,18 +254,8 @@ def write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=No
         ct_stats.to_csv(os.path.join(study_name, f"mask_stats_by_{ct_key}_mqc.tsv"), sep="\t", index=False)
 
 
-def plot_upset_by_group(obs, outlier_cols=None, group_col=None, outdir=None):
-    if outlier_cols is None:
-        outlier_cols = [
-            "non_outlier",
-            "counts_outlier",
-            "umi_outlier",
-            "genes_outlier",
-            "mito_outlier",
-            #"ribo_outlier",
-            #"hb_outlier",
-            "predicted_doublet"
-        ]
+def plot_upset_by_group(obs, outlier_cols=None, group_col=None, outdir="."):
+
     os.makedirs(outdir, exist_ok=True)
     obs = obs.copy()
     obs["membership"] = obs[outlier_cols].apply(lambda row: tuple(c for c in outlier_cols if row[c]), axis=1)
@@ -284,6 +278,10 @@ def plot_upset_by_group(obs, outlier_cols=None, group_col=None, outdir=None):
         group = "all"
         counts = obs["membership"].value_counts()
         if counts.empty:
+            return
+        # If only category is non_outlier, skip plot
+        if len(counts) == 1 and counts.index[0] == ("non_outlier",):
+            print(f"Only non_outlier category found for upset plot ({group_col}={group}), skipping plot.")
             return
         data = from_memberships(counts.index, data=counts.values)
         plt.figure(figsize=(8, 4))

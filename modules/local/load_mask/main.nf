@@ -21,7 +21,8 @@ process LOAD_MASK {
         -replaceClc \
         -ignoreSamplesLackingData \
         --data-type NULL \
-        -clcName Mask \
+        -clcName mask \
+        -clcDefaultValue false \
         2>> "message.txt"
     """
 

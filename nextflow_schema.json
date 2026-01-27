@@ -253,7 +253,7 @@
                 },
                 "upload_clc": {
                     "type": "boolean",
-                    "default": false,
+                    "default": true,
                     "description": "Upload cell-level characteristics to Gemma.",
                     "fa_icon": "fas fa-upload"
                 },
