@@ -22,7 +22,7 @@ process LOAD_CLC {
         -ignoreSamplesLackingData \\
         --data-type NULL \\
         -clcName counts_outlier,genes_outlier,mito_outlier,predicted_doublet,non_outlier,umi_outlier \\
-        -clcDefaultValue false \\
+        -clcDefaultValue false,false,false,false,false,false \\
         2>> "message.txt"
     """
 
