@@ -104,6 +104,7 @@ workflow SCANNOTATE {
         params.GEMMA_USERNAME,
         params.GEMMA_PASSWORD
     )
+    ch_clc     = QC_REPORTING.out.clc
     ch_masks   = QC_REPORTING.out.masks
     ch_multiqc = QC_REPORTING.out.multiqc
     ch_versions = ch_versions.mix(QC_REPORTING.out.versions)
@@ -111,9 +112,10 @@ workflow SCANNOTATE {
     //
     // SUBWORKFLOW: Upload results to Gemma (optional)
     //
-    
+
     GEMMA_UPLOAD(
         ch_celltypes,
+        ch_clc,
         ch_masks,
         ch_multiqc,
         params.use_staging,
@@ -122,6 +124,7 @@ workflow SCANNOTATE {
         params.nmads,
         params.upload_cta ?: false,
         params.upload_clc ?: false,
+        params.upload_mask ?: false,
         params.upload_multiqc ?: false,
         params.process_samples
     )

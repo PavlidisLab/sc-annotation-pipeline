@@ -4,11 +4,12 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { GET_META     } from "$projectDir/modules/local/get_meta/main"
-include { PROCESS_QC   } from "$projectDir/modules/local/process_qc/main"
-include { COMBINE_QC   } from "$projectDir/modules/local/combine_qc/main"
-include { COMBINE_CLC  } from "$projectDir/modules/local/combine_clc/main"
-include { RUN_MULTIQC  } from "$projectDir/modules/local/run_multiqc/main"
+include { GET_META      } from "$projectDir/modules/local/get_meta/main"
+include { PROCESS_QC    } from "$projectDir/modules/local/process_qc/main"
+include { COMBINE_QC    } from "$projectDir/modules/local/combine_qc/main"
+include { COMBINE_CLC   } from "$projectDir/modules/local/combine_clc/main"
+include { COMBINE_MASK  } from "$projectDir/modules/local/combine_mask/main"
+include { RUN_MULTIQC   } from "$projectDir/modules/local/run_multiqc/main"
 workflow QC_REPORTING {
 
     take:
@@ -62,9 +63,10 @@ workflow QC_REPORTING {
     )
 
 
-    ch_qc_dirs   = PROCESS_QC.out.qc_dir
-    ch_mask_files = PROCESS_QC.out.mask_files
-    ch_versions  = ch_versions.mix(PROCESS_QC.out.versions.first())
+    ch_qc_dirs    = PROCESS_QC.out.qc_dir
+    ch_clc_files  = PROCESS_QC.out.clc_files
+    ch_mask_files = PROCESS_QC.out.mask_file
+    ch_versions   = ch_versions.mix(PROCESS_QC.out.versions.first())
 
     if (process_samples) {
         // Combine QC directories
@@ -72,13 +74,19 @@ workflow QC_REPORTING {
         COMBINE_QC(ch_qc_grouped)
         ch_multiqc_input = COMBINE_QC.out.combined_qc
 
-        // Combine mask files
+        // Combine CLC files (individual outlier categories)
+        ch_clc_grouped = ch_clc_files.groupTuple(by: 0)
+        COMBINE_CLC(ch_clc_grouped)
+        ch_clc = COMBINE_CLC.out.combined_mask
+
+        // Combine mask files (single boolean mask)
         ch_mask_grouped = ch_mask_files.groupTuple(by: 0)
-        COMBINE_CLC(ch_mask_grouped)
-        ch_masks = COMBINE_CLC.out.combined_mask
+        COMBINE_MASK(ch_mask_grouped)
+        ch_masks = COMBINE_MASK.out.combined_mask
     }
     else {
         ch_multiqc_input = ch_qc_dirs
+        ch_clc = ch_clc_files
         ch_masks = ch_mask_files
     }
 
@@ -103,7 +111,8 @@ workflow QC_REPORTING {
 
     emit:
     qc_dirs   = ch_qc_dirs
-    masks     = ch_masks
-    multiqc   =  ch_multiqc
+    clc       = ch_clc      // channel: [ study_name, clc.tsv ] - individual outlier categories
+    masks     = ch_masks    // channel: [ study_name, mask.tsv ] - single boolean mask
+    multiqc   = ch_multiqc
     versions  = ch_versions
 }
