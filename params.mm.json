@@ -12,9 +12,14 @@
         "Tabula Muris Senis"
     ],
     "organ": "brain",
-    "nmads": {"mito": 20, "umi": 5, "genes": 5, "counts": 5},
-    "author_annotations_path": "/space/grp/Pipelines/sc-annotation-pipeline/meta/author_cell_annotations",
-    "original_celltype_columns": "/space/grp/Pipelines/sc-annotation-pipeline/meta/original_celltype_columns.tsv",
+    "nmads": {
+        "mito": 20,
+        "umi": 5,
+        "genes": 5,
+        "counts": 5
+    },
+    "author_annotations_path": "/space/grp/Pipelines/sc-annotation-pipeline/assets/author_cell_annotations",
+    "original_celltype_columns": "/space/grp/Pipelines/sc-annotation-pipeline/assets/original_celltype_columns.tsv",
     "process_samples": false,
     "use_staging": true,
     "preferredCtaLevel": "family"
