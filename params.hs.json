@@ -8,7 +8,8 @@
     "study_names": null,
     "ref_collections": [
         "Transcriptomic cytoarchitecture reveals principles of human neocortex organization",
-        "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas"
+        "SEA-AD: Seattle Alzheimer’s Disease Brain Cell Atlas",
+        "Molecular and cellular evolution of the primate dorsolateral prefrontal cortex"
     ],
     "organ": "brain",
     "nmads": {"mito": 20, "umi": 5, "genes": 5, "counts": 5},
