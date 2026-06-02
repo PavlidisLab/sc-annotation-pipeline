@@ -4,8 +4,8 @@ process GET_CENSUS_ADATA {
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker://raschwaa/census_pipeline:latest' :
-        'raschwaa/census_pipeline:latest' }"
+        'docker://raschwaa/census-minimal:latest' :
+        'raschwaa/census-minimal:latest' }"
 
     input:
     val ref_collections

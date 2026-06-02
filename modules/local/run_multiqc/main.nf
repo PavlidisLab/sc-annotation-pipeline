@@ -4,8 +4,8 @@ process RUN_MULTIQC {
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker://raschwaa/census_pipeline:latest' :
-        'raschwaa/census_pipeline:latest' }"
+        'docker://raschwaa/scanpyenv-minimal:latest' :
+        'raschwaa/scanpyenv-minimal:latest' }"
 
     input:
     tuple val(study_name), path(qc_dir)
