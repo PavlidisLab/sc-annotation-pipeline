@@ -112,24 +112,31 @@ workflow SCANNOTATE {
     //
     // SUBWORKFLOW: Upload results to Gemma (optional)
     //
+    // Master switch: when --upload_gemma is false the whole upload subworkflow is
+    // skipped, so a run needs no Gemma write access. The granular upload_cta/clc/mask/
+    // multiqc flags still select which artifacts to upload when on. (Note: fetching study
+    // data and metadata from Gemma still requires GEMMA_USERNAME/GEMMA_PASSWORD.)
+    //
+    ch_messages = Channel.empty()
+    if (params.upload_gemma) {
+        GEMMA_UPLOAD(
+            ch_celltypes,
+            ch_clc,
+            ch_masks,
+            ch_multiqc,
+            params.use_staging,
+            params.version,
+            params.preferredCtaLevel,
+            params.nmads,
+            params.upload_cta ?: false,
+            params.upload_clc ?: false,
+            params.upload_mask ?: false,
+            params.upload_multiqc ?: false,
+            params.process_samples
+        )
+        ch_messages = GEMMA_UPLOAD.out.messages
+    }
 
-    GEMMA_UPLOAD(
-        ch_celltypes,
-        ch_clc,
-        ch_masks,
-        ch_multiqc,
-        params.use_staging,
-        params.version,
-        params.preferredCtaLevel,
-        params.nmads,
-        params.upload_cta ?: false,
-        params.upload_clc ?: false,
-        params.upload_mask ?: false,
-        params.upload_multiqc ?: false,
-        params.process_samples
-    )
-    ch_messages = GEMMA_UPLOAD.out.messages
-    
 
     emit:
     celltypes = ch_celltypes
