@@ -28,6 +28,7 @@ workflow QC_REPORTING {
     process_samples      // boolean: process individual samples
     gemma_username       // string: Gemma username
     gemma_password       // string: Gemma password
+    mask_outliers_as_unknown // boolean: relabel outlier cells as "unknown" in the report
 
     main:
 
@@ -57,7 +58,8 @@ workflow QC_REPORTING {
         nmads,
         organism,
         markers_file,
-        cell_type_keys
+        cell_type_keys,
+        mask_outliers_as_unknown
     )
 
 

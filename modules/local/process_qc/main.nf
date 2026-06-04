@@ -15,6 +15,7 @@ process PROCESS_QC {
     val organism
     path markers_file
     val cell_type_keys
+    val mask_outliers_as_unknown
 
     output:
     path "**png"                                        , emit: plots
@@ -41,6 +42,7 @@ process PROCESS_QC {
         --organism ${organism} \\
         --markers_file ${markers_file} \\
         --cell_type_keys ${cell_type_keys_str} \\
+        --mask_outliers_as_unknown ${mask_outliers_as_unknown} \\
         ${args}
     """
 

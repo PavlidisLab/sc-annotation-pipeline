@@ -98,7 +98,8 @@ workflow SCANNOTATE {
         params.cutoff,
         params.process_samples,
         params.GEMMA_USERNAME,
-        params.GEMMA_PASSWORD
+        params.GEMMA_PASSWORD,
+        params.mask_outliers_as_unknown
     )
     ch_clc     = QC_REPORTING.out.clc
     ch_masks   = QC_REPORTING.out.masks
