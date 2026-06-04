@@ -624,6 +624,10 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
         overlap,
         key=lambda x: ontology_mapping[x] if not pd.isna(ontology_mapping.get(x)) else x
     )
+    # Pin "unknown" (QC-outlier cells) as its own category at the end of the heatmap. It is
+    # not in the markers file, so it's excluded from `overlap` above; append it back last.
+    if "unknown" in scaled_expr.index:
+        sorted_cell_types = sorted_cell_types + ["unknown"]
     # sort rows
     scaled_expr = scaled_expr.loc[sorted_cell_types, :]
 

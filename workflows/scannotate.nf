@@ -9,6 +9,7 @@ include { PREPARE_REFERENCE  } from "$projectDir/subworkflows/local/prepare_refe
 include { PROCESS_QUERIES    } from "$projectDir/subworkflows/local/process_queries/main"
 include { CLASSIFY_CELLTYPES } from "$projectDir/subworkflows/local/classify_celltypes/main"
 include { QC_REPORTING       } from "$projectDir/subworkflows/local/qc_reporting/main"
+include { RELABEL_OUTLIERS   } from "$projectDir/modules/local/relabel_outliers/main"
 include { GEMMA_UPLOAD       } from "$projectDir/subworkflows/local/gemma_upload/main"
 
 /*
@@ -97,11 +98,21 @@ workflow SCANNOTATE {
         params.cutoff,
         params.process_samples,
         params.GEMMA_USERNAME,
-        params.GEMMA_PASSWORD
+        params.GEMMA_PASSWORD,
+        params.mask_outliers_as_unknown
     )
     ch_clc     = QC_REPORTING.out.clc
     ch_masks   = QC_REPORTING.out.masks
     ch_multiqc = QC_REPORTING.out.multiqc
+
+    //
+    // MODULE: Relabel QC-outlier cells as "unknown" in the CTA (--mask_outliers_as_unknown)
+    //
+    ch_final_celltypes = ch_celltypes
+    if (params.mask_outliers_as_unknown) {
+        RELABEL_OUTLIERS(ch_celltypes.combine(ch_masks, by: 0))
+        ch_final_celltypes = RELABEL_OUTLIERS.out.celltypes
+    }
 
     //
     // SUBWORKFLOW: Upload results to Gemma (optional)
@@ -114,7 +125,7 @@ workflow SCANNOTATE {
     ch_messages = Channel.empty()
     if (params.upload_gemma) {
         GEMMA_UPLOAD(
-            ch_celltypes,
+            ch_final_celltypes,
             ch_clc,
             ch_masks,
             ch_multiqc,
@@ -133,7 +144,7 @@ workflow SCANNOTATE {
 
 
     emit:
-    celltypes = ch_celltypes
+    celltypes = ch_final_celltypes
     masks     = ch_masks
     multiqc   = ch_multiqc
     messages  = ch_messages
