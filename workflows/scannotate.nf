@@ -25,7 +25,6 @@ workflow SCANNOTATE {
     study_paths   // string: space-separated or file (optional, legacy)
 
     main:
-    ch_versions = Channel.empty()
 
     //
     // SUBWORKFLOW: Validate inputs and download/prepare studies
@@ -37,7 +36,6 @@ workflow SCANNOTATE {
         params.use_staging
     )
     ch_studies = INPUT_CHECK.out.studies
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
     //
     // SUBWORKFLOW: Prepare reference data (scVI model + Census data)
@@ -55,7 +53,6 @@ workflow SCANNOTATE {
     )
     ch_model = PREPARE_REFERENCE.out.model_path
     ch_refs  = PREPARE_REFERENCE.out.ref_paths
-    ch_versions = ch_versions.mix(PREPARE_REFERENCE.out.versions)
 
     //
     // SUBWORKFLOW: Process query data through scVI model
@@ -68,7 +65,6 @@ workflow SCANNOTATE {
     )
     ch_processed = PROCESS_QUERIES.out.processed
     ch_raw       = PROCESS_QUERIES.out.raw
-    ch_versions  = ch_versions.mix(PROCESS_QUERIES.out.versions)
 
     //
     // SUBWORKFLOW: Classify cell types using random forest
@@ -82,7 +78,6 @@ workflow SCANNOTATE {
         params.process_samples
     )
     ch_celltypes = CLASSIFY_CELLTYPES.out.celltypes
-    ch_versions  = ch_versions.mix(CLASSIFY_CELLTYPES.out.versions)
 
     //
     // SUBWORKFLOW: QC analysis and MultiQC reporting
@@ -107,7 +102,6 @@ workflow SCANNOTATE {
     ch_clc     = QC_REPORTING.out.clc
     ch_masks   = QC_REPORTING.out.masks
     ch_multiqc = QC_REPORTING.out.multiqc
-    ch_versions = ch_versions.mix(QC_REPORTING.out.versions)
 
     //
     // SUBWORKFLOW: Upload results to Gemma (optional)
@@ -142,7 +136,6 @@ workflow SCANNOTATE {
     celltypes = ch_celltypes
     masks     = ch_masks
     multiqc   = ch_multiqc
-    versions  = ch_versions
     messages  = ch_messages
 }
 

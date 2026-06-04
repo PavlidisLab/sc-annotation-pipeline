@@ -15,7 +15,6 @@ workflow INPUT_CHECK {
     use_staging   // boolean: use Gemma staging environment
 
     main:
-    ch_versions = Channel.empty()
 
     //
     // Option 1: Samplesheet input (--input)
@@ -120,5 +119,4 @@ workflow INPUT_CHECK {
 
     emit:
     studies  = ch_studies   // channel: [ sample/study_name, study_path ]
-    versions = ch_versions  // channel: [ versions.yml ]
 }

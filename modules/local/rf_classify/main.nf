@@ -15,7 +15,6 @@ process RF_CLASSIFY {
 
     output:
     tuple val(study_name), val(query_name), path("${query_name}_*_cell_type.tsv"), emit: celltype_files
-    path "versions.yml"                                                          , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -31,12 +30,6 @@ process RF_CLASSIFY {
         --mapping_file ${mapping_file} \\
         --ref_keys ${ref_keys_str} \\
         ${args}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version | sed 's/Python //g')
-        scikit-learn: \$(python -c "import sklearn; print(sklearn.__version__)")
-    END_VERSIONS
     """
 
     stub:
@@ -44,11 +37,5 @@ process RF_CLASSIFY {
     touch ${query_name}_subclass_cell_type.tsv
     touch ${query_name}_class_cell_type.tsv
     touch ${query_name}_family_cell_type.tsv
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version | sed 's/Python //g')
-        scikit-learn: \$(python -c "import sklearn; print(sklearn.__version__)")
-    END_VERSIONS
     """
 }

@@ -14,7 +14,6 @@ process GET_META {
 
     output:
     tuple val(study_name), path("**sample_meta.tsv"), emit: meta
-    path "versions.yml"                              , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -25,21 +24,11 @@ process GET_META {
         --study_name ${study_name} \\
         --gemma_username ${gemma_username} \\
         --gemma_password ${gemma_password}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version | sed 's/Python //g')
-    END_VERSIONS
     """
 
     stub:
     """
     mkdir -p ${study_name}
     echo "sample_id\tsample_name" > ${study_name}/sample_meta.tsv
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version | sed 's/Python //g')
-    END_VERSIONS
     """
 }

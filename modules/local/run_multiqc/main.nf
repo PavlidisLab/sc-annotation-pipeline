@@ -17,7 +17,6 @@ process RUN_MULTIQC {
 
     output:
     tuple val(study_name), path("**multiqc_report.html"), emit: report
-    path "versions.yml"                                  , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -32,21 +31,11 @@ process RUN_MULTIQC {
     echo 'title: "${study_name} CELLxGENE Census ${census_version} cutoff ${cutoff} MADs: ${nmads_str}"' >> new_config.yaml
 
     multiqc ${qc_dir} -d ${use_config_flag} ${args}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        multiqc: \$(multiqc --version | sed 's/multiqc, version //g')
-    END_VERSIONS
     """
 
     stub:
     """
     mkdir -p ${study_name}
     touch ${study_name}/multiqc_report.html
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        multiqc: \$(multiqc --version | sed 's/multiqc, version //g')
-    END_VERSIONS
     """
 }
