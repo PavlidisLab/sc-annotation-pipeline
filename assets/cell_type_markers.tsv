@@ -1,5 +1,5 @@
 cell_type	markers	shortname	family	organism
-vip GABAergic cortical interneuron	VIP	VIP	GABAergic	mus_musculus
+VIP GABAergic interneuron	VIP	VIP	GABAergic	mus_musculus
 pvalb GABAergic cortical interneuron	PVALB	PVALB	GABAergic	mus_musculus
 sst GABAergic cortical interneuron	SST	SST	GABAergic	mus_musculus
 lamp5 GABAergic cortical interneuron	LAMP5	LAMP5	GABAergic	mus_musculus
@@ -20,7 +20,7 @@ L6 intratelencephalic projecting Car3 glutamatergic neuron	CAR3	L6 Car3	Glutamat
 corticothalamic-projecting glutamatergic cortical neuron	FOXP2, TLE4, SEMA3E	CT	Glutamatergic	mus_musculus
 endothelial cell	FLT1	Endothelial	Non-neuron	mus_musculus
 ependymal cell	TUBA1A, FOXJ1	Ependymal	Non-neuron	mus_musculus
-dentate gyrus hippocampal neuron	PROX1	DG	Glutamatergic	mus_musculus
+dentate gyrus neuron	PROX1	DG	Glutamatergic	mus_musculus
 CA3 hippocampal neuron	BOK, FXYDZ	CA3	Glutamatergic	mus_musculus
 CA2-IG-FC hippocampal neuron	AMIGO2, RAMP3	CA2-IG-FC	Glutamatergic	mus_musculus
 L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB, SLC30A3	L2/3-6 IT	Glutamatergic	mus_musculus
@@ -42,7 +42,7 @@ mature NK T cell	CD45RB	NK T cell	Non-neuron	mus_musculus
 L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB	L2/3-6 IT	Glutamatergic	homo_sapiens
 oligodendrocyte	MOG	Oligodendrocyte	Non-neuron	homo_sapiens
 pvalb GABAergic cortical interneuron	PVALB	PVALB	GABAergic	homo_sapiens
-vip GABAergic cortical interneuron	VIP	VIP	GABAergic	homo_sapiens
+VIP GABAergic interneuron	VIP	VIP	GABAergic	homo_sapiens
 sst GABAergic cortical interneuron	SST	SST	GABAergic	homo_sapiens
 astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	homo_sapiens
 lamp5 GABAergic cortical interneuron	LAMP5	LAMP5	GABAergic	homo_sapiens
