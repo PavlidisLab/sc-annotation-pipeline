@@ -579,60 +579,54 @@ def get_gene_to_celltype_map(df, organism="mus_musculus"):
 
 
 def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_name="", cell_type_key="subclass_cell_type"):
+    if cell_type_key not in query.obs.columns:
+        return
+
     # Drop vars with NaN feature names
     query = query[:, ~query.var["feature_name"].isnull()]
     query.var_names = query.var["feature_name"]
-    
+
     markers_df = pd.read_csv(markers_file, sep="\t")
     markers_df = markers_df[markers_df["organism"] == organism]
+    level = cell_type_key.replace("_cell_type", "")
+    if "level" in markers_df.columns:
+        markers_df = markers_df[markers_df["level"] == level]
     ontology_mapping = markers_df.set_index("cell_type")["shortname"].to_dict()
-   
-    #Make raw index match processed var index
+
     query.raw.var.index = query.raw.var["feature_name"]
 
-    # Read marker genes
     gene_ct_dict = get_gene_to_celltype_map(markers_df, organism=organism)
-    # Collect all unique markers across all families/classes/cell types
     all_markers = list(gene_ct_dict.keys())
     valid_markers = [gene for gene in all_markers if gene in query.var_names]
 
-    # Filter raw expression matrix to match query.var_names
     expr_matrix = query.raw.X.toarray()
     expr_matrix = pd.DataFrame(expr_matrix, index=query.obs.index, columns=query.raw.var.index)
-    
+
     avg_expr = expr_matrix.groupby(query.obs[cell_type_key]).mean()
     avg_expr = avg_expr.loc[:, valid_markers]
-    
-    # Scale expression across genes
+
     scaled_expr = (avg_expr - avg_expr.mean()) / avg_expr.std()
     scaled_expr = scaled_expr.loc[:, valid_markers]
     scaled_expr.fillna(0, inplace=True)
 
-    # Rename columns: gene -> gene (celltype)
     scaled_expr.rename(columns=gene_ct_dict, inplace=True)
-    
-    sorted_columns = sorted(scaled_expr.columns, key=lambda x: x.split(":")[0])  
-    
-    # Sort by the first part of the column name
+    sorted_columns = sorted(scaled_expr.columns, key=lambda x: x.split(":")[0])
     scaled_expr = scaled_expr[sorted_columns]
-    
-    ## get ontology mapping from file
-    cell_types = markers_df["cell_type"]
-    overlap = list(set(cell_types).intersection(scaled_expr.index))
 
+    overlap = list(set(markers_df["cell_type"]).intersection(scaled_expr.index))
     sorted_cell_types = sorted(
         overlap,
         key=lambda x: ontology_mapping[x] if not pd.isna(ontology_mapping.get(x)) else x
     )
-    # Pin "unknown" (QC-outlier cells) as its own category at the end of the heatmap. It is
-    # not in the markers file, so it's excluded from `overlap` above; append it back last.
+
+    # Pin "unknown" (QC-outlier cells) at the end; excluded from the markers-file
+    # intersection above so it must be appended explicitly.
     if "unknown" in scaled_expr.index:
         sorted_cell_types = sorted_cell_types + ["unknown"]
-    # sort rows
+
     scaled_expr = scaled_expr.loc[sorted_cell_types, :]
 
-    # Save matrix
     os.makedirs(study_name, exist_ok=True)
-    scaled_expr.to_csv(os.path.join(study_name,f"{study_name}_{cell_type_key}_heatmap_mqc.tsv"), sep="\t")
+    scaled_expr.to_csv(os.path.join(study_name, f"{study_name}_{cell_type_key}_heatmap_mqc.tsv"), sep="\t")
 
  

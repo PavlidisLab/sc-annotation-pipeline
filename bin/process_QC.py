@@ -428,7 +428,8 @@ def main():
     if not args.mask_outliers_as_unknown:
         write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=existing_outlier_cols)
 
-    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key="subclass_cell_type")
+    for cell_type_key in cell_type_keys:
+        make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key=cell_type_key)
 
 if __name__ == "__main__":
     main()
