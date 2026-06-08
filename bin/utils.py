@@ -619,11 +619,6 @@ def make_celltype_matrices(query, markers_file, organism="mus_musculus", study_n
         key=lambda x: ontology_mapping[x] if not pd.isna(ontology_mapping.get(x)) else x
     )
 
-    # Pin "unknown" (QC-outlier cells) at the end; excluded from the markers-file
-    # intersection above so it must be appended explicitly.
-    if "unknown" in scaled_expr.index:
-        sorted_cell_types = sorted_cell_types + ["unknown"]
-
     scaled_expr = scaled_expr.loc[sorted_cell_types, :]
 
     os.makedirs(study_name, exist_ok=True)

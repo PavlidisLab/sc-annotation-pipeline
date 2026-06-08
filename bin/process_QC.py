@@ -40,8 +40,6 @@ def parse_arguments():
         "mito_outlier",
         "predicted_doublet"
     ], help='List of outlier columns to use')
-    parser.add_argument('--mask_outliers_as_unknown', type=lambda x: str(x).lower() == 'true', default=True,
-                        help='Relabel QC-outlier cells as "unknown" in the report (keeps it consistent with the CTA)')
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -313,28 +311,6 @@ def combine_celltype_files(file_paths):
     return combined_df
 
 
-def relabel_outliers_as_unknown(query_combined, other_adatas, cell_type_keys, outlier_cols):
-    """Set cell type columns to "unknown" for cells flagged as an outlier in any QC
-    category, so the QC report tells the same story as the relabeled CTA. The outlier
-    flags live on query_combined; the other objects share its obs index, so we relabel
-    by index intersection."""
-    outlier_metrics = [m for m in outlier_cols
-                       if m in query_combined.obs.columns and m != "non_outlier"]
-    if not outlier_metrics:
-        return
-    masked_index = query_combined.obs.index[query_combined.obs[outlier_metrics].any(axis=1)]
-    for adata in [query_combined, *other_adatas]:
-        common = adata.obs.index.intersection(masked_index)
-        for ct_key in cell_type_keys:
-            if ct_key not in adata.obs.columns:
-                continue
-            col = adata.obs[ct_key]
-            if isinstance(col.dtype, pd.CategoricalDtype) and "unknown" not in col.cat.categories:
-                adata.obs[ct_key] = col.cat.add_categories("unknown")
-            adata.obs.loc[common, ct_key] = "unknown"
-    print(f"Relabeled {len(masked_index)} outlier cells as 'unknown' in the QC report.")
-
-
 def main():
     # Parse command line arguments
     args = parse_arguments()
@@ -378,11 +354,6 @@ def main():
     query_combined = ad.concat(query_subsets.values(), axis=0)
     plot_joint_umap(query_combined, study_name=study_name, sample_name="all_samples")
 
-    # Relabel outlier cells as "unknown" before building the cell-type breakdowns, so the
-    # report matches the CTA. Governed by the same --mask_outliers_as_unknown param.
-    if args.mask_outliers_as_unknown:
-        relabel_outliers_as_unknown(query_combined, [query_proc, query], cell_type_keys, args.outlier_cols)
-
     # List of cell type keys to process
     for cell_type_key in cell_type_keys:
         # If the key doesn't exist, skip
@@ -421,12 +392,7 @@ def main():
     # Write mask file (single boolean for any outlier)
     write_mask_file(query_combined, study_name, metrics=existing_outlier_cols)
 
-    # Outlier-metrics-per-cell-type breakdown only makes sense when outliers keep their
-    # original labels. Once relabeled to "unknown", real cell types show ~0 outliers and
-    # "unknown" holds them all, so the table is degenerate; skip it and let "unknown" stand
-    # as its own cell-type category in the count tables and heatmap.
-    if not args.mask_outliers_as_unknown:
-        write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=existing_outlier_cols)
+    write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=existing_outlier_cols)
 
     for cell_type_key in cell_type_keys:
         make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key=cell_type_key)
