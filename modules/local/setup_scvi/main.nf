@@ -4,8 +4,8 @@ process SETUP_SCVI {
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker://raschwaa/scanpyenv-minimal:latest' :
-        'raschwaa/scanpyenv-minimal:latest' }"
+        'docker://raschwaa/census-minimal:latest' :
+        'raschwaa/census-minimal:latest' }"
 
     input:
     val organism

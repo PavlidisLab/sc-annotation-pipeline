@@ -7,11 +7,8 @@ import scanpy as sc
 import numpy as np
 import pandas as pd
 import anndata as ad
-import cellxgene_census
 from scipy.sparse import csr_matrix
 import warnings
-import cellxgene_census
-import cellxgene_census.experimental
 import scvi
 from utils import *
 from pathlib import Path
