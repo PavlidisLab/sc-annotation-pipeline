@@ -109,3 +109,9 @@ assets/large-studies-samplesheet.csv
 assets/mouse-samplesheet.csv
 assets/psychencode-samplesheet.csv
 environment-scanpyenv.yml
+
+# Personal notes, conference correspondence, planning docs - not for the repo
+*.eml
+docs/usability-roadmap.md
+docs/bosc-2026-review-feedback.md
+CLAUDE.md
