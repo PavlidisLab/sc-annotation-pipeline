@@ -25,8 +25,8 @@ CA3 hippocampal neuron	BOK, FXYDZ	CA3	Glutamatergic	mus_musculus	subclass
 CA2-IG-FC hippocampal neuron	AMIGO2, RAMP3	CA2-IG-FC	Glutamatergic	mus_musculus	subclass
 near-projecting glutamatergic cortical neuron	FOXP2, TLE4, SLC17A8	L5/6 NP	Glutamatergic	mus_musculus	subclass
 vascular leptomeningeal cell	DCN, LUM, COL1A1, COL5A1	VLMC	Non-neuron	mus_musculus	subclass
-central nervous system macrophage	CD45, CD44	CNS macrophage	Non-neuron	mus_musculus	subclass
-microglial cell	TMEM119, P2RY12, P2Y12, HEXB	Microglia	Non-neuron	mus_musculus	subclass
+central nervous system macrophage	Mrc1, Pf4	CNS macrophage	Non-neuron	mus_musculus	subclass
+microglial cell	TMEM119, P2RY12	Microglia	Non-neuron	mus_musculus	subclass
 neuroepithelial stem cell	HES5, NES, SOX2	Neuroepithelial stem cell	Neuroglioblast	mus_musculus	subclass
 oligodendrocyte	MOG	Oligodendrocyte	Non-neuron	mus_musculus	subclass
 oligodendrocyte precursor cell	PDGFRA	OPC	Non-neuron	mus_musculus	subclass
@@ -45,13 +45,12 @@ VIP GABAergic interneuron	VIP	VIP	GABAergic	homo_sapiens	subclass
 sst GABAergic cortical interneuron	SST	SST	GABAergic	homo_sapiens	subclass
 astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	homo_sapiens	subclass
 lamp5 GABAergic cortical interneuron	LAMP5	LAMP5	GABAergic	homo_sapiens	subclass
-microglial cell	TMEM119, P2RY12, P2Y12, HEXB	Microglia	Non-neuron	homo_sapiens	subclass
+microglial cell	TMEM119, P2RY12	Microglia	Non-neuron	homo_sapiens	subclass
 oligodendrocyte precursor cell	PDGFRA	OPC	Non-neuron	homo_sapiens	subclass
 sncg GABAergic cortical interneuron	SNCG	SNCG	GABAergic	homo_sapiens	subclass
 near-projecting glutamatergic cortical neuron	FOXP2, TLE4, SLC17A8	L5/6 NP	Glutamatergic	homo_sapiens	subclass
 L6b glutamatergic cortical neuron	CPLX3, CTGF, NXPH4	L6b	Glutamatergic	homo_sapiens	subclass
 chandelier pvalb GABAergic cortical interneuron	PVALB, VIPR2, UNC5B	Chandelier	GABAergic	homo_sapiens	subclass
-caudal ganglionic eminence derived GABAergic cortical interneuron	PROX1, NTNG1	CGE	GABAergic	homo_sapiens	subclass
 L5 extratelencephalic projecting glutamatergic cortical neuron	FEZF2, POU3F1, BCL6, ETV1, BCL11B	L5 ET	Glutamatergic	homo_sapiens	subclass
 L6 corticothalamic-projecting glutamatergic cortical neuron	FOXP2, TLE4, SEMA3E	L6 CT	Glutamatergic	homo_sapiens	subclass
 vascular leptomeningeal cell	DCN, LUM, COL1A1, COL5A1	VLMC	Non-neuron	homo_sapiens	subclass
@@ -59,16 +58,46 @@ endothelial cell	FLT1	Endothelial	Non-neuron	homo_sapiens	subclass
 pericyte	PDGFRB, RGS5	Pericyte	Non-neuron	homo_sapiens	subclass
 GABAergic interneuron	GAD1, GAD2	GABAergic	GABAergic	mus_musculus	family
 glutamatergic neuron	SLC17A7, SLC17A6	Glutamatergic	Glutamatergic	mus_musculus	family
-astrocyte	GFAP, AQP4, S100B	Astrocyte	Non-neuron	mus_musculus	family
+astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	mus_musculus	family
 oligodendrocyte	MBP, MOG, PLP1	Oligodendrocyte	Non-neuron	mus_musculus	family
 oligodendrocyte precursor cell	PDGFRA, CSPG4	OPC	Non-neuron	mus_musculus	family
-central nervous system macrophage	CX3CR1, TMEM119, P2RY12	CNS macrophage	Non-neuron	mus_musculus	family
+central nervous system macrophage	Ptprc, Mrc1, Tmem119, P2ry12	CNS macrophage	Non-neuron	mus_musculus	family
 brain vascular cell	CLDN5, FLT1, PDGFRB	Vascular	Non-neuron	mus_musculus	family
 neural stem cell	SOX2, NES, HES5	Neural stem	Neuroglioblast	mus_musculus	family
 GABAergic interneuron	GAD1, GAD2	GABAergic	GABAergic	homo_sapiens	family
 glutamatergic neuron	SLC17A7, SLC17A6	Glutamatergic	Glutamatergic	homo_sapiens	family
-astrocyte	GFAP, AQP4, S100B	Astrocyte	Non-neuron	homo_sapiens	family
+astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	homo_sapiens	family
 oligodendrocyte	MBP, MOG, PLP1	Oligodendrocyte	Non-neuron	homo_sapiens	family
 oligodendrocyte precursor cell	PDGFRA, CSPG4	OPC	Non-neuron	homo_sapiens	family
-microglial cell	CX3CR1, TMEM119, P2RY12	Microglia	Non-neuron	homo_sapiens	family
+microglial cell	PTPRC, CX3CR1, TMEM119, P2RY12	Microglia	Non-neuron	homo_sapiens	family
 brain vascular cell	CLDN5, FLT1, PDGFRB	Vascular	Non-neuron	homo_sapiens	family
+VIP GABAergic interneuron	VIP	VIP	GABAergic	mus_musculus	class
+pvalb GABAergic cortical interneuron	PVALB	PVALB	GABAergic	mus_musculus	class
+sst GABAergic cortical interneuron	SST	SST	GABAergic	mus_musculus	class
+lamp5 GABAergic cortical interneuron	LAMP5	LAMP5	GABAergic	mus_musculus	class
+sncg GABAergic cortical interneuron	SNCG	SNCG	GABAergic	mus_musculus	class
+L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2	L2/3-6 IT	Glutamatergic	mus_musculus	class
+deep layer non-IT	FEZF2, TLE4	Deep non-IT	Glutamatergic	mus_musculus	class
+hippocampal neuron	PROX1	Hippocampal	Glutamatergic	mus_musculus	class
+Cajal-Retzius cell	RELN	Cajal-Retzius	Glutamatergic	mus_musculus	class
+astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	mus_musculus	class
+brain vascular cell	CLDN5, PDGFRB	Vascular	Non-neuron	mus_musculus	class
+central nervous system macrophage	Mrc1, Pf4	CNS macrophage	Non-neuron	mus_musculus	class
+microglial cell	TMEM119, P2RY12	Microglia	Non-neuron	mus_musculus	class
+oligodendrocyte	MOG, MBP	Oligodendrocyte	Non-neuron	mus_musculus	class
+oligodendrocyte precursor cell	PDGFRA	OPC	Non-neuron	mus_musculus	class
+neural stem cell	SOX2, NES	Neural stem	Neuroglioblast	mus_musculus	class
+VIP GABAergic interneuron	VIP	VIP	GABAergic	homo_sapiens	class
+pvalb GABAergic cortical interneuron	PVALB	PVALB	GABAergic	homo_sapiens	class
+chandelier pvalb GABAergic cortical interneuron	PVALB, VIPR2	Chandelier	GABAergic	homo_sapiens	class
+sst GABAergic cortical interneuron	SST	SST	GABAergic	homo_sapiens	class
+lamp5 GABAergic cortical interneuron	LAMP5	LAMP5	GABAergic	homo_sapiens	class
+sncg GABAergic cortical interneuron	SNCG	SNCG	GABAergic	homo_sapiens	class
+PAX6 GABAergic cortical interneuron	PAX6	PAX6	GABAergic	homo_sapiens	class
+L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2	L2/3-6 IT	Glutamatergic	homo_sapiens	class
+deep layer non-IT	FEZF2, TLE4	Deep non-IT	Glutamatergic	homo_sapiens	class
+astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	homo_sapiens	class
+brain vascular cell	CLDN5, PDGFRB	Vascular	Non-neuron	homo_sapiens	class
+microglial cell	TMEM119, P2RY12	Microglia	Non-neuron	homo_sapiens	class
+oligodendrocyte	MOG, MBP	Oligodendrocyte	Non-neuron	homo_sapiens	class
+oligodendrocyte precursor cell	PDGFRA	OPC	Non-neuron	homo_sapiens	class

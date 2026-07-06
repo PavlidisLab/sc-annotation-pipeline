@@ -76,6 +76,12 @@ custom_data:
     file_format: 'tsv'
     plot_type: 'heatmap'
 
+  markers_heatmap_class:
+    section_name: 'Cell type markers (class)'
+    description: 'Expression of select markers averaged across class cell-type labels and z-score normalized across genes.'
+    file_format: 'tsv'
+    plot_type: 'heatmap'
+
   markers_heatmap_family:
     section_name: 'Cell type markers (family)'
     description: 'Expression of select markers averaged across family cell-type labels and z-score normalized across genes.'
@@ -133,6 +139,8 @@ sp:
 
   markers_heatmap_subclass:
     fn: "*_subclass_cell_type_heatmap_mqc.tsv"
+  markers_heatmap_class:
+    fn: "*_class_cell_type_heatmap_mqc.tsv"
   markers_heatmap_family:
     fn: "*_family_cell_type_heatmap_mqc.tsv"
 
@@ -158,6 +166,7 @@ custom_content:
     - cluster_celltype_composition_class
     - cluster_celltype_composition_family
     - markers_heatmap_subclass
+    - markers_heatmap_class
     - markers_heatmap_family
     - celltype_umap
 
