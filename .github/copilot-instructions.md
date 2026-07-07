@@ -32,7 +32,7 @@ This repository contains a Nextflow pipeline for automated cell type annotation 
 
 ## Integration Points
 - **External APIs:** CellxGene census (for reference data/models), Gemma CLI (for data upload).
-- **Containerization:** Each process module (`modules/local/*/main.nf`) specifies its own Docker/Singularity container — `raschwaa/scanpyenv-minimal:latest` or `raschwaa/census-minimal:latest`. Engine selection (`docker`/`singularity`/`conda` profiles) lives in `nextflow.config`.
+- **Containerization:** Some processes specify Docker/Singularity containers in `nextflow.config`.
 
 ## Examples & References
 - See `README.md` for parameter explanations, input/output structure, and example commands.
