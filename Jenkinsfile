@@ -12,10 +12,10 @@ pipeline {
                         sh '''
                             set -euo pipefail
 
-                            nextflow run sc-annotate.nf \
+                            nextflow run main.nf \
                               -profile conda \
                               -params-file params.mm.json \
-                              --study_names /space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/study_names_mouse.txt \
+                              --study_names /space/grp/rschwartz/rschwartz/get_gemma_data.nf/study_names_mouse.txt \
                               -process.executor slurm \
                               -resume
                         '''
