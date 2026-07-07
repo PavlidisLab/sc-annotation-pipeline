@@ -299,6 +299,7 @@ nextflow run main.nf --nmads.mito 3 --nmads.counts 4
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `--use_staging` | Use Gemma staging server | `true` |
+| `--upload_gemma` | Master switch — set `false` to skip the entire Gemma upload subworkflow (no Gemma write access needed) | `true` |
 | `--upload_cta` | Upload cell type annotations | `true` |
 | `--upload_clc` | Upload cell-level characteristics | `true` |
 | `--upload_mask` | Upload outlier mask | `true` |
