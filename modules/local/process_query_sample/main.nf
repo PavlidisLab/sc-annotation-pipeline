@@ -4,7 +4,7 @@ process PROCESS_QUERY_SAMPLE {
     errorStrategy { task.exitStatus == 42 ? 'ignore' : 'terminate' }
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
         'docker://raschwaa/scanpyenv-minimal:latest' :
         'raschwaa/scanpyenv-minimal:latest' }"
 
