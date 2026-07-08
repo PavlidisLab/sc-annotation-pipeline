@@ -3,6 +3,7 @@
 from pathlib import Path
 import os
 import sys
+import random
 import scanpy as sc
 import numpy as np
 import pandas as pd
@@ -11,7 +12,7 @@ from scipy.sparse import csr_matrix
 import warnings
 import scvi
 from sklearn.ensemble import RandomForestClassifier
-from utils import *
+from classify_utils import *
 from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split

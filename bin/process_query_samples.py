@@ -2,11 +2,12 @@
 
 import os
 import sys
+import random
 import scanpy as sc
 import numpy as np
 import pandas as pd
 import scvi
-from utils import *
+from classify_utils import *
 import argparse
 import scipy
 import gzip

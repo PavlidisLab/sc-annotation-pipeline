@@ -3,6 +3,7 @@
 from pathlib import Path
 import os
 import sys
+import random
 import scanpy as sc
 import numpy as np
 import pandas as pd
@@ -10,7 +11,7 @@ import anndata as ad
 from scipy.sparse import csr_matrix
 import warnings
 import scvi
-from utils import *
+from classify_utils import *
 from pathlib import Path
 import argparse
 import os

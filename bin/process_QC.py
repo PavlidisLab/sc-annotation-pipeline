@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import argparse
 import json
-from utils import *
+from qc_utils import *
+from marker_utils import *
 from PIL import Image
 import io
 import math
