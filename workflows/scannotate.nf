@@ -107,15 +107,19 @@ workflow SCANNOTATE {
     //
     // SUBWORKFLOW: Upload results to Gemma (optional)
     //
-    // Master switch: when --use_gemma is false, QC_REPORTING skips fetching per-sample
-    // metadata from Gemma (needed for studies with no matching Gemma entry) and the whole
-    // upload subworkflow below is skipped too, so a run needs no Gemma access at all. The
-    // granular upload_cta/clc/mask/multiqc flags still select which artifacts to upload
-    // when on. (Note: downloading studies by name via --study_names is a separate, explicit
-    // Gemma fetch and still requires GEMMA_USERNAME/GEMMA_PASSWORD regardless of this flag.)
+    // use_gemma is the top-level switch for all Gemma interaction: when false,
+    // QC_REPORTING skips fetching per-sample metadata (needed for studies with no
+    // matching Gemma entry) and this upload subworkflow is skipped too, so a run needs
+    // no Gemma access at all. When use_gemma is true, upload_gemma is a nested switch
+    // that opts out of uploading specifically (e.g. read access but no write access, or
+    // not wanting to write test runs back to Gemma) while still fetching metadata. The
+    // granular upload_cta/clc/mask/multiqc flags select which artifacts to upload when
+    // both of the above are on. (Note: downloading studies by name via --study_names is
+    // a separate, explicit Gemma fetch and always requires GEMMA_USERNAME/GEMMA_PASSWORD,
+    // regardless of these flags.)
     //
     ch_messages = Channel.empty()
-    if (params.use_gemma) {
+    if (params.use_gemma && params.upload_gemma) {
         GEMMA_UPLOAD(
             ch_celltypes,
             ch_clc,
