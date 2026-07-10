@@ -18,7 +18,13 @@ def read_query(query_path, gene_mapping, new_meta, sample_meta):
        # query.var.set_index("OFFICIAL_SYMBOL", inplace=True)
         #drop nan values
     else:
-        query.var.set_index("feature_name", inplace=True)
+        # fall back to the Ensembl id for genes with no symbol, so var_names stays
+        # all-string (a NaN float breaks var_names_make_unique's string concatenation).
+        # astype(object) first: feature_name is often a pandas Categorical, and fillna
+        # can't insert values that aren't already in the category list.
+        query.var["feature_name"] = query.var["feature_name"].astype(object).fillna(query.var.index.to_series())
+        query.var.set_index("feature_name", inplace=True, drop=False)
+        query.var_names_make_unique()
 
     query.obs=query.obs.reset_index()
     query.obs["full_barcode"] = query.obs["sample_id"].astype(str) + "_" + query.obs["cell_id"].astype(str)
