@@ -168,7 +168,7 @@ local_study,,/path/to/local/data
 |--------|----------|-------------|
 | `sample` | Yes | Unique sample identifier |
 | `study_name` | No* | Study name to download from Gemma |
-| `study_path` | No* | Path to pre-downloaded MEX data |
+| `study_path` | No* | Path to pre-downloaded MEX data, or a single pre-combined `.h5ad` file |
 
 *At least one of `study_name` or `study_path` must be provided per row.
 
@@ -196,7 +196,7 @@ nextflow run main.nf -profile conda -params-file params.mm.json \
 
 #### From Study Paths (Legacy)
 
-Use pre-downloaded MEX data:
+Use pre-downloaded MEX data, without needing Gemma credentials:
 
 ```bash
 # Space-separated list
@@ -207,6 +207,8 @@ nextflow run main.nf -profile conda -params-file params.mm.json \
 nextflow run main.nf -profile conda -params-file params.mm.json \
     --study_paths paths.txt
 ```
+
+Each path can be either a directory of per-sample MEX subdirectories, or a single pre-combined `.h5ad` file. A directory containing more than one `.h5ad` file is not supported — the pipeline only accepts one `.h5ad` per study.
 
 ### Profiles
 
