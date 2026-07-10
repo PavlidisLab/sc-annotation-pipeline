@@ -28,11 +28,12 @@ workflow QC_REPORTING {
     process_samples      // boolean: process individual samples
     gemma_username       // string: Gemma username
     gemma_password       // string: Gemma password
+    use_gemma            // boolean: fetch per-sample metadata from Gemma
 
     main:
 
-    // Get metadata from Gemma
-    GET_META(ch_studies, gemma_username, gemma_password)
+    // Get metadata from Gemma (skipped for locally-sourced studies with no Gemma entry)
+    GET_META(ch_studies, gemma_username, gemma_password, use_gemma)
     ch_meta = GET_META.out.meta
 
     // Group celltypes by study

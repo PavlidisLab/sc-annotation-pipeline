@@ -306,7 +306,7 @@ nextflow run main.nf --nmads.mito 3 --nmads.counts 4
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `--use_staging` | Use Gemma staging server | `true` |
-| `--upload_gemma` | Master switch — set `false` to skip the entire Gemma upload subworkflow (no Gemma write access needed) | `true` |
+| `--use_gemma` | Master switch — set `false` to skip all Gemma interaction (per-sample metadata fetch during QC and uploads). Needed for studies from `--study_paths`/local samplesheet rows that don't exist in Gemma | `true` |
 | `--upload_cta` | Upload cell type annotations | `true` |
 | `--upload_clc` | Upload cell-level characteristics | `true` |
 | `--upload_mask` | Upload outlier mask | `true` |
