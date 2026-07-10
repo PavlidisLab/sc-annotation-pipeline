@@ -223,7 +223,7 @@ Each path can be either a directory of per-sample MEX subdirectories, or a singl
 
 SLURM execution is enabled by default and does not require a separate profile.
 
-**Note:** if `singularity`/`apptainer` isn't installed on your SLURM compute nodes (only the login node), jobs will fail with `singularity: command not found`. Use `-profile conda` for SLURM production runs on such clusters, or `-process.executor local` to run containers on the login node directly.
+Note: `singularity`/`apptainer` must be installed on every node SLURM dispatches jobs to, not just the login node, or jobs fail with `singularity: command not found`. Use `-profile conda` on such clusters, or `-process.executor local` to run containers on the login node directly.
 
 ### Resuming Pipelines
 
