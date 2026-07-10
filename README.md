@@ -210,6 +210,14 @@ nextflow run main.nf -profile conda -params-file params.mm.json \
 
 Each path can be either a directory of per-sample MEX subdirectories, or a single pre-combined `.h5ad` file. A directory containing more than one `.h5ad` file is not supported — the pipeline only accepts one `.h5ad` per study.
 
+**Required `.h5ad` format:**
+- `X`: raw counts (cells x genes)
+- `var_names` (index): Ensembl gene IDs — required for matching against the scVI reference
+- `var['feature_name']` (optional): gene symbol per gene. If present, used directly for QC (mito/ribo/hb detection). If absent, symbols are looked up from `var_names` via `assets/gemma_genes.tsv`
+- `obs['sample_id']` (optional): defaults to the samplesheet `sample` value if missing (treats the whole file as one sample)
+
+This matches the shape of a Gemma-exported `.h5ad` (e.g. from `get_gemma_data.nf`). A `.h5ad` from a different source (e.g. counts in `layers['counts']` instead of `X`, or non-Ensembl `var_names`) is not currently supported without preprocessing it into this shape first.
+
 ### Profiles
 
 | Profile | Description |
