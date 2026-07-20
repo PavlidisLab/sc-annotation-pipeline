@@ -1,6 +1,6 @@
 process SETUP_SCVI {
     tag "$organism"
-    // label 'process_medium'
+    label 'process_medium'
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?

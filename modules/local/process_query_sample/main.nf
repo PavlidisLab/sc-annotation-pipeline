@@ -1,6 +1,6 @@
 process PROCESS_QUERY_SAMPLE {
     tag "$query_name"
-    // label 'process_high'
+    label 'process_high'
     errorStrategy { task.exitStatus == 42 ? 'ignore' : 'terminate' }
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"

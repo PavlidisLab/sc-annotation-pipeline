@@ -1,6 +1,6 @@
 process PROCESS_QUERY_COMBINED {
     tag "$study_name"
-    // label 'process_high'
+    label 'process_high'
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?

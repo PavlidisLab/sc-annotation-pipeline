@@ -1,6 +1,6 @@
 process GET_META {
     tag "$study_name"
-    // label 'process_single'
+    label 'process_single'
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"
     container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
