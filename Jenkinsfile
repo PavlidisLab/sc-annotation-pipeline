@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        PATH = "/space/opt/bin:${env.PATH}"
+        PATH = "/space/opt/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:${env.PATH}"
         GEMMA_USERNAME = credentials('gemma-username-rachel')
         GEMMA_PASSWORD = credentials('gemma-password-rachel')
     }
