@@ -59,13 +59,13 @@ sc-annotation-pipeline-rachel-dev/
 ├── conf/
 │   ├── base.config              # Resource defaults (CPU/memory/time)
 │   ├── modules.config           # Module-specific settings
-│   ├── test_mmus.config         # Mouse test profile
-│   └── test_hsap.config         # Human test profile
+│   └── test_*.config            # Human/mouse test profile matrix (8 profiles, see Test Profiles below)
 ├── assets/                      # Reference files and configs
 │   ├── samplesheet.csv
 │   ├── cell_type_markers.tsv
 │   └── ...
 ├── bin/                         # Python scripts
+├── scripts/                     # Standalone maintenance scripts (test runner, cleanup, etc.)
 ├── params.mm.json               # Mouse parameters
 ├── params.hs.json               # Human parameters
 ├── README.md
@@ -88,10 +88,20 @@ sc-annotation-pipeline-rachel-dev/
 
 ## Test Profiles
 
-Two test profiles are provided:
-- **test_mouse**: Runs a minimal pipeline test with mouse (Mus musculus) parameters.
-- **test_human**: Runs a minimal pipeline test with human (Homo sapiens) parameters.
-Use with `-profile test_mouse,conda` or `-profile test_human,conda`.
+A full human/mouse test profile matrix is provided:
+
+| Profile | Organism | Notes |
+|---------|----------|-------|
+| `test_mouse` | mouse | Samplesheet-driven, default combined processing |
+| `test_human` | human | Samplesheet-driven, default combined processing |
+| `test_mouse_persample` | mouse | `--process_samples true` |
+| `test_human_persample` | human | `--process_samples true` |
+| `test_mouse_local` | mouse | `--study_paths` (MEX sample directory), `--use_gemma false` |
+| `test_human_local` | human | `--study_paths` (single `.h5ad`), `--use_gemma false` |
+| `test_mouse_upload_off` | mouse | `--upload_gemma false` |
+| `test_human_upload_off` | human | `--upload_gemma false` |
+
+Use with e.g. `-profile test_mouse,conda`. Run all of them and get a pass/fail summary with `scripts/run_test_profiles.sh`.
 
 ## Requirements
 
@@ -226,8 +236,10 @@ This matches the shape of a Gemma-exported `.h5ad` (e.g. from `get_gemma_data.nf
 | `docker` | Use Docker containers |
 | `singularity` | Use Singularity containers |
 | `apptainer` | Use Apptainer containers |
-| `test_human` | Test configuration for human data |
-| `test_mouse` | Test configuration for mouse data |
+| `test_human` / `test_mouse` | Samplesheet-driven test data |
+| `test_human_persample` / `test_mouse_persample` | Test data with `--process_samples true` |
+| `test_human_local` / `test_mouse_local` | Test data via `--study_paths`, `--use_gemma false` |
+| `test_human_upload_off` / `test_mouse_upload_off` | Test data with `--upload_gemma false` |
 
 SLURM execution is enabled by default and does not require a separate profile.
 
@@ -347,19 +359,22 @@ Parameter priority: CLI arguments > params.json > nextflow.config
 ```
 results/
 └── mus_musculus_subsample_ref_500_2025-01-15_17-51-37/
-    ├── celltypes/
-    │   └── *_predicted_celltype.tsv    # Cell type predictions
-    ├── masks/
-    │   └── *_outlier_mask.tsv          # QC outlier masks
+    ├── scvi_model/                     # Downloaded scVI model
+    ├── reference/                      # Census reference embeddings
+    ├── <study_name>/
+    │   ├── processed/                  # scVI query embeddings
+    │   ├── predicted_celltypes/         # Cell type predictions
+    │   ├── masks/                      # QC outlier masks
+    │   ├── qc/                         # Per-sample QC output
+    │   └── combined_qc/                # Combined QC output
     ├── multiqc/
-    │   └── multiqc_report.html         # QC summary report
-    ├── pipeline_info/
-    │   ├── execution_report.html       # Nextflow execution report
-    │   ├── execution_timeline.html     # Timeline visualization
-    │   ├── execution_trace.txt         # Resource usage trace
-    │   └── pipeline_dag.dot            # Pipeline DAG
-    └── versions/
-        └── software_versions.yml       # Software versions used
+    │   └── <study_name>/
+    │       └── multiqc_report.html     # QC summary report
+    └── pipeline_info/
+        ├── execution_report.html       # Nextflow execution report
+        ├── execution_timeline.html     # Timeline visualization
+        ├── execution_trace.txt         # Resource usage trace
+        └── pipeline_dag.dot            # Pipeline DAG
 ```
 
 ---
