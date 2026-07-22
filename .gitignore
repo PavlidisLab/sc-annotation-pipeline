@@ -5,6 +5,8 @@ __pycache__/
 *.nextflow
 *log*
 work/
+.singularity_cache/
+.apptainer_cache/
 *h5ad
 *mex
 *mtx
