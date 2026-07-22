@@ -34,8 +34,11 @@ def read_query(query_path, gene_mapping, new_meta, sample_meta):
     sample_meta["sample_id"] = sample_meta["sample_id"].astype(str)
     query.obs = query.obs.merge(sample_meta, left_on="sample_id", right_on="sample_id", how="left", suffixes=("", "_y"))
 
-    # use_gemma=false means no metadata to join, so sample_name is all NaN - fall back to sample_id
-    query.obs["sample_name"] = query.obs["sample_name"].fillna(query.obs["sample_id"])
+    # use_gemma=false means no metadata to join, so sample_name is all NaN - fall back to sample_id.
+    # astype(object) first: sample_name is often a pandas Categorical (h5ad-sourced data
+    # commonly stores string columns this way), and fillna can't insert values that aren't
+    # already in the category list.
+    query.obs["sample_name"] = query.obs["sample_name"].astype(object).fillna(query.obs["sample_id"])
 
     columns_to_drop = [col for col in query.obs.columns if col.endswith("_y")]
     query.obs.drop(columns=columns_to_drop, inplace=True)
