@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        PATH = "/space/opt/bin:${env.PATH}"
+    }
+
     stages {
         stage('Test: mouse') {
             steps {
