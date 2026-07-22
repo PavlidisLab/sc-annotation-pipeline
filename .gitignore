@@ -115,6 +115,3 @@ environment-scanpyenv.yml
 docs/usability-roadmap.md
 docs/bosc-2026-review-feedback.md
 CLAUDE.md
-
-# Dormant/orphaned CI config - kept locally, not tracked
-Jenkinsfile
