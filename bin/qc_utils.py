@@ -3,7 +3,6 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import scanpy as sc
 from scipy.stats import median_abs_deviation
-from statsmodels.formula.api import ols
 
 
 def read_query(query_path, gene_mapping, new_meta, sample_meta):
@@ -34,6 +33,9 @@ def read_query(query_path, gene_mapping, new_meta, sample_meta):
 
     sample_meta["sample_id"] = sample_meta["sample_id"].astype(str)
     query.obs = query.obs.merge(sample_meta, left_on="sample_id", right_on="sample_id", how="left", suffixes=("", "_y"))
+
+    # use_gemma=false means no metadata to join, so sample_name is all NaN - fall back to sample_id
+    query.obs["sample_name"] = query.obs["sample_name"].fillna(query.obs["sample_id"])
 
     columns_to_drop = [col for col in query.obs.columns if col.endswith("_y")]
     query.obs.drop(columns=columns_to_drop, inplace=True)
@@ -85,15 +87,18 @@ def qc_preprocess(query):
 def get_lm(query, nmads=5, scale="normal"):
     # Assume dataset is an AnnData object
     # Fit linear model: log10(n_genes_per_cell) ~ log10(counts_per_cell)
-    lm_model = ols(formula='log1p_n_genes_by_counts ~ log1p_total_counts', data=query.obs).fit()
+    x = query.obs["log1p_total_counts"].to_numpy()
+    y = query.obs["log1p_n_genes_by_counts"].to_numpy()
+    slope, intercept = np.polyfit(x, y, 1)
     # Calculate residuals
-    residuals = lm_model.resid
+    residuals = y - (intercept + slope * x)
     # If data is normally distributed, this is similar to std
     mad_residuals = median_abs_deviation(residuals, scale=scale)
     # Intercept adjustment (add for upper bound, subtract for lower bound)
     intercept_adjustment = np.median(residuals) + nmads * mad_residuals
     return {
-        "model": lm_model,
+        "slope": slope,
+        "intercept": intercept,
         "intercept_adjustment": intercept_adjustment
     }
 
@@ -127,8 +132,8 @@ def get_qc_metrics(query, nmads):
         query.obs[f"{key}_outlier"] = is_outlier(query, metric, nmads[key])
 
     lm_dict = get_lm(query, nmads=nmads["counts"])
-    intercept = lm_dict["model"].params[0]
-    slope = lm_dict["model"].params[1]
+    intercept = lm_dict["intercept"]
+    slope = lm_dict["slope"]
 
 
     query.obs["counts_outlier"] = (
