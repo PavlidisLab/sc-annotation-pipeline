@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         PATH = "/space/opt/bin:${env.PATH}"
+        GEMMA_USERNAME = credentials('gemma-username')
+        GEMMA_PASSWORD = credentials('gemma-password')
     }
 
     stages {
