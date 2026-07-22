@@ -65,11 +65,7 @@ def main():
       try:
           # Attempt to read the 10x mtx data
           adata = sc.read_10x_mtx(query_path)
-          # Drop genes with no Ensembl id (blank in this Gemma export, parsed as NaN
-          # by read_10x_mtx's pandas-based feature file reader) - they can never match
-          # the scVI reference anyway, and left in they become duplicate NaN var_names
-          # that newer anndata versions silently leave unresolved instead of erroring,
-          # which later breaks sc.concat's reindex.
+          # drop genes with blank Ensembl ids - duplicate NaN var_names break sc.concat later
           adata = adata[:, adata.var_names.notna()].copy()
           adata.var_names_make_unique()
           adata.obs_names_make_unique()
@@ -94,10 +90,7 @@ def main():
               with gzip.open(barcodes_path, 'rt') as f:
                   barcodes = [line.strip() for line in f]
 
-              # Drop genes with no Ensembl id (blank in this Gemma export) - they can
-              # never match the scVI reference anyway, and left in they flood var_names
-              # with duplicate empty strings that make_unique() handles inconsistently
-              # across anndata versions.
+              # drop genes with blank Ensembl ids, same as above
               keep = [i for i, gene in enumerate(genes) if gene[1]]
               matrix = matrix[keep, :]
               genes = [genes[i] for i in keep]
@@ -114,7 +107,7 @@ def main():
 
           except Exception as manual_e:
               print(f"Error processing {sample_id} manually: {manual_e}")
-              all_sample_ids[new_sample_id] = None  # Or handle it differently, e.g., skip this sample
+              continue  # unrecoverable, skip the sample
 
 
     combined_adata = sc.concat(all_sample_ids, label="sample_id", join="inner")

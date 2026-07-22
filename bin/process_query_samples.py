@@ -52,10 +52,7 @@ def main():
   try:
     # Attempt to read the 10x mtx data
     adata = sc.read_10x_mtx(query_path)
-    # Drop genes with no Ensembl id (blank in this Gemma export, parsed as NaN
-    # by read_10x_mtx's pandas-based feature file reader) - they can never match
-    # the scVI reference anyway, and left in they become duplicate NaN var_names
-    # that newer anndata versions silently leave unresolved instead of erroring.
+    # drop genes with blank Ensembl ids - duplicate NaN var_names break things downstream
     adata = adata[:, adata.var_names.notna()].copy()
     adata.var_names_make_unique()
     adata.obs["sample_id"] = sample_id  # Add sample_id to obs
@@ -80,10 +77,7 @@ def main():
         with gzip.open(barcodes_path, 'rt') as f:
             barcodes = [line.strip() for line in f]
 
-        # Drop genes with no Ensembl id (blank in this Gemma export) - they can
-        # never match the scVI reference anyway, and left in they flood var_names
-        # with duplicate empty strings that make_unique() handles inconsistently
-        # across anndata versions.
+        # drop genes with blank Ensembl ids, same as above
         keep = [i for i, gene in enumerate(genes) if gene[1]]
         matrix = matrix[keep, :]
         genes = [genes[i] for i in keep]
