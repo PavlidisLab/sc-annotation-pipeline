@@ -24,7 +24,7 @@ workflow PREPARE_REFERENCE {
 
     // Download scVI model
     SETUP_SCVI(organism, census_version)
-    ch_model = SETUP_SCVI.out.model_path
+    ch_model = SETUP_SCVI.out.model_file
 
     // Get reference data from CellxGene Census
     ref_collections_str = ref_collections.collect { "\"${it}\"" }.join(' ')
@@ -43,6 +43,6 @@ workflow PREPARE_REFERENCE {
     ch_refs = GET_CENSUS_ADATA.out.ref_paths.flatten()
 
     emit:
-    model_path = ch_model    // path: scVI model directory
+    model_path = ch_model    // path: scVI model.pt file
     ref_paths  = ch_refs     // channel: [ ref.h5ad, ... ]
 }

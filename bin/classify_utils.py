@@ -1,5 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore")
+import os
+import tempfile
 import pandas as pd
 import numpy as np
 import anndata as ad
@@ -30,6 +32,13 @@ def process_query(query, model_file_path, batch_key="sample", seed=42):
     if not isinstance(query, ad.AnnData):
         raise ValueError("Input must be an AnnData object.")
 
+    # scvi-tools' loader wants a directory containing model.pt, not the file itself -
+    # repackage into a scratch dir so Nextflow can cache/stage model.pt as a plain file.
+    model_dir_path = model_file_path
+    if os.path.isfile(model_file_path):
+        model_dir_path = tempfile.mkdtemp()
+        os.symlink(os.path.abspath(model_file_path), os.path.join(model_dir_path, "model.pt"))
+
     # Assign ensembl_id to var
     #query.var["ensembl_id"] = query.var["feature_id"]
     if "feature_id" in query.var.columns:
@@ -42,8 +51,8 @@ def process_query(query, model_file_path, batch_key="sample", seed=42):
     #query = query[:, query.var["feature_name"].notnull().values].copy()
 
     # Prepare the query AnnData for scVI
-    scvi.model.SCVI.prepare_query_anndata(query, model_file_path)
-    vae_q = scvi.model.SCVI.load_query_data(query, model_file_path)
+    scvi.model.SCVI.prepare_query_anndata(query, model_dir_path)
+    vae_q = scvi.model.SCVI.load_query_data(query, model_dir_path)
 
     # Set the model to trained and get latent representation
     vae_q.is_trained = True

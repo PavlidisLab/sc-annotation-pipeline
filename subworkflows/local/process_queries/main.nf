@@ -11,7 +11,7 @@ workflow PROCESS_QUERIES {
 
     take:
     ch_studies       // channel: [ study_name, study_path ]
-    model_path       // path: scVI model directory
+    model_path       // path: scVI model.pt file
     process_samples  // boolean: process individual samples
     seed             // integer: random seed
 

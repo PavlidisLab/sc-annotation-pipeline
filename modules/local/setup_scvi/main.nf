@@ -7,12 +7,15 @@ process SETUP_SCVI {
         'docker://raschwaa/census-minimal:latest' :
         'raschwaa/census-minimal:latest' }"
 
+    // model.pt is fully keyed by organism + census_version, so cache it across work-dirs/resumes
+    storeDir "${projectDir}/.cache/scvi_model"
+
     input:
     val organism
     val census_version
 
     output:
-    path "scvi-${organism}-${census_version}/", emit: model_path
+    path "scvi-${organism}-${census_version}/model.pt", emit: model_file
 
     when:
     task.ext.when == null || task.ext.when
