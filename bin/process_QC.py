@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import argparse
 import json
-from utils import *
+from qc_utils import *
+from marker_utils import *
 from PIL import Image
 import io
 import math
@@ -353,6 +354,7 @@ def main():
 
     query_combined = ad.concat(query_subsets.values(), axis=0)
     plot_joint_umap(query_combined, study_name=study_name, sample_name="all_samples")
+
     # List of cell type keys to process
     for cell_type_key in cell_type_keys:
         # If the key doesn't exist, skip
@@ -391,10 +393,10 @@ def main():
     # Write mask file (single boolean for any outlier)
     write_mask_file(query_combined, study_name, metrics=existing_outlier_cols)
 
-    # Write mask statistics for QC report
     write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=existing_outlier_cols)
 
-    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key="subclass_cell_type")
+    for cell_type_key in cell_type_keys:
+        make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key=cell_type_key)
 
 if __name__ == "__main__":
     main()

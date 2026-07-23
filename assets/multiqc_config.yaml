@@ -76,6 +76,18 @@ custom_data:
     file_format: 'tsv'
     plot_type: 'heatmap'
 
+  markers_heatmap_class:
+    section_name: 'Cell type markers (class)'
+    description: 'Expression of select markers averaged across class cell-type labels and z-score normalized across genes.'
+    file_format: 'tsv'
+    plot_type: 'heatmap'
+
+  markers_heatmap_family:
+    section_name: 'Cell type markers (family)'
+    description: 'Expression of select markers averaged across family cell-type labels and z-score normalized across genes.'
+    file_format: 'tsv'
+    plot_type: 'heatmap'
+
   mask_stats_by_class:
     section_name: 'Outlier Types by Cell Type (class)'
     description: 'Count of each outlier type per class cell type (not mutually exclusive)'
@@ -126,7 +138,11 @@ sp:
     fn: "*cluster_celltypes_mqc_family_cell_type.tsv"
 
   markers_heatmap_subclass:
-    fn: "*subclass_cell_type_heatmap_mqc.tsv"
+    fn: "*_subclass_cell_type_heatmap_mqc.tsv"
+  markers_heatmap_class:
+    fn: "*_class_cell_type_heatmap_mqc.tsv"
+  markers_heatmap_family:
+    fn: "*_family_cell_type_heatmap_mqc.tsv"
 
   mask_stats_by_class:
     fn: "*mask_stats_by_class_cell_type_mqc.tsv"

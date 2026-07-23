@@ -11,12 +11,11 @@ workflow PROCESS_QUERIES {
 
     take:
     ch_studies       // channel: [ study_name, study_path ]
-    model_path       // path: scVI model directory
+    model_path       // path: scVI model.pt file
     process_samples  // boolean: process individual samples
     seed             // integer: random seed
 
     main:
-    ch_versions = Channel.empty()
 
     if (process_samples) {
         // Expand channel to individual samples
@@ -32,18 +31,15 @@ workflow PROCESS_QUERIES {
         PROCESS_QUERY_SAMPLE(model_path, ch_expanded, seed)
         ch_processed = PROCESS_QUERY_SAMPLE.out.processed_query
         ch_raw       = PROCESS_QUERY_SAMPLE.out.raw_query
-        ch_versions  = ch_versions.mix(PROCESS_QUERY_SAMPLE.out.versions.first())
     }
     else {
         // Process entire study as one
         PROCESS_QUERY_COMBINED(model_path, ch_studies, seed)
         ch_processed = PROCESS_QUERY_COMBINED.out.processed_query
         ch_raw       = PROCESS_QUERY_COMBINED.out.raw_query
-        ch_versions  = ch_versions.mix(PROCESS_QUERY_COMBINED.out.versions.first())
     }
 
     emit:
     processed = ch_processed  // channel: [ study_name, query_name, processed.h5ad ]
     raw       = ch_raw        // channel: [ study_name, query_name, raw.h5ad ]
-    versions  = ch_versions   // channel: [ versions.yml ]
 }

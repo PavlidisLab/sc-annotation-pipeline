@@ -2,11 +2,12 @@
 
 import os
 import sys
+import random
 import scanpy as sc
 import numpy as np
 import pandas as pd
 import scvi
-from utils import *
+from classify_utils import *
 import argparse
 import scipy
 import gzip
@@ -51,6 +52,9 @@ def main():
   try:
     # Attempt to read the 10x mtx data
     adata = sc.read_10x_mtx(query_path)
+    # drop genes with blank Ensembl ids - duplicate NaN var_names break things downstream
+    adata = adata[:, adata.var_names.notna()].copy()
+    adata.var_names_make_unique()
     adata.obs["sample_id"] = sample_id  # Add sample_id to obs
     adata.obs_names_make_unique()
   except Exception as e:
@@ -72,7 +76,12 @@ def main():
             genes = [line.strip().split("\t") for line in f]
         with gzip.open(barcodes_path, 'rt') as f:
             barcodes = [line.strip() for line in f]
-        
+
+        # drop genes with blank Ensembl ids, same as above
+        keep = [i for i, gene in enumerate(genes) if gene[1]]
+        matrix = matrix[keep, :]
+        genes = [genes[i] for i in keep]
+
         # Create AnnData object
         adata = sc.AnnData(X=matrix.T)  # Transpose to match expected shape (cells x genes)
         adata.var_names = [gene[1] for gene in genes]

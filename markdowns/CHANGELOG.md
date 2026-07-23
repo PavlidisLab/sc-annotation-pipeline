@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ref_keys` parameter for specifying reference keys in classification
 - Added `preferredCtaLevel` parameter for preferred cell type annotation level
 - Added granular Gemma upload controls: `upload_cta`, `upload_clc`, `upload_multiqc`
+- Added `use_gemma` master switch to skip all Gemma interaction (metadata fetch + uploads), for studies given via `--study_paths`/local samplesheet rows
+- Added full human/mouse test profile matrix (8 profiles: `test_mouse`/`test_human`, `_persample`, `_local`, `_upload_off` variants)
+- Added `scripts/run_test_profiles.sh` to run all test profiles and report a pass/fail summary
 
 ### `Changed`
 
@@ -37,8 +40,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reorganized modules into `modules/local/<tool>/main.nf` structure
 - Created subworkflows for logical groupings of modules
 - GEMMA_UPLOAD subworkflow now has granular control over which outputs to upload
+- Split `bin/utils.py` god-module into `census_utils.py`, `classify_utils.py`, `qc_utils.py`, `marker_utils.py`
+- SLURM CPU allocation now tiered by process label instead of a blanket reservation, to reduce queue congestion
+- Per-sample QC linear model now uses `numpy.polyfit` instead of `statsmodels` (faster, drops a dependency)
 
 ### `Fixed`
+
+- Fixed MEX ingestion crash from blank Ensembl gene IDs producing duplicate NaN `var_names`
+- Fixed unrecoverable samples being passed to `sc.concat` as `None` instead of being skipped
+- Fixed `sample_name` being entirely NaN (breaking per-sample QC grouping) when `use_gemma=false`
 
 ### `Dependencies`
 

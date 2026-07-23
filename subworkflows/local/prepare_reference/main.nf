@@ -21,12 +21,10 @@ workflow PREPARE_REFERENCE {
     author_annotations_path   // path: optional author annotations directory
 
     main:
-    ch_versions = Channel.empty()
 
     // Download scVI model
     SETUP_SCVI(organism, census_version)
-    ch_model = SETUP_SCVI.out.model_path
-    ch_versions = ch_versions.mix(SETUP_SCVI.out.versions)
+    ch_model = SETUP_SCVI.out.model_file
 
     // Get reference data from CellxGene Census
     ref_collections_str = ref_collections.collect { "\"${it}\"" }.join(' ')
@@ -43,10 +41,8 @@ workflow PREPARE_REFERENCE {
         author_annotations_path ?: []
     )
     ch_refs = GET_CENSUS_ADATA.out.ref_paths.flatten()
-    ch_versions = ch_versions.mix(GET_CENSUS_ADATA.out.versions)
 
     emit:
-    model_path = ch_model    // path: scVI model directory
+    model_path = ch_model    // path: scVI model.pt file
     ref_paths  = ch_refs     // channel: [ ref.h5ad, ... ]
-    versions   = ch_versions // channel: [ versions.yml ]
 }
