@@ -1,5 +1,5 @@
 process LOAD_MASK {
-    tag "$study_name"
+    tag "$study_name GEMMA_CLI_TASK"
     label 'process_single'
 
     input:
