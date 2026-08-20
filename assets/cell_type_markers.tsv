@@ -56,6 +56,12 @@ L6 corticothalamic-projecting glutamatergic cortical neuron	FOXP2, TLE4, SEMA3E	
 vascular leptomeningeal cell	DCN, LUM, COL1A1, COL5A1	VLMC	Non-neuron	homo_sapiens	subclass
 endothelial cell	FLT1	Endothelial	Non-neuron	homo_sapiens	subclass
 pericyte	PDGFRB, RGS5	Pericyte	Non-neuron	homo_sapiens	subclass
+smooth muscle cell	ACTA2	Smooth muscle cell	Non-neuron	homo_sapiens	subclass
+erythroid lineage cell	HBA1, HBB	Erythroid	Non-neuron	homo_sapiens	subclass
+macrophage	F13A1, COLEC12	Macrophage	Immune	homo_sapiens	subclass
+myeloid cell	LSP1, LYZ	Myeloid	Immune	homo_sapiens	subclass
+B cell	EBF1, IGKC	B cell	Immune	homo_sapiens	subclass
+T cell	SKAP1, CD247	T cell	Immune	homo_sapiens	subclass
 GABAergic interneuron	GAD1, GAD2	GABAergic	GABAergic	mus_musculus	family
 glutamatergic neuron	SLC17A7, SLC17A6	Glutamatergic	Glutamatergic	mus_musculus	family
 astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	mus_musculus	family
@@ -71,6 +77,7 @@ oligodendrocyte	MBP, MOG, PLP1	Oligodendrocyte	Non-neuron	homo_sapiens	family
 oligodendrocyte precursor cell	PDGFRA, CSPG4	OPC	Non-neuron	homo_sapiens	family
 microglial cell	PTPRC, CX3CR1, TMEM119, P2RY12	Microglia	Non-neuron	homo_sapiens	family
 brain vascular cell	CLDN5, FLT1, PDGFRB	Vascular	Non-neuron	homo_sapiens	family
+immune	PTPRC	Immune	Immune	homo_sapiens	family
 VIP GABAergic interneuron	VIP	VIP	GABAergic	mus_musculus	class
 pvalb GABAergic cortical interneuron	PVALB	PVALB	GABAergic	mus_musculus	class
 sst GABAergic cortical interneuron	SST	SST	GABAergic	mus_musculus	class
@@ -101,3 +108,4 @@ brain vascular cell	CLDN5, PDGFRB	Vascular	Non-neuron	homo_sapiens	class
 microglial cell	TMEM119, P2RY12	Microglia	Non-neuron	homo_sapiens	class
 oligodendrocyte	MOG, MBP	Oligodendrocyte	Non-neuron	homo_sapiens	class
 oligodendrocyte precursor cell	PDGFRA	OPC	Non-neuron	homo_sapiens	class
+immune	PTPRC	Immune	Immune	homo_sapiens	class
