@@ -1,6 +1,6 @@
 process LOAD_MASK {
-    tag "$study_name"
-    // label 'process_single'
+    tag "$study_name GEMMA_CLI_TASK"
+    label 'process_single'
 
     input:
     tuple val(study_name), path(mask_file)

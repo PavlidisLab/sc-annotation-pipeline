@@ -1,6 +1,6 @@
 process COMBINE_CTA {
     tag "$study_name"
-    // label 'process_single'
+    label 'process_single'
 
     input:
     tuple val(study_name), val(level), val(query_names), path(celltype_files)

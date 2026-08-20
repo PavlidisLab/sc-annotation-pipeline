@@ -4,7 +4,7 @@ import warnings
 warnings.filterwarnings("ignore")
 import argparse
 import os
-from utils import *
+from census_utils import *
 
 # Function to parse command line arguments
 def parse_arguments():

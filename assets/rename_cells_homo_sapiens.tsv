@@ -2,7 +2,7 @@ cell_type	subclass_cell_type	subclass_cell_type_uri	class_cell_type	class_cell_t
 L2/3-6 intratelencephalic projecting glutamatergic neuron	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	glutamatergic neuron	CL:0000679
 oligodendrocyte	oligodendrocyte	CL:0000128	oligodendrocyte	CL:0000128	oligodendrocyte	CL:0000128
 pvalb GABAergic cortical interneuron	pvalb GABAergic cortical interneuron	CL:4023018	pvalb GABAergic cortical interneuron	CL:4023018	GABAergic interneuron	CL:0011005
-vip GABAergic cortical interneuron	vip GABAergic cortical interneuron	CL:4023016	vip GABAergic cortical interneuron	CL:4023016	GABAergic interneuron	CL:0011005
+vip GABAergic cortical interneuron	VIP GABAergic interneuron	CL:4023016	VIP GABAergic interneuron	CL:4023016	GABAergic interneuron	CL:0011005
 sst GABAergic cortical interneuron	sst GABAergic cortical interneuron	CL:4023017	sst GABAergic cortical interneuron	CL:4023017	GABAergic interneuron	CL:0011005
 astrocyte of the cerebral cortex	astrocyte	CL:0000127	astrocyte	CL:0000127	astrocyte	CL:0000127
 lamp5 GABAergic cortical interneuron	lamp5 GABAergic cortical interneuron	CL:4023011	lamp5 GABAergic cortical interneuron	CL:4023011	GABAergic interneuron	CL:0011005

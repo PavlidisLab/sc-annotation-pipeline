@@ -15,7 +15,6 @@ workflow INPUT_CHECK {
     use_staging   // boolean: use Gemma staging environment
 
     main:
-    ch_versions = Channel.empty()
 
     //
     // Option 1: Samplesheet input (--input)
@@ -86,9 +85,10 @@ workflow INPUT_CHECK {
     // Option 3: Study paths (--study_paths) - local directories
     //
     else if (study_paths) {
-        // Read from file or space-separated list
+        // Read from file or space-separated list. A single .h5ad is study data
+        // itself (as with a samplesheet study_path), not a manifest to read lines from.
         ch_studies = (
-            file(study_paths).exists() && file(study_paths).isFile()
+            file(study_paths).exists() && file(study_paths).isFile() && !study_paths.toString().endsWith('.h5ad')
                 ? Channel.from(
                       file(study_paths)
                           .readLines()
@@ -96,7 +96,12 @@ workflow INPUT_CHECK {
                           .findAll { it }
                           .collect { path ->
                               def p = file(path)
-                              [p.getName(), p]
+                              // A single file here is always the pre-combined .h5ad itself
+                              // (validated in bin/process_query.py); use baseName so it
+                              // yields the same bare study_name as a mex directory (avoids
+                              // a doubled ".h5ad.h5ad" downstream in PROCESS_QUERY_COMBINED).
+                              def name = p.isFile() ? p.baseName : p.getName()
+                              [name, p]
                           }
                   )
                 : Channel.from(
@@ -106,7 +111,12 @@ workflow INPUT_CHECK {
                           .findAll { it }
                           .collect { path ->
                               def p = file(path)
-                              [p.getName(), p]
+                              // A single file here is always the pre-combined .h5ad itself
+                              // (validated in bin/process_query.py); use baseName so it
+                              // yields the same bare study_name as a mex directory (avoids
+                              // a doubled ".h5ad.h5ad" downstream in PROCESS_QUERY_COMBINED).
+                              def name = p.isFile() ? p.baseName : p.getName()
+                              [name, p]
                           }
                   )
         )
@@ -120,5 +130,4 @@ workflow INPUT_CHECK {
 
     emit:
     studies  = ch_studies   // channel: [ sample/study_name, study_path ]
-    versions = ch_versions  // channel: [ versions.yml ]
 }

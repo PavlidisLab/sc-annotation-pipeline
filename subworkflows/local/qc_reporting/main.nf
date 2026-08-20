@@ -28,14 +28,13 @@ workflow QC_REPORTING {
     process_samples      // boolean: process individual samples
     gemma_username       // string: Gemma username
     gemma_password       // string: Gemma password
+    use_gemma            // boolean: fetch per-sample metadata from Gemma
 
     main:
-    ch_versions = Channel.empty()
 
-    // Get metadata from Gemma
-    GET_META(ch_studies, gemma_username, gemma_password)
+    // Get metadata from Gemma (skipped for locally-sourced studies with no Gemma entry)
+    GET_META(ch_studies, gemma_username, gemma_password, use_gemma)
     ch_meta = GET_META.out.meta
-    ch_versions = ch_versions.mix(GET_META.out.versions.first())
 
     // Group celltypes by study
     ch_celltypes_grouped = ch_celltypes.groupTuple(by: 0)
@@ -66,7 +65,6 @@ workflow QC_REPORTING {
     ch_qc_dirs    = PROCESS_QC.out.qc_dir
     ch_clc_files  = PROCESS_QC.out.clc_files
     ch_mask_files = PROCESS_QC.out.mask_file
-    ch_versions   = ch_versions.mix(PROCESS_QC.out.versions.first())
 
     if (process_samples) {
         // Combine QC directories
@@ -102,7 +100,6 @@ workflow QC_REPORTING {
         )
 
         ch_multiqc = RUN_MULTIQC.out.report
-        ch_versions = ch_versions.mix(RUN_MULTIQC.out.versions.first())
     }
     else {
         ch_multiqc = Channel.empty()
@@ -114,5 +111,4 @@ workflow QC_REPORTING {
     clc       = ch_clc      // channel: [ study_name, clc.tsv ] - individual outlier categories
     masks     = ch_masks    // channel: [ study_name, mask.tsv ] - single boolean mask
     multiqc   = ch_multiqc
-    versions  = ch_versions
 }

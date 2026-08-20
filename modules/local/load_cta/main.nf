@@ -1,6 +1,6 @@
 process LOAD_CTA {
-    tag "$study_name"
-    // label 'process_single'
+    tag "$study_name GEMMA_CLI_TASK"
+    label 'process_single'
 
     input:
     tuple val(study_name), path(celltype_file)

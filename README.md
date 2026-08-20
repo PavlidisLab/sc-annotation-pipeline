@@ -59,13 +59,13 @@ sc-annotation-pipeline-rachel-dev/
 ├── conf/
 │   ├── base.config              # Resource defaults (CPU/memory/time)
 │   ├── modules.config           # Module-specific settings
-│   ├── test_mmus.config         # Mouse test profile
-│   └── test_hsap.config         # Human test profile
+│   └── test_*.config            # Human/mouse test profile matrix (8 profiles, see Test Profiles below)
 ├── assets/                      # Reference files and configs
 │   ├── samplesheet.csv
 │   ├── cell_type_markers.tsv
 │   └── ...
 ├── bin/                         # Python scripts
+├── scripts/                     # Standalone maintenance scripts (test runner, cleanup, etc.)
 ├── params.mm.json               # Mouse parameters
 ├── params.hs.json               # Human parameters
 ├── README.md
@@ -88,10 +88,20 @@ sc-annotation-pipeline-rachel-dev/
 
 ## Test Profiles
 
-Two test profiles are provided:
-- **test_mouse**: Runs a minimal pipeline test with mouse (Mus musculus) parameters.
-- **test_human**: Runs a minimal pipeline test with human (Homo sapiens) parameters.
-Use with `-profile test_mouse,conda` or `-profile test_human,conda`.
+A full human/mouse test profile matrix is provided:
+
+| Profile | Organism | Notes |
+|---------|----------|-------|
+| `test_mouse` | mouse | Samplesheet-driven, default combined processing |
+| `test_human` | human | Samplesheet-driven, default combined processing |
+| `test_mouse_persample` | mouse | `--process_samples true` |
+| `test_human_persample` | human | `--process_samples true` |
+| `test_mouse_local` | mouse | `--study_paths` (MEX sample directory), `--use_gemma false` |
+| `test_human_local` | human | `--study_paths` (single `.h5ad`), `--use_gemma false` |
+| `test_mouse_upload_off` | mouse | `--upload_gemma false` |
+| `test_human_upload_off` | human | `--upload_gemma false` |
+
+Use with e.g. `-profile test_mouse,conda`. Run all of them and get a pass/fail summary with `scripts/run_test_profiles.sh`.
 
 ## Requirements
 
@@ -168,7 +178,7 @@ local_study,,/path/to/local/data
 |--------|----------|-------------|
 | `sample` | Yes | Unique sample identifier |
 | `study_name` | No* | Study name to download from Gemma |
-| `study_path` | No* | Path to pre-downloaded MEX data |
+| `study_path` | No* | Path to pre-downloaded MEX data, or a single pre-combined `.h5ad` file |
 
 *At least one of `study_name` or `study_path` must be provided per row.
 
@@ -196,7 +206,7 @@ nextflow run main.nf -profile conda -params-file params.mm.json \
 
 #### From Study Paths (Legacy)
 
-Use pre-downloaded MEX data:
+Use pre-downloaded MEX data, without needing Gemma credentials:
 
 ```bash
 # Space-separated list
@@ -208,15 +218,32 @@ nextflow run main.nf -profile conda -params-file params.mm.json \
     --study_paths paths.txt
 ```
 
+Each path can be either a directory of per-sample MEX subdirectories, or a single pre-combined `.h5ad` file. A directory containing more than one `.h5ad` file is not supported — the pipeline only accepts one `.h5ad` per study.
+
+**Required `.h5ad` format:**
+- `X`: raw counts (cells x genes)
+- `var_names` (index): Ensembl gene IDs — required for matching against the scVI reference
+- `var['feature_name']` (optional): gene symbol per gene. If present, used directly for QC (mito/ribo/hb detection). If absent, symbols are looked up from `var_names` via `assets/gemma_genes.tsv`
+- `obs['sample_id']` (optional): defaults to the samplesheet `sample` value if missing (treats the whole file as one sample)
+
+This matches the shape of a Gemma-exported `.h5ad` (e.g. from `get_gemma_data.nf`). A `.h5ad` from a different source (e.g. counts in `layers['counts']` instead of `X`, or non-Ensembl `var_names`) is not currently supported without preprocessing it into this shape first.
+
 ### Profiles
 
 | Profile | Description |
 |---------|-------------|
 | `conda` | Use Conda for environment management |
-| `test_human` | Test configuration for human data |
-| `test_mouse` | Test configuration for mouse data |
+| `docker` | Use Docker containers |
+| `singularity` | Use Singularity containers |
+| `apptainer` | Use Apptainer containers |
+| `test_human` / `test_mouse` | Samplesheet-driven test data |
+| `test_human_persample` / `test_mouse_persample` | Test data with `--process_samples true` |
+| `test_human_local` / `test_mouse_local` | Test data via `--study_paths`, `--use_gemma false` |
+| `test_human_upload_off` / `test_mouse_upload_off` | Test data with `--upload_gemma false` |
 
 SLURM execution is enabled by default and does not require a separate profile.
+
+Note: `singularity`/`apptainer` must be installed on every node SLURM dispatches jobs to, not just the login node, or jobs fail with `singularity: command not found`. Use `-profile conda` on such clusters, or `-process.executor local` to run containers on the login node directly.
 
 ### Resuming Pipelines
 
@@ -299,6 +326,8 @@ nextflow run main.nf --nmads.mito 3 --nmads.counts 4
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `--use_staging` | Use Gemma staging server | `true` |
+| `--use_gemma` | Top-level switch — set `false` to skip all Gemma interaction (per-sample metadata fetch during QC and uploads). Needed for studies from `--study_paths`/local samplesheet rows that don't exist in Gemma | `true` |
+| `--upload_gemma` | Nested under `--use_gemma` — set `false` to skip only the upload subworkflow (still fetches metadata) | `true` |
 | `--upload_cta` | Upload cell type annotations | `true` |
 | `--upload_clc` | Upload cell-level characteristics | `true` |
 | `--upload_mask` | Upload outlier mask | `true` |
@@ -330,19 +359,22 @@ Parameter priority: CLI arguments > params.json > nextflow.config
 ```
 results/
 └── mus_musculus_subsample_ref_500_2025-01-15_17-51-37/
-    ├── celltypes/
-    │   └── *_predicted_celltype.tsv    # Cell type predictions
-    ├── masks/
-    │   └── *_outlier_mask.tsv          # QC outlier masks
+    ├── scvi_model/                     # Downloaded scVI model
+    ├── reference/                      # Census reference embeddings
+    ├── <study_name>/
+    │   ├── processed/                  # scVI query embeddings
+    │   ├── predicted_celltypes/         # Cell type predictions
+    │   ├── masks/                      # QC outlier masks
+    │   ├── qc/                         # Per-sample QC output
+    │   └── combined_qc/                # Combined QC output
     ├── multiqc/
-    │   └── multiqc_report.html         # QC summary report
-    ├── pipeline_info/
-    │   ├── execution_report.html       # Nextflow execution report
-    │   ├── execution_timeline.html     # Timeline visualization
-    │   ├── execution_trace.txt         # Resource usage trace
-    │   └── pipeline_dag.dot            # Pipeline DAG
-    └── versions/
-        └── software_versions.yml       # Software versions used
+    │   └── <study_name>/
+    │       └── multiqc_report.html     # QC summary report
+    └── pipeline_info/
+        ├── execution_report.html       # Nextflow execution report
+        ├── execution_timeline.html     # Timeline visualization
+        ├── execution_trace.txt         # Resource usage trace
+        └── pipeline_dag.dot            # Pipeline DAG
 ```
 
 ---

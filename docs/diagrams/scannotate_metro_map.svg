@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" width="720" height="900">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 770" width="720" height="770">
   <defs>
     <!-- Drop shadow filter -->
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -14,14 +14,14 @@
   </defs>
 
   <!-- Background -->
-  <rect width="720" height="900" fill="#ffffff"/>
+  <rect width="720" height="770" fill="#ffffff"/>
 
   <!-- Header -->
   <rect x="0" y="0" width="720" height="50" fill="url(#headerGrad)"/>
   <text x="360" y="32" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white">PavlidisLab/sc-annotation-pipeline</text>
 
   <!-- Main flow line -->
-  <path d="M 165 130 L 165 720" stroke="#24B064" stroke-width="4" fill="none"/>
+  <path d="M 165 130 L 165 595" stroke="#24B064" stroke-width="4" fill="none"/>
 
   <!-- ==================== INPUT ==================== -->
   <g transform="translate(35, 100)" filter="url(#shadow)">
@@ -99,15 +99,8 @@
     <text x="130" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#555">Upload to Gemma (optional)</text>
   </g>
 
-  <!-- ==================== VERSIONS OUTPUT ==================== -->
-  <g transform="translate(35, 610)" filter="url(#shadow)">
-    <rect x="0" y="0" width="260" height="50" rx="8" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
-    <text x="130" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#2E7D32">versions.yml</text>
-    <text x="130" y="38" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#555">Software versions for reproducibility</text>
-  </g>
-
   <!-- Color Legend -->
-  <g transform="translate(35, 690)">
+  <g transform="translate(35, 620)">
     <text x="0" y="0" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#333">Legend</text>
 
     <rect x="0" y="12" width="18" height="18" rx="3" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1"/>
@@ -129,10 +122,6 @@
     <text x="335" y="52" font-family="Arial, sans-serif" font-size="10" fill="#333">Optional</text>
   </g>
 
-  <!-- Footer description -->
-  <text x="360" y="790" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">Cell types assigned using Random Forest on scVI embeddings</text>
-  <text x="360" y="805" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">from CellxGene Census reference data</text>
-
   <!-- Pipeline info -->
-  <text x="360" y="840" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#999">v2.0.0dev</text>
+  <text x="360" y="710" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#999">v2.0.0dev</text>
 </svg>

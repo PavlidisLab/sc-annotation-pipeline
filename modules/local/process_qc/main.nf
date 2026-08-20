@@ -1,11 +1,11 @@
 process PROCESS_QC {
     tag "$query_name"
-    // label 'process_medium'
+    label 'process_medium'
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker://raschwaa/census_pipeline:latest' :
-        'raschwaa/census_pipeline:latest' }"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
+        'docker://raschwaa/scanpyenv-minimal:latest' :
+        'raschwaa/scanpyenv-minimal:latest' }"
 
     input:
     tuple val(study_name), val(query_name), path(predicted_meta_files), path(study_path), path(sample_meta)
@@ -21,7 +21,6 @@ process PROCESS_QC {
     tuple val(study_name), path("${query_name}/")       , emit: qc_dir
     tuple val(study_name), path("${query_name}*clc.tsv"), emit: clc_files
     tuple val(study_name), path("${query_name}_mask.tsv"), emit: mask_file
-    path "versions.yml"                                 , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -43,12 +42,6 @@ process PROCESS_QC {
         --markers_file ${markers_file} \\
         --cell_type_keys ${cell_type_keys_str} \\
         ${args}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version | sed 's/Python //g')
-        scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-    END_VERSIONS
     """
 
     stub:
@@ -58,11 +51,5 @@ process PROCESS_QC {
     touch ${query_name}_clc.tsv
     echo -e "sample_id\tcell_id\tcategory\tvalue" > ${query_name}_mask.tsv
     touch ${query_name}_plot.png
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version | sed 's/Python //g')
-        scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-    END_VERSIONS
     """
 }

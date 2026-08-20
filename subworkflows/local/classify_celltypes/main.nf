@@ -18,7 +18,6 @@ workflow CLASSIFY_CELLTYPES {
     process_samples  // boolean: whether processing individual samples
 
     main:
-    ch_versions = Channel.empty()
 
     // Combine processed queries with reference paths
     ch_combos = ch_processed.combine(ch_refs)
@@ -26,7 +25,6 @@ workflow CLASSIFY_CELLTYPES {
     // Run random forest classification
     RF_CLASSIFY(ch_combos, cutoff, mapping_file, ref_keys)
     ch_celltype_files = RF_CLASSIFY.out.celltype_files
-    ch_versions = ch_versions.mix(RF_CLASSIFY.out.versions.first())
 
     if (process_samples) {
         // Group and combine cell type files by study and level
@@ -53,5 +51,4 @@ workflow CLASSIFY_CELLTYPES {
     emit:
     celltypes        = ch_celltypes        // channel: [ study_name, celltype.tsv ]
     celltype_files   = ch_celltype_files   // channel: [ study_name, query_name, [files] ]
-    versions         = ch_versions         // channel: [ versions.yml ]
 }

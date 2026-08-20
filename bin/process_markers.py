@@ -11,7 +11,6 @@ import anndata as ad
 import re
 from scipy.sparse import csr_matrix
 import warnings
-from utils import *
 import matplotlib.pyplot as plt
 import seaborn as sns
 import json
