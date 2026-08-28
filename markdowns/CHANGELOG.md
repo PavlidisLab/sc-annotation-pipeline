@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `use_gemma` master switch to skip all Gemma interaction (metadata fetch + uploads), for studies given via `--study_paths`/local samplesheet rows
 - Added full human/mouse test profile matrix (8 profiles: `test_mouse`/`test_human`, `_persample`, `_local`, `_upload_off` variants)
 - Added `scripts/run_test_profiles.sh` to run all test profiles and report a pass/fail summary
+- Added Ma et al. (2022, primate dlPFC evolution) as a human `ref_collections` source, with corresponding rename-file mappings for its immune (macrophage, myeloid cell, B cell, T cell), smooth muscle, and erythroid lineage cell types
+- Added marker genes for those immune/vascular/erythroid cell types to `assets/cell_type_markers.tsv` so they render in the QC heatmaps
 
 ### `Changed`
 
@@ -49,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed MEX ingestion crash from blank Ensembl gene IDs producing duplicate NaN `var_names`
 - Fixed unrecoverable samples being passed to `sc.concat` as `None` instead of being skipped
 - Fixed `sample_name` being entirely NaN (breaking per-sample QC grouping) when `use_gemma=false`
+- Fixed `test_human` samplesheet pointing at a stale `DevBrain` fixture path
 
 ### `Dependencies`
 
