@@ -1,15 +1,5 @@
 author_cell_type	subclass_cell_type	subclass_cell_type_uri	class_cell_type	class_cell_type_uri	family_cell_type	family_cell_type_uri
-neural stem cell	neural stem cell	CL:0000047	neural stem cell	CL:0000047	neural stem cell	CL:0000047
-neuroepithelial stem cell	neural stem cell	CL:0000047	neural stem cell	CL:0000047	neural stem cell	CL:0000047
-astrocyte	astrocyte	CL:0000127	astrocyte	CL:0000127	astrocyte	CL:0000127
-endothelial cell	endothelial cell	CL:0000115	brain vascular cell	CL:4023072	brain vascular cell	CL:4023072
-ependymal cell	ependymal cell	CL:0000065	brain vascular cell	CL:4023072	brain vascular cell	CL:4023072
 Macrophage	central nervous system macrophage	CL:0000878	central nervous system macrophage	CL:0000878	central nervous system macrophage	CL:0000878
-macrophage	central nervous system macrophage	CL:0000878	central nervous system macrophage	CL:0000878	central nervous system macrophage	CL:0000878
-microglial cell	microglial cell	CL:0000129	microglial cell	CL:0000129	central nervous system macrophage	CL:0000878
-oligodendrocyte	oligodendrocyte	CL:0000128	oligodendrocyte	CL:0000128	oligodendrocyte	CL:0000128
-oligodendrocyte precursor cell	oligodendrocyte precursor cell	CL:0002453	oligodendrocyte precursor cell	CL:0002453	oligodendrocyte precursor cell	CL:0002453
-brain pericyte	pericyte	CL:0000669	brain vascular cell	CL:4023072	brain vascular cell	CL:4023072
 Prog/IP	neural stem cell	CL:0000047	neural stem cell	CL:0000047	neural stem cell	CL:0000047
 Vip	VIP GABAergic interneuron	CL:4023016	VIP GABAergic interneuron	CL:4023016	GABAergic interneuron	CL:0011005
 Pvalb	pvalb GABAergic cortical interneuron	CL:4023018	pvalb GABAergic cortical interneuron	CL:4023018	GABAergic interneuron	CL:0011005
@@ -61,3 +51,5 @@ L6b CTX	L6b glutamatergic cortical neuron	CL:4023038	deep layer non-IT		glutamat
 CA1-ProS	CA1-prosubiculum hippocampal neuron		hippocampal neuron	CL:0002608	glutamatergic neuron	CL:0000679
 Micro-PVM	microglial cell	CL:0000129	microglial cell	CL:0000129	central nervous system macrophage	CL:0000878
 SMC-Peri	smooth muscle cell	CL:0000192	brain vascular cell	CL:4023072	brain vascular cell	CL:4023072
+OPC	oligodendrocyte precursor cell	CL:0002453	oligodendrocyte precursor cell	CL:0002453	oligodendrocyte precursor cell	CL:0002453
+L6 IT Car3	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	glutamatergic neuron	CL:0000679
