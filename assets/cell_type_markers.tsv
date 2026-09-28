@@ -1,43 +1,43 @@
 cell_type	markers	shortname	family	organism	level
-VIP GABAergic interneuron	VIP	VIP	GABAergic	mus_musculus	subclass
-pvalb GABAergic cortical interneuron	PVALB	PVALB	GABAergic	mus_musculus	subclass
-sst GABAergic cortical interneuron	SST	SST	GABAergic	mus_musculus	subclass
-lamp5 GABAergic cortical interneuron	LAMP5	LAMP5	GABAergic	mus_musculus	subclass
-sncg GABAergic cortical interneuron	SNCG	SNCG	GABAergic	mus_musculus	subclass
-neural stem cell	HES5, NES, SOX2, DLX2	Neural stem cell	Neuroglioblast	mus_musculus	subclass
-L4/5 intratelencephalic projecting glutamatergic neuron	RORB	L4/5 IT	Glutamatergic	mus_musculus	subclass
-L2/3 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2	L2/3 IT	Glutamatergic	mus_musculus	subclass
-L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB, SLC30A3	L2/3-6 IT	Glutamatergic	mus_musculus	subclass
-L6 corticothalamic-projecting glutamatergic cortical neuron	FOXP2, TLE4, SEMA3E	L6 CT	Glutamatergic	mus_musculus	subclass
-L6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB, SEMA3E	L6 IT	Glutamatergic	mus_musculus	subclass
-L5/6 near-projecting glutamatergic neuron	FOXP2, TLE4, SLC17A8	L5/6 NP	Glutamatergic	mus_musculus	subclass
-L5 extratelencephalic projecting glutamatergic cortical neuron	FEZF2, POU3F1, BCL6, ETV1, BCL11B	L5 ET	Glutamatergic	mus_musculus	subclass
-L6b glutamatergic cortical neuron	CPLX3, CTGF, NXPH4	L6b	Glutamatergic	mus_musculus	subclass
-subiculum-prosubiculum hippocampal neuron	FN1	Sub-ProS	Glutamatergic	mus_musculus	subclass
-astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	mus_musculus	subclass
-Cajal-Retzius cell	RELN	Cajal-Retzius cell	Glutamatergic	mus_musculus	subclass
-L6 intratelencephalic projecting Car3 glutamatergic neuron	CAR3	L6 Car3	Glutamatergic	mus_musculus	subclass
-corticothalamic-projecting glutamatergic cortical neuron	FOXP2, TLE4, SEMA3E	CT	Glutamatergic	mus_musculus	subclass
-endothelial cell	FLT1	Endothelial	Non-neuron	mus_musculus	subclass
-ependymal cell	TUBA1A, FOXJ1	Ependymal	Non-neuron	mus_musculus	subclass
-dentate gyrus neuron	PROX1	DG	Glutamatergic	mus_musculus	subclass
-CA3 hippocampal neuron	BOK, FXYDZ	CA3	Glutamatergic	mus_musculus	subclass
-CA2-IG-FC hippocampal neuron	AMIGO2, RAMP3	CA2-IG-FC	Glutamatergic	mus_musculus	subclass
-near-projecting glutamatergic cortical neuron	FOXP2, TLE4, SLC17A8	L5/6 NP	Glutamatergic	mus_musculus	subclass
-vascular leptomeningeal cell	DCN, LUM, COL1A1, COL5A1	VLMC	Non-neuron	mus_musculus	subclass
-central nervous system macrophage	Mrc1, Pf4	CNS macrophage	Non-neuron	mus_musculus	subclass
-microglial cell	TMEM119, P2RY12	Microglia	Non-neuron	mus_musculus	subclass
-neuroepithelial stem cell	HES5, NES, SOX2	Neuroepithelial stem cell	Neuroglioblast	mus_musculus	subclass
-oligodendrocyte	MOG	Oligodendrocyte	Non-neuron	mus_musculus	subclass
-oligodendrocyte precursor cell	PDGFRA	OPC	Non-neuron	mus_musculus	subclass
-pericyte	PDGFRB, RGS5	Pericyte	Non-neuron	mus_musculus	subclass
-CA1-prosubiculum hippocampal neuron	SATB2, GLIPR, DLK1, DCN	CA1-ProS	Glutamatergic	mus_musculus	subclass
+VIP GABAergic interneuron	Vip	VIP	GABAergic	mus_musculus	subclass
+pvalb GABAergic cortical interneuron	Pvalb	PVALB	GABAergic	mus_musculus	subclass
+sst GABAergic cortical interneuron	Sst	SST	GABAergic	mus_musculus	subclass
+lamp5 GABAergic cortical interneuron	Lamp5	LAMP5	GABAergic	mus_musculus	subclass
+sncg GABAergic cortical interneuron	Sncg	SNCG	GABAergic	mus_musculus	subclass
+neural stem cell	Hes5, Nes, Sox2, Dlx2	Neural stem cell	Neuroglioblast	mus_musculus	subclass
+L4/5 intratelencephalic projecting glutamatergic neuron	Rorb	L4/5 IT	Glutamatergic	mus_musculus	subclass
+L2/3 intratelencephalic projecting glutamatergic neuron	Cux2, Lhx2	L2/3 IT	Glutamatergic	mus_musculus	subclass
+L2/3-6 intratelencephalic projecting glutamatergic neuron	Cux2, Lhx2, Rorb, Slc30a3	L2/3-6 IT	Glutamatergic	mus_musculus	subclass
+L6 corticothalamic-projecting glutamatergic cortical neuron	Foxp2, Tle4, Sema3e	L6 CT	Glutamatergic	mus_musculus	subclass
+L6 intratelencephalic projecting glutamatergic neuron	Cux2, Lhx2, Rorb, Sema3e	L6 IT	Glutamatergic	mus_musculus	subclass
+L5/6 near-projecting glutamatergic neuron	Foxp2, Tle4, Slc17a8	L5/6 NP	Glutamatergic	mus_musculus	subclass
+L5 extratelencephalic projecting glutamatergic cortical neuron	Fezf2, Pou3f1, Bcl6, Etv1, Bcl11b	L5 ET	Glutamatergic	mus_musculus	subclass
+L6b glutamatergic cortical neuron	Cplx3, Ctgf, Nxph4	L6b	Glutamatergic	mus_musculus	subclass
+subiculum-prosubiculum hippocampal neuron	Fn1	Sub-ProS	Glutamatergic	mus_musculus	subclass
+astrocyte	Gfap, Aqp4	Astrocyte	Non-neuron	mus_musculus	subclass
+Cajal-Retzius cell	Reln	Cajal-Retzius cell	Glutamatergic	mus_musculus	subclass
+L6 intratelencephalic projecting Car3 glutamatergic neuron	Car3	L6 Car3	Glutamatergic	mus_musculus	subclass
+corticothalamic-projecting glutamatergic cortical neuron	Foxp2, Tle4, Sema3e	CT	Glutamatergic	mus_musculus	subclass
+endothelial cell	Flt1	Endothelial	Non-neuron	mus_musculus	subclass
+ependymal cell	Tuba1a, Foxj1	Ependymal	Non-neuron	mus_musculus	subclass
+dentate gyrus neuron	Prox1	DG	Glutamatergic	mus_musculus	subclass
+CA3 hippocampal neuron	Bok, Fxydz	CA3	Glutamatergic	mus_musculus	subclass
+CA2-IG-FC hippocampal neuron	Amigo2, Ramp3	CA2-IG-FC	Glutamatergic	mus_musculus	subclass
+near-projecting glutamatergic cortical neuron	Foxp2, Tle4, Slc17a8	L5/6 NP	Glutamatergic	mus_musculus	subclass
+vascular leptomeningeal cell	Dcn, Lum, Col1a1, Col5a1	VLMC	Non-neuron	mus_musculus	subclass
+central nervous system macrophage	Mrc1, Pf4	Macrophage	Non-neuron	mus_musculus	subclass
+microglial cell	Tmem119, P2ry12	Microglia	Non-neuron	mus_musculus	subclass
+neuroepithelial stem cell	Hes5, Nes, Sox2	Neuroepithelial stem cell	Neuroglioblast	mus_musculus	subclass
+oligodendrocyte	Mog	Oligodendrocyte	Non-neuron	mus_musculus	subclass
+oligodendrocyte precursor cell	Pdgfra	OPC	Non-neuron	mus_musculus	subclass
+pericyte	Pdgfrb, Rgs5	Pericyte	Non-neuron	mus_musculus	subclass
+CA1-prosubiculum hippocampal neuron	Satb2, Glipr, Dlk1, Dcn	CA1-ProS	Glutamatergic	mus_musculus	subclass
 L4 RSP-ACA glutamatergic neuron	#N/A	#N/A	Glutamatergic	mus_musculus	subclass
-smooth muscle cell	ACTA2	Smooth muscle cell	Non-neuron	mus_musculus	subclass
-sst chodl GABAergic cortical interneuron	CHODL	SST	GABAergic	mus_musculus	subclass
-CD8-positive, alpha-beta T cell	CD8A	CD8+ T cell	Non-neuron	mus_musculus	subclass
-T cell	CD3, CD8A, CD45RB	T cell	Non-neuron	mus_musculus	subclass
-mature NK T cell	CD45RB	NK T cell	Non-neuron	mus_musculus	subclass
+smooth muscle cell	Acta2	Smooth muscle cell	Non-neuron	mus_musculus	subclass
+sst chodl GABAergic cortical interneuron	Chodl	SST	GABAergic	mus_musculus	subclass
+CD8-positive, alpha-beta T cell	Cd8a	CD8+ T cell	Non-neuron	mus_musculus	subclass
+T cell	Cd3, Cd8a, Cd45rb	T cell	Non-neuron	mus_musculus	subclass
+mature NK T cell	Cd45rb	NK T cell	Non-neuron	mus_musculus	subclass
 L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2, LHX2, RORB	L2/3-6 IT	Glutamatergic	homo_sapiens	subclass
 oligodendrocyte	MOG	Oligodendrocyte	Non-neuron	homo_sapiens	subclass
 pvalb GABAergic cortical interneuron	PVALB	PVALB	GABAergic	homo_sapiens	subclass
@@ -62,14 +62,14 @@ macrophage	F13A1, COLEC12	Macrophage	Immune	homo_sapiens	subclass
 myeloid cell	LSP1, LYZ	Myeloid	Immune	homo_sapiens	subclass
 B cell	EBF1, IGKC	B cell	Immune	homo_sapiens	subclass
 T cell	SKAP1, CD247	T cell	Immune	homo_sapiens	subclass
-GABAergic interneuron	GAD1, GAD2	GABAergic	GABAergic	mus_musculus	family
-glutamatergic neuron	SLC17A7, SLC17A6	Glutamatergic	Glutamatergic	mus_musculus	family
-astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	mus_musculus	family
-oligodendrocyte	MBP, MOG, PLP1	Oligodendrocyte	Non-neuron	mus_musculus	family
-oligodendrocyte precursor cell	PDGFRA, CSPG4	OPC	Non-neuron	mus_musculus	family
+GABAergic interneuron	Gad1, Gad2	GABAergic	GABAergic	mus_musculus	family
+glutamatergic neuron	Slc17a7, Slc17a6	Glutamatergic	Glutamatergic	mus_musculus	family
+astrocyte	Gfap, Aqp4	Astrocyte	Non-neuron	mus_musculus	family
+oligodendrocyte	Mbp, Mog, Plp1	Oligodendrocyte	Non-neuron	mus_musculus	family
+oligodendrocyte precursor cell	Pdgfra, Cspg4	OPC	Non-neuron	mus_musculus	family
 central nervous system macrophage	Ptprc, Mrc1, Tmem119, P2ry12	CNS macrophage	Non-neuron	mus_musculus	family
-brain vascular cell	CLDN5, FLT1, PDGFRB	Vascular	Non-neuron	mus_musculus	family
-neural stem cell	SOX2, NES, HES5	Neural stem	Neuroglioblast	mus_musculus	family
+brain vascular cell	Cldn5, Flt1, Pdgfrb	Vascular	Non-neuron	mus_musculus	family
+neural stem cell	Sox2, Nes, Hes5	Neural stem cell	Neuroglioblast	mus_musculus	family
 GABAergic interneuron	GAD1, GAD2	GABAergic	GABAergic	homo_sapiens	family
 glutamatergic neuron	SLC17A7, SLC17A6	Glutamatergic	Glutamatergic	homo_sapiens	family
 astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	homo_sapiens	family
@@ -78,22 +78,22 @@ oligodendrocyte precursor cell	PDGFRA, CSPG4	OPC	Non-neuron	homo_sapiens	family
 microglial cell	PTPRC, CX3CR1, TMEM119, P2RY12	Microglia	Non-neuron	homo_sapiens	family
 brain vascular cell	CLDN5, FLT1, PDGFRB	Vascular	Non-neuron	homo_sapiens	family
 immune	PTPRC	Immune	Immune	homo_sapiens	family
-VIP GABAergic interneuron	VIP	VIP	GABAergic	mus_musculus	class
-pvalb GABAergic cortical interneuron	PVALB	PVALB	GABAergic	mus_musculus	class
-sst GABAergic cortical interneuron	SST	SST	GABAergic	mus_musculus	class
-lamp5 GABAergic cortical interneuron	LAMP5	LAMP5	GABAergic	mus_musculus	class
-sncg GABAergic cortical interneuron	SNCG	SNCG	GABAergic	mus_musculus	class
-L2/3-6 intratelencephalic projecting glutamatergic neuron	CUX2	L2/3-6 IT	Glutamatergic	mus_musculus	class
-deep layer non-IT	FEZF2, TLE4	Deep non-IT	Glutamatergic	mus_musculus	class
-hippocampal neuron	PROX1	Hippocampal	Glutamatergic	mus_musculus	class
-Cajal-Retzius cell	RELN	Cajal-Retzius	Glutamatergic	mus_musculus	class
-astrocyte	GFAP, AQP4	Astrocyte	Non-neuron	mus_musculus	class
-brain vascular cell	CLDN5, PDGFRB	Vascular	Non-neuron	mus_musculus	class
-central nervous system macrophage	Mrc1, Pf4	CNS macrophage	Non-neuron	mus_musculus	class
-microglial cell	TMEM119, P2RY12	Microglia	Non-neuron	mus_musculus	class
-oligodendrocyte	MOG, MBP	Oligodendrocyte	Non-neuron	mus_musculus	class
-oligodendrocyte precursor cell	PDGFRA	OPC	Non-neuron	mus_musculus	class
-neural stem cell	SOX2, NES	Neural stem	Neuroglioblast	mus_musculus	class
+VIP GABAergic interneuron	Vip	VIP	GABAergic	mus_musculus	class
+pvalb GABAergic cortical interneuron	Pvalb	PVALB	GABAergic	mus_musculus	class
+sst GABAergic cortical interneuron	Sst	SST	GABAergic	mus_musculus	class
+lamp5 GABAergic cortical interneuron	Lamp5	LAMP5	GABAergic	mus_musculus	class
+sncg GABAergic cortical interneuron	Sncg	SNCG	GABAergic	mus_musculus	class
+L2/3-6 intratelencephalic projecting glutamatergic neuron	Cux2	L2/3-6 IT	Glutamatergic	mus_musculus	class
+deep layer non-IT	Fezf2, Tle4	deep layer non-IT	Glutamatergic	mus_musculus	class
+hippocampal neuron	Prox1	Hippocampal neuron	Glutamatergic	mus_musculus	class
+Cajal-Retzius cell	Reln	Cajal-Retzius cell	Glutamatergic	mus_musculus	class
+astrocyte	Gfap, Aqp4	Astrocyte	Non-neuron	mus_musculus	class
+brain vascular cell	Cldn5, Pdgfrb	Vascular	Non-neuron	mus_musculus	class
+central nervous system macrophage	Mrc1, Pf4	Macrophage	Non-neuron	mus_musculus	class
+microglial cell	Tmem119, P2ry12	Microglia	Non-neuron	mus_musculus	class
+oligodendrocyte	Mog, Mbp	Oligodendrocyte	Non-neuron	mus_musculus	class
+oligodendrocyte precursor cell	Pdgfra	OPC	Non-neuron	mus_musculus	class
+neural stem cell	Sox2, Nes	Neural stem cell	Neuroglioblast	mus_musculus	class
 VIP GABAergic interneuron	VIP	VIP	GABAergic	homo_sapiens	class
 pvalb GABAergic cortical interneuron	PVALB	PVALB	GABAergic	homo_sapiens	class
 chandelier pvalb GABAergic cortical interneuron	PVALB, VIPR2	Chandelier	GABAergic	homo_sapiens	class
@@ -109,3 +109,6 @@ microglial cell	TMEM119, P2RY12	Microglia	Non-neuron	homo_sapiens	class
 oligodendrocyte	MOG, MBP	Oligodendrocyte	Non-neuron	homo_sapiens	class
 oligodendrocyte precursor cell	PDGFRA	OPC	Non-neuron	homo_sapiens	class
 immune	PTPRC	Immune	Immune	homo_sapiens	class
+neuron	Rbfox3	Neuron	Neuron	mus_musculus	subclass
+neuron	Rbfox3	Neuron	Neuron	mus_musculus	class
+neuron	Rbfox3	Neuron	Neuron	mus_musculus	family

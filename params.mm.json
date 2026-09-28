@@ -3,7 +3,7 @@
     "census_version": "2024-07-01",
     "cutoff": 0,
     "seed": 42,
-    "subsample_ref": 500,
+    "subsample_ref": 100,
     "study_names": null,
     "study_paths": null,
     "ref_collections": [
