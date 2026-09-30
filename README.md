@@ -1,7 +1,7 @@
 # Single-cell Re-annotation Pipeline for Human and Mouse Neocortex
 
 
-Nextflow pipeline for automated single-cell cell type annotation using scVI embeddings and random forest classification. Designed to annotate cell types from single-cell data loaded into the [Gemma database](https://gemma.msl.ubc.ca). Cell types are assigned using a random forest classifier trained on scVI embeddings from the CellxGene data corpus<sup>1</sup><sup>2</sup><sup>3</sup>.
+Nextflow pipeline for automated single-cell cell type annotation using scVI embeddings and a random forest or kNN classifier. Designed to annotate cell types from single-cell data loaded into the [Gemma database](https://gemma.msl.ubc.ca). Cell types are assigned using a random forest or kNN classifier (`--classifier`) trained on scVI embeddings from the CellxGene data corpus<sup>1</sup><sup>2</sup><sup>3</sup>.
 
 
 ![sc-metro-map](docs/diagrams/scannotate_metro_map.svg)
@@ -26,7 +26,7 @@ Nextflow pipeline for automated single-cell cell type annotation using scVI embe
 1. **Input validation** - Validates study names or paths and downloads data if needed
 2. **Reference preparation** - Downloads scVI model and pulls reference embeddings from CellxGene Census
 3. **Query processing** - Generates scVI embeddings for query datasets
-4. **Cell type classification** - Classifies cells using random forest on scVI embeddings
+4. **Cell type classification** - Classifies cells using a random forest or kNN classifier on scVI embeddings
 5. **QC reporting** - Generates QC metrics and MultiQC reports with outlier detection
 6. **Gemma upload** (optional) - Uploads annotations to Gemma database
 
@@ -79,7 +79,7 @@ sc-annotation-pipeline-rachel-dev/
 | `INPUT_CHECK` | Validates inputs and downloads/prepares studies from Gemma |
 | `PREPARE_REFERENCE` | Downloads scVI model and Census reference data |
 | `PROCESS_QUERIES` | Processes query data through scVI model to generate embeddings |
-| `CLASSIFY_CELLTYPES` | Random forest classification using reference embeddings |
+| `CLASSIFY_CELLTYPES` | Random forest or kNN classification using reference embeddings |
 | `QC_REPORTING` | QC analysis, outlier detection, and MultiQC report generation |
 | `GEMMA_UPLOAD` | Uploads cell type annotations and QC masks to Gemma |
 
@@ -288,6 +288,7 @@ nextflow run main.nf -profile conda -work-dir /scratch/my_workdir ...
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
+| `--classifier` | Classifier on scVI embeddings: `rf` or `knn` (`params.mm.json` sets `knn`) | `rf` |
 | `--cutoff` | Min probability to assign label | `0` |
 | `--seed` | Random seed | `42` |
 | `--process_samples` | Process samples individually | `false` |

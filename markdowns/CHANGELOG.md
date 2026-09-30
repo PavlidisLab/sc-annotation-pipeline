@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `INPUT_CHECK` - validates inputs and downloads/prepares studies
   - `PREPARE_REFERENCE` - prepares scVI model and Census reference data
   - `PROCESS_QUERIES` - processes query data through scVI model
-  - `CLASSIFY_CELLTYPES` - random forest classification
+  - `CLASSIFY_CELLTYPES` - random forest or kNN classification (process `CLASSIFY_SCVI`)
   - `QC_REPORTING` - QC analysis and MultiQC report generation
   - `GEMMA_UPLOAD` - uploads results to Gemma (optional)
 - Added `conf/base.config` for resource management
@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `scripts/run_test_profiles.sh` to run all test profiles and report a pass/fail summary
 - Added Ma et al. (2022, primate dlPFC evolution) as a human `ref_collections` source, with corresponding rename-file mappings for its immune (macrophage, myeloid cell, B cell, T cell), smooth muscle, and erythroid lineage cell types
 - Added marker genes for those immune/vascular/erythroid cell types to `assets/cell_type_markers.tsv` so they render in the QC heatmaps
+- Added `classifier` parameter (`rf` or `knn`) for the scVI embedding classifier. `params.mm.json` sets `knn` (15 neighbors, distance weights), human keeps `rf`
 
 ### `Changed`
 
@@ -45,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Split `bin/utils.py` god-module into `census_utils.py`, `classify_utils.py`, `qc_utils.py`, `marker_utils.py`
 - SLURM CPU allocation now tiered by process label instead of a blanket reservation, to reduce queue congestion
 - Per-sample QC linear model now uses `numpy.polyfit` instead of `statsmodels` (faster, drops a dependency)
+- Renamed process `RF_CLASSIFY` to `CLASSIFY_SCVI` (module `modules/local/classify_scvi`), since it now runs kNN as well as random forest
+- Dropped Tabula Muris Senis from the mouse `ref_collections`, along with its lowercase ontology name rows in `assets/rename_cells_mus_musculus.tsv`
+- Added `OPC` and `L6 IT Car3` rows to the mouse rename map, which had no rows for these labels
 
 ### `Fixed`
 

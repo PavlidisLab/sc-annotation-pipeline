@@ -1,4 +1,4 @@
-process RF_CLASSIFY {
+process CLASSIFY_SCVI {
     tag "$query_name"
     label 'process_medium'
 
@@ -29,6 +29,7 @@ process RF_CLASSIFY {
         --cutoff ${cutoff} \\
         --mapping_file ${mapping_file} \\
         --ref_keys ${ref_keys_str} \\
+        --classifier ${params.classifier} \\
         ${args}
     """
 

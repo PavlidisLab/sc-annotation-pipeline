@@ -1,6 +1,7 @@
 {
     "organism": "mus_musculus",
     "census_version": "2024-07-01",
+    "classifier": "knn",
     "cutoff": 0,
     "seed": 42,
     "subsample_ref": 100,

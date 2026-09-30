@@ -1,10 +1,10 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CLASSIFY CELL TYPES USING RANDOM FOREST
+    CLASSIFY CELL TYPES ON SCVI EMBEDDINGS (RANDOM FOREST OR KNN)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { RF_CLASSIFY  } from "$projectDir/modules/local/rf_classify/main"
+include { CLASSIFY_SCVI  } from "$projectDir/modules/local/classify_scvi/main"
 include { COMBINE_CTA  } from "$projectDir/modules/local/combine_cta/main"
 
 workflow CLASSIFY_CELLTYPES {
@@ -22,9 +22,9 @@ workflow CLASSIFY_CELLTYPES {
     // Combine processed queries with reference paths
     ch_combos = ch_processed.combine(ch_refs)
 
-    // Run random forest classification
-    RF_CLASSIFY(ch_combos, cutoff, mapping_file, ref_keys)
-    ch_celltype_files = RF_CLASSIFY.out.celltype_files
+    // Classify with the random forest or kNN set by params.classifier
+    CLASSIFY_SCVI(ch_combos, cutoff, mapping_file, ref_keys)
+    ch_celltype_files = CLASSIFY_SCVI.out.celltype_files
 
     if (process_samples) {
         // Group and combine cell type files by study and level
