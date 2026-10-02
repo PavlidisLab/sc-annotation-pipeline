@@ -23,7 +23,7 @@ def parse_arguments():
     parser.add_argument('--assay', type=str, nargs = "+", help="Assays to subset from referenc (unnecessary)", default=None)
     parser.add_argument('--tissue', type=str, nargs="+", default = None, help = "tissues to pull from (different from organ, this can select for more specific brain regions)")
     parser.add_argument('--subsample', type=int, help="Number of cells per cell type to subsample from reference", default=50)
-    parser.add_argument('--rename_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/author_cell_annotations/rename_cells_mmus_author.tsv")
+    parser.add_argument('--rename_file', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/assets/rename_cells_mus_musculus.tsv")
     parser.add_argument('--ref_name', type=str, default="whole_cortex", help="Prefix of temporary reference file created")
     parser.add_argument('--original_celltype_columns', type=str, default=None)
     parser.add_argument('--author_annotations_path', type=str, default=None)

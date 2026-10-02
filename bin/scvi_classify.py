@@ -39,7 +39,7 @@ def parse_arguments():
     parser.add_argument('--classifier', type=str, default="rf", choices=["rf", "knn"], help="classifier fit on the scVI embeddings")
     parser.add_argument('--n_neighbors', type=int, default=15, help="neighbors for the knn classifier")
     parser.add_argument('--ref_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type"], help="levels of granularity to classify corresponding to column names of rename_cells file")
-    parser.add_argument('--mapping_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mus_musculus.tsv", help="cell type taxonomy mapping file")
+    parser.add_argument('--mapping_file', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/assets/rename_cells_mus_musculus.tsv", help="cell type taxonomy mapping file")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
