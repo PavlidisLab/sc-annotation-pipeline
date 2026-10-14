@@ -40,7 +40,7 @@ def setup(organism="homo_sapiens", version="2024-07-01"):
     return outdir
 
 
-def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv"):
+def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/assets/rename_cells_mus_musculus.tsv"):
     rename_df = pd.read_csv(rename_file, sep=None)
     rename_key = rename_df.columns[0]
     rename_cell_type = rename_df.columns[1]
@@ -57,7 +57,7 @@ def rename_cells(obs, rename_file="/space/grp/rschwartz/rschwartz/cell_annotatio
 
 
 def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo sapiens",
-                    rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mmus.tsv"):
+                    rename_file="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/assets/rename_cells_mus_musculus.tsv"):
     random.seed(seed)
     np.random.seed(seed)
 
@@ -159,7 +159,7 @@ def get_cellxgene_obs(census, organism, organ="brain", primary_data=True, diseas
 def get_census(census_version="2024-07-01", organism="homo_sapiens", subsample=5, assay=None, tissue=None, organ="brain",
                ref_collections=["Transcriptomic cytoarchitecture reveals principles of human neocortex organization"],
                original_celltypes=None,
-               rename_file="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells.tsv", seed=42):
+               rename_file="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/assets/rename_cells_homo_sapiens.tsv", seed=42):
 
     census = cellxgene_census.open_soma(census_version=census_version)
     dataset_info = census.get("census_info").get("datasets").read().concat().to_pandas()

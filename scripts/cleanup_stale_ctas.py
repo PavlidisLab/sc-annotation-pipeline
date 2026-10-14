@@ -27,7 +27,8 @@ def parse_args():
 
 def main():
     args = parse_args()
-    gp = gemmapy.GemmaPy(path="staging" if args.use_staging else "production")
+    # gemmapy treats path as a host alias, so production is the default (no path)
+    gp = gemmapy.GemmaPy(**({"path": "staging"} if args.use_staging else {}))
 
     try:
         dim = gp.raw.get_dataset_single_cell_dimension(dataset=args.study_name).to_dict()["data"]

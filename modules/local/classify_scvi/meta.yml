@@ -1,4 +1,4 @@
-name: rf_classify
+name: classify_scvi
 description: Performs random forest classification on scVI embeddings for cell type prediction
 keywords:
   - random-forest

@@ -10,6 +10,7 @@ def argument_parser():
     parser.add_argument("--study_name", type=str, help="Name of the study", default="GSE152715.1")
     parser.add_argument('--gemma_username', type=str, default=None)
     parser.add_argument('--gemma_password', type=str, default=None)
+    parser.add_argument('--use_staging', action='store_true', help='Use Gemma staging instead of production')
     return parser.parse_args()
 
 def main():
@@ -17,7 +18,9 @@ def main():
 
     gemma_username = args.gemma_username
     gemma_password = args.gemma_password
-    client = gemmapy.GemmaPy(auth=[gemma_username,gemma_password], path='staging')
+    # gemmapy treats path as a host alias, so production is the default (no path)
+    client_kwargs = {'path': 'staging'} if args.use_staging else {}
+    client = gemmapy.GemmaPy(auth=[gemma_username,gemma_password], **client_kwargs)
     study_name = args.study_name
 
     # use_processed_quantitation_type=False is the raw per-BioAssay set this

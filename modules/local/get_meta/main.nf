@@ -25,7 +25,8 @@ process GET_META {
         python ${projectDir}/bin/get_gemma_meta.py \\
             --study_name ${study_name} \\
             --gemma_username ${gemma_username} \\
-            --gemma_password ${gemma_password}
+            --gemma_password ${gemma_password} \\
+            ${params.use_staging ? '--use_staging' : ''}
         """
     else
         // No matching Gemma study to fetch metadata for (--use_gemma false); emit an
