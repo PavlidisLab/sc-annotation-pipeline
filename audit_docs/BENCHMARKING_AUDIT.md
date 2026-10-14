@@ -25,7 +25,7 @@ Updated 2026-09-28. Tables: `BENCHMARKING_AUDIT_TABLES.md`.
 - Sample level, modeled (macro F1 model with study, reference, cutoff, subsample_ref and treatment state terms): kNN 0.887, Seurat 0.860, RF 0.892, with overlapping 95% CIs. RF is lowest in the raw scores but not in the model. The model estimates are marginal means over the other terms, so they are not the same slice as the raw cutoff 0 scores, and the difference is not yet reconciled.
 - Seurat is not highest on every metric. Raw (cutoff 0, ref 100) it leads on weighted F1 (0.912 vs 0.901 kNN), micro F1 (0.920 vs 0.912) and accuracy (0.905 vs 0.886), but kNN is slightly ahead on macro F1 (0.813 vs 0.809) and precision (0.954 vs 0.952), and Seurat is lowest in the modeled macro F1 (0.860). Gaps are small and CIs overlap.
 - Per cell type recall, precision and F1 by classifier, with significance brackets: `classifier_boxplots/README.md`, and the Seurat vs kNN gaps in F1, recall and precision: `classifier_gap/README.md` (symlink).
-- Sweep finished 2026-09-25 on branch `census-map-fixes`. Detail: `cell-type-heterogeneity/FINDINGS.md`.
+- Sweep finished 2026-09-25 on branch `census-map-fixes` (the `evaluation_summary.nf` worktree, to be merged or retired; the pipeline now lives in `annotation-benchmark`, see `benchmark-tracking/MIGRATION_AUDIT_2026-10-02.md`). Detail: `cell-type-heterogeneity/FINDINGS.md`.
 
 F1, mean ± sd across queries (whole cortex, subclass, cutoff 0, ref 500):
 
