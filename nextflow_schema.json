@@ -69,7 +69,7 @@
                 },
                 "subsample_ref": {
                     "type": "integer",
-                    "default": 500,
+                    "default": 100,
                     "description": "Number of cells per cell type to subsample from reference.",
                     "minimum": 10,
                     "fa_icon": "fas fa-random"
@@ -100,6 +100,13 @@
             "fa_icon": "fas fa-cogs",
             "description": "Options for cell type classification.",
             "properties": {
+                "classifier": {
+                    "type": "string",
+                    "default": "rf",
+                    "enum": ["rf", "knn", "seurat"],
+                    "description": "Classifier: random forest or kNN on scVI embeddings, or Seurat label transfer.",
+                    "fa_icon": "fas fa-project-diagram"
+                },
                 "cutoff": {
                     "type": "number",
                     "default": 0,
