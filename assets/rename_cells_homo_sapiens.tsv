@@ -21,7 +21,7 @@ cerebral cortex endothelial cell	endothelial cell	CL:0000115	brain vascular cell
 astrocyte	astrocyte	CL:0000127	astrocyte	CL:0000127	astrocyte	CL:0000127
 endothelial cell	endothelial cell	CL:0000115	brain vascular cell	CL:4023072	brain vascular cell	CL:4023072
 pericyte	pericyte	CL:0000669	brain vascular cell	CL:4023072	brain vascular cell	CL:4023072
-VIP GABAergic cortical interneuron	vip GABAergic cortical interneuron	CL:4023016	vip GABAergic cortical interneuron	CL:4023016	GABAergic interneuron	CL:0011005
+VIP GABAergic cortical interneuron	VIP GABAergic interneuron	CL:4023016	VIP GABAergic interneuron	CL:4023016	GABAergic interneuron	CL:0011005
 L2/3 intratelencephalic projecting glutamatergic neuron	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	glutamatergic neuron	CL:0000679
 L5/6 near-projecting glutamatergic neuron of the primary motor cortex	near-projecting glutamatergic cortical neuron	CL:4023012	deep layer non-IT		glutamatergic neuron	CL:0000679
 L6 intratelencephalic projecting glutamatergic neuron of the primary motor cortex	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	L2/3-6 intratelencephalic projecting glutamatergic neuron	CL:4023040	glutamatergic neuron	CL:0000679
