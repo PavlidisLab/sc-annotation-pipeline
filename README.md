@@ -8,7 +8,7 @@ This Nextflow pipeline annotates cell types in single-cell data from the [Gemma 
 
 ![scannotate-flow](docs/diagrams/scannotate_flow.png)
 
-*Figure 1. Pipeline data flow (version 2.1.0). Blue boxes are inputs, green boxes are steps, amber boxes are outputs; arrows show data flow. Source: docs/diagrams/scannotate_flow.mmd.*
+*Figure 1. Pipeline data flow (version 2.1.0). Blue boxes are inputs, green boxes are steps, amber boxes are outputs; arrows show data flow.*
 
 ## Table of Contents
 
