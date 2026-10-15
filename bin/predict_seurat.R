@@ -2,10 +2,7 @@ library(reticulate)
 use_condaenv("~/anaconda3/envs/r4.3/")
 library(Seurat)
 library(dplyr)
-library(gplots)
 library(argparse)
-library(cellxgene.census)
-library(data.tree)
 set.seed(123)
 
 
