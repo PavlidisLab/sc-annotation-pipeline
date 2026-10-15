@@ -11,7 +11,6 @@ Nextflow pipeline for automated single-cell cell type annotation using scVI embe
 ## Table of Contents
 
 - [Pipeline Summary](#pipeline-summary)
-- [Pipeline Structure](#pipeline-structure)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
@@ -33,63 +32,6 @@ Nextflow pipeline for automated single-cell cell type annotation using scVI embe
 6. **Gemma upload** (optional) - Uploads annotations to Gemma database
 
 ---
-
-## Pipeline Structure
-
-This pipeline follows [nf-core best practices](https://nf-co.re/docs/contributing/pipelines/pipeline_file_structure) with a modular architecture.
-
-### Directory Layout
-
-
-```
-sc-annotation-pipeline/
-├── main.nf                      # Entry point
-├── nextflow.config              # Main configuration
-├── nextflow_schema.json         # Nextflow schema
-├── workflows/
-│   └── scannotate.nf            # Main workflow orchestration
-├── subworkflows/
-│   └── local/
-│       ├── input_check/
-│       ├── prepare_reference/
-│       ├── process_queries/
-│       ├── classify_celltypes/
-│       ├── qc_reporting/
-│       └── gemma_upload/
-├── modules/
-│   └── local/
-├── conf/
-│   ├── base.config              # Resource defaults (CPU/memory/time)
-│   ├── modules.config           # Module-specific settings
-│   └── test_*.config            # Human/mouse test profile matrix (8 profiles, see Test Profiles below)
-├── assets/                      # Reference files and configs
-│   ├── samplesheet.csv
-│   ├── cell_type_markers.tsv
-│   └── ...
-├── bin/                         # Python scripts
-├── scripts/                     # Standalone maintenance scripts (test runner, cleanup, etc.)
-├── docs/diagrams/               # Workflow diagram (scannotate_flow.mmd and .png)
-├── markdowns/                   # CHANGELOG.md and other project notes
-├── params.mm.json               # Mouse parameters
-├── params.hs.json               # Human parameters
-├── LICENSE                      # Apache-2.0
-├── README.md
-└── ...
-```
-
-### Subworkflows
-
-| Subworkflow | Description |
-|-------------|-------------|
-| `INPUT_CHECK` | Validates inputs and downloads/prepares studies from Gemma |
-| `PREPARE_REFERENCE` | Downloads scVI model and Census reference data |
-| `PROCESS_QUERIES` | Processes query data through scVI model to generate embeddings |
-| `CLASSIFY_CELLTYPES` | Random forest or kNN classification using reference embeddings |
-| `QC_REPORTING` | QC analysis, outlier detection, and MultiQC report generation |
-| `GEMMA_UPLOAD` | Uploads cell type annotations and QC masks to Gemma |
-
----
-
 
 ## Test Profiles
 
