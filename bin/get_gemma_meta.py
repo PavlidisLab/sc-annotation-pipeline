@@ -37,13 +37,17 @@ def main():
     # characteristics to a given BioAssay id in several studies.
     samples_raw = client.raw.get_dataset_samples(study_name, use_processed_quantitation_type=False)
 
+    # generic platforms (e.g. Generic_mouse_ncbiIds) carry no taxon, so fall back to the dataset's own taxon
+    dataset_taxon = client.raw.get_datasets_by_ids([study_name]).data[0].taxon.scientific_name
+
     rows = []
     for s in samples_raw.data:
+        taxon = s.array_design.taxon.scientific_name if s.array_design.taxon is not None else dataset_taxon
         row = {
             "sample_id": s.id,             # BioAssay ID (join key)
             "biomaterial_id": s.sample.id,  # BioMaterial ID (reference only)
             "sample_name": s.name,
-            "organism": s.array_design.taxon.scientific_name.lower().replace(" ", "_"),
+            "organism": taxon.lower().replace(" ", "_"),
         }
         for c in s.sample.characteristics:
             if c.category is not None:
