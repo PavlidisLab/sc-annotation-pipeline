@@ -233,18 +233,6 @@
                     "description": "Use Gemma staging environment instead of production.",
                     "fa_icon": "fas fa-flask"
                 },
-                "GEMMA_USERNAME": {
-                    "type": "string",
-                    "description": "Gemma API username (from environment variable).",
-                    "fa_icon": "fas fa-user",
-                    "hidden": true
-                },
-                "GEMMA_PASSWORD": {
-                    "type": "string",
-                    "description": "Gemma API password (from environment variable).",
-                    "fa_icon": "fas fa-lock",
-                    "hidden": true
-                },
                 "upload_cta": {
                     "type": "boolean",
                     "default": true,

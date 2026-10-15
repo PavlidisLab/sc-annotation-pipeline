@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added container and scVI model caching, and SLURM CPU tiers by process label
 - Split `bin/utils.py` into classify, QC, marker and census submodules
 - Removed hardcoded Gemma credentials from script defaults
+- Gemma credentials are read from the environment (`GEMMA_USERNAME`, `GEMMA_PASSWORD`) and no longer appear on command lines or in work files
 
 ### `Fixed`
 

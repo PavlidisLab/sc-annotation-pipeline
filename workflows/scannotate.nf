@@ -96,8 +96,6 @@ workflow SCANNOTATE {
         params.census_version,
         params.cutoff,
         params.process_samples,
-        params.GEMMA_USERNAME,
-        params.GEMMA_PASSWORD,
         params.use_gemma
     )
     ch_clc     = QC_REPORTING.out.clc

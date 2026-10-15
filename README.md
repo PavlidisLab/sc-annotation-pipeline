@@ -342,7 +342,7 @@ The specified `ctaProtocol` must exist in Gemma prior to upload. The ctaProtocol
 gemma-cli addProtocol --name "sc-pipeline-<new version>"
 ```
 
-**Note:** Set `GEMMA_USERNAME` and `GEMMA_PASSWORD` environment variables for Gemma uploads.
+**Note:** Set `GEMMA_USERNAME` and `GEMMA_PASSWORD` environment variables before launching Nextflow. Tasks read them from the inherited environment; they are not parameters and never appear on command lines or in `work/` files. With `docker`, the variables are not passed into the container automatically.
 
 ### Parameter Files
 

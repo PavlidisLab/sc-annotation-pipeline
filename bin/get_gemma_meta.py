@@ -3,22 +3,27 @@ import warnings
 warnings.filterwarnings("ignore")
 import pandas as pd
 import argparse
-import gemmapy
+import os
+import sys
 
 def argument_parser():
     parser = argparse.ArgumentParser(description="Preprocess data from GEMMA")
     parser.add_argument("--study_name", type=str, help="Name of the study", default="GSE152715.1")
-    parser.add_argument('--gemma_username', type=str, default=None)
-    parser.add_argument('--gemma_password', type=str, default=None)
     parser.add_argument('--use_staging', action='store_true', help='Use Gemma staging instead of production')
     return parser.parse_args()
 
 def main():
     args = argument_parser()
 
-    gemma_username = args.gemma_username
-    gemma_password = args.gemma_password
+    # Credentials come from the environment only, so they never appear on a command line
+    # or in work/*/.command.sh. Fail before any network call if either is missing.
+    missing = [v for v in ("GEMMA_USERNAME", "GEMMA_PASSWORD") if not os.environ.get(v)]
+    if missing:
+        sys.exit(f"ERROR: required environment variable(s) not set: {', '.join(missing)}")
+    gemma_username = os.environ["GEMMA_USERNAME"]
+    gemma_password = os.environ["GEMMA_PASSWORD"]
     # gemmapy treats path as a host alias, so production is the default (no path)
+    import gemmapy  # imported after the credential check so a missing variable fails first
     client_kwargs = {'path': 'staging'} if args.use_staging else {}
     client = gemmapy.GemmaPy(auth=[gemma_username,gemma_password], **client_kwargs)
     study_name = args.study_name

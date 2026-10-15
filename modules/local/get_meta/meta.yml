@@ -12,12 +12,6 @@ input:
   - study_path:
       type: directory
       description: Path to study data
-  - gemma_username:
-      type: string
-      description: Gemma API username
-  - gemma_password:
-      type: string
-      description: Gemma API password
 
 output:
   - meta:

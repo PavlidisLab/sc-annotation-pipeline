@@ -9,8 +9,6 @@ process GET_META {
 
     input:
     tuple val(study_name), path(study_path)
-    val gemma_username
-    val gemma_password
     val use_gemma
 
     output:
@@ -21,11 +19,11 @@ process GET_META {
 
     script:
     if (use_gemma)
+        // GEMMA_USERNAME / GEMMA_PASSWORD are read by the script from the task environment
+        // (inherited from the submitting shell), never passed as arguments.
         """
         python ${projectDir}/bin/get_gemma_meta.py \\
             --study_name ${study_name} \\
-            --gemma_username ${gemma_username} \\
-            --gemma_password ${gemma_password} \\
             ${params.use_staging ? '--use_staging' : ''}
         """
     else
