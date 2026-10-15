@@ -230,6 +230,7 @@ nextflow run main.nf -profile conda -work-dir /scratch/my_workdir ...
 | `--organ` | Organ to sample from Census | `brain` |
 | `--subsample_ref` | Cells per cell type to subsample | `500` |
 | `--ref_collections` | Reference collection names (list). The mouse default in `nextflow.config` is the two collections used in `params.mm.json` (Tabula Muris Senis is no longer included); the human collections are in `params.hs.json` | Mouse collections |
+| `--ref_tag` | Short reference tag used in the CTA protocol; `null` uses the first 6 hex characters of the SHA-256 of the sorted `ref_collections` | `null` |
 | `--ref_keys` | Reference annotation keys | `["subclass_cell_type", "class_cell_type", "family_cell_type"]` |
 
 ### Classification Options
@@ -281,13 +282,14 @@ nextflow run main.nf --nmads.mito 3 --nmads.counts 4
 | `--upload_clc` | Upload cell-level characteristics | `true` |
 | `--upload_mask` | Upload outlier mask | `true` |
 | `--upload_multiqc` | Upload MultiQC report | `true` |
+| `--cta_protocol` | CTA protocol identifier override; `null` builds it from the configuration (see Cell Type Assignment Protocols) | `null` |
 
 #### Cell Type Assignment Protocols
 
-The specified `ctaProtocol` must exist in Gemma prior to upload. The ctaProtocol is determined by the pipeline version e.g. `sc-pipeline-2.1.0`. The corresponding ctaName is determined by a combination of pipeline version and level of granularity, e.g. `sc-pipeline-2.1.0-class`. To create a ctaProtocol in gemma, run:
+The specified `ctaProtocol` must exist in Gemma prior to upload. The ctaProtocol is built as `sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>`, e.g. `sc-pipeline-2.1.0-rf-census20240701-ref1710b1-n500-cutoff0`. The tag is `--ref_tag` or the first six hex characters of the SHA-256 of the sorted `ref_collections` (see `assets/ref_tags.tsv`). The ctaName is the protocol plus the level, e.g. `sc-pipeline-2.1.0-rf-census20240701-ref1710b1-n500-cutoff0-class`. Set `--cta_protocol` to override. To create a ctaProtocol in gemma, run:
 
 ```
-gemma-cli addProtocol --name "sc-pipeline-<new version>"
+gemma-cli addProtocol --name "sc-pipeline-2.1.0-rf-census20240701-ref1710b1-n500-cutoff0"
 ```
 
 **Note:** Set the `GEMMA_USERNAME` and `GEMMA_PASSWORD` environment variables for Gemma uploads and for downloading studies by name. They are read from the environment only; they are not pipeline parameters and are never passed as command-line arguments, so they do not appear in command lines or work files. The `singularity` and `apptainer` profiles forward both variables into the containers by name (`envWhitelist`). The `GET_META` process runs on the launch host (`conf/modules.config`), so it also reads them from the environment of the Nextflow launch. If they are unset, export them or set `--use_gemma false`.
