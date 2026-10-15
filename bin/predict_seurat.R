@@ -139,6 +139,7 @@ if (anyNA(idx) || anyDuplicated(norm_label(ref_labels))) {
   stop("Could not map Seurat score columns to reference labels: ", paste(score_labels[is.na(idx)], collapse = ", "))
 }
 colnames(prediction_scores) <- ref_labels[idx]
+prediction_scores <- cbind(cell_id = rownames(prediction_scores), prediction_scores)
 
 write.table(prediction_scores, file=gzfile(paste0(query_name,"_",ref_name,"_prediction_scores_seurat.tsv.gz"), compression=4), sep="\t", row.names=FALSE)
 write.table(query@meta.data, file=paste0(query_name,".obs.relabel.tsv"), row.names=FALSE, sep= "\t")

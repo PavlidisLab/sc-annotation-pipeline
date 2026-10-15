@@ -24,6 +24,13 @@ nfeatures = args$nfeatures
 
 sceasy_seurat <- sceasy::convertFormat(h5ad_file, from="anndata", to="seurat")
 
+# SCTransform fails on cells with no counts (log_umi is -Inf); they are labelled unknown in seurat_classify.py
+empty <- Matrix::colSums(GetAssayData(sceasy_seurat, layer = "counts")) == 0
+if (any(empty)) {
+  message(sum(empty), " of ", length(empty), " cells have zero counts and were removed before SCTransform")
+  sceasy_seurat <- sceasy_seurat[, !empty]
+}
+
 if ("feature_id" %in% colnames(sceasy_seurat@assays$RNA[[]])) {
   sceasy_seurat <- rename_features(sceasy_seurat, column_name="feature_id")
 }
