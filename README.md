@@ -337,10 +337,10 @@ nextflow run main.nf --nmads.mito 3 --nmads.counts 4
 
 #### Cell Type Assignment Protocols
 
-The specified `ctaProtocol` must exist in Gemma prior to upload. The ctaProtocol is built from the pipeline configuration as `sc-pipeline-<version>-<classifier>-ref<subsample_ref>-cutoff<cutoff>`, e.g. `sc-pipeline-2.0.0-seurat-ref100-cutoff0`, so runs with different classifiers or settings never replace each other's assignments. The ctaName is the protocol plus the level, e.g. `sc-pipeline-2.0.0-seurat-ref100-cutoff0-class`. Set `--cta_protocol` to override the identifier. Other settings (reference collections, census version, Seurat parameters) are not in the identifier; they are fixed by the pipeline version and `nextflow.config`. To create a ctaProtocol in gemma, run:
+The specified `ctaProtocol` must exist in Gemma prior to upload. The ctaProtocol is built as `sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>`, e.g. `sc-pipeline-2.2.0-seurat-census20240701-ref1710b1-n100-cutoff0`. The tag is `--ref_tag` or the first six hex characters of the SHA-256 of the sorted `ref_collections` (see `assets/ref_tags.tsv`). Seurat settings are fixed by the pipeline version. The ctaName is the protocol plus the level. Set `--cta_protocol` to override. To create a ctaProtocol in gemma, run:
 
 ```
-gemma-cli addProtocol --name "sc-pipeline-2.0.0-seurat-ref100-cutoff0"
+gemma-cli addProtocol --name "sc-pipeline-2.2.0-seurat-census20240701-ref1710b1-n100-cutoff0"
 ```
 
 **Note:** Set `GEMMA_USERNAME` and `GEMMA_PASSWORD` environment variables for Gemma uploads.

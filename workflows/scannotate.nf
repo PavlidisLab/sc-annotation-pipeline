@@ -17,6 +17,20 @@ include { GEMMA_UPLOAD       } from "$projectDir/subworkflows/local/gemma_upload
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+// CTA protocol: sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>
+// The tag is params.ref_tag or the first 6 hex chars of SHA-256 over the sorted ref_collections joined by "\n".
+def refTag(collections) {
+    def text = ((collections ?: []) as List).collect { it.toString() }.sort().join("\n")
+    def digest = java.security.MessageDigest.getInstance("SHA-256").digest(text.getBytes("UTF-8"))
+    return digest.collect { String.format("%02x", it & 0xff) }.join("").substring(0, 6)
+}
+
+def ctaProtocol(p) {
+    def tag = p.ref_tag ?: refTag(p.ref_collections)
+    def census = p.census_version.toString().replace("-", "")
+    return "sc-pipeline-${p.version}-${p.classifier}-census${census}-ref${tag}-n${p.subsample_ref}-cutoff${p.cutoff}"
+}
+
 workflow SCANNOTATE {
 
     take:
@@ -120,6 +134,8 @@ workflow SCANNOTATE {
     //
     ch_messages = Channel.empty()
     if (params.use_gemma && params.upload_gemma) {
+        cta_protocol = params.cta_protocol ?: ctaProtocol(params)
+        log.info "CTA protocol: ${cta_protocol}"
         GEMMA_UPLOAD(
             ch_celltypes,
             ch_clc,
@@ -127,7 +143,7 @@ workflow SCANNOTATE {
             ch_multiqc,
             params.use_staging,
             params.version,
-            params.cta_protocol ?: "sc-pipeline-${params.version}-${params.classifier}-ref${params.subsample_ref}-cutoff${params.cutoff}",
+            cta_protocol,
             params.preferredCtaLevel,
             params.nmads,
             params.upload_cta ?: false,

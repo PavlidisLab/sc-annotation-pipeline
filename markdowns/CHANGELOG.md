@@ -3,6 +3,19 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.2.0 - [Unreleased]
+
+### `Added`
+
+- Added the Seurat label transfer classifier (`--classifier seurat`) with its parameters and modules
+- Built the CTA protocol from the configuration: `sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>`
+  - Added `ref_tag` parameter (default: SHA-256 prefix of the sorted `ref_collections`) and `assets/ref_tags.tsv`
+
+### `Changed`
+
+- Changed the `subsample_ref` default to 100
+- Made `cutoff` configurable for all classifiers
+
 ## v2.0.0dev - [Unreleased]
 
 ### `Added`
