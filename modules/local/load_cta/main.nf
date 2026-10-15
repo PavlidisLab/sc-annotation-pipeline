@@ -5,7 +5,7 @@ process LOAD_CTA {
     input:
     tuple val(study_name), path(celltype_file)
     val use_staging
-    val version
+    val protocol
     val preferred_cta_level
 
     output:
@@ -21,8 +21,8 @@ process LOAD_CTA {
     """
     ${gemma_cmd} loadSingleCellData -loadCta -e ${study_name} \\
         -ctaFile ${celltype_file} ${preferred_flag} \\
-        -ctaName "sc-pipeline-${version}-${level}" \\
-        -ctaProtocol "sc-pipeline-${version}" \\
+        -ctaName "${protocol}-${level}" \\
+        -ctaProtocol "${protocol}" \\
         -replaceCta \\
         --data-type NULL \\
         -ignoreSamplesLackingData 2> "message.txt"

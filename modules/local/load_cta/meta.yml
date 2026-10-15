@@ -16,9 +16,9 @@ input:
   - use_staging:
       type: boolean
       description: Whether to use Gemma staging environment
-  - version:
+  - protocol:
       type: string
-      description: Pipeline version for annotation naming
+      description: Cell type assignment protocol identifier; the CTA name is this plus the level
   - preferred_cta_level:
       type: string
       description: Preferred cell type annotation level

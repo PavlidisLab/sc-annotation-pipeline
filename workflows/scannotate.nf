@@ -127,6 +127,7 @@ workflow SCANNOTATE {
             ch_multiqc,
             params.use_staging,
             params.version,
+            params.cta_protocol ?: "sc-pipeline-${params.version}-${params.classifier}-ref${params.subsample_ref}-cutoff${params.cutoff}",
             params.preferredCtaLevel,
             params.nmads,
             params.upload_cta ?: false,

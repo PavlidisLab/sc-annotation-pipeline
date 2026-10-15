@@ -135,6 +135,11 @@
                     "description": "Preferred cell type annotation level for Gemma upload.",
                     "enum": ["subclass", "class", "family"],
                     "fa_icon": "fas fa-star"
+                },
+                "cta_protocol": {
+                    "type": "string",
+                    "description": "Cell type assignment protocol identifier for Gemma upload. Default is built from the version, classifier, subsample_ref and cutoff.",
+                    "fa_icon": "fas fa-tag"
                 }
             }
         },
