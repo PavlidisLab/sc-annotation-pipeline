@@ -19,6 +19,9 @@ input:
   - protocol:
       type: string
       description: Cell type assignment protocol identifier; the CTA name is this plus the level
+  - protocol_description:
+      type: string
+      description: One-line description recording the settings behind the protocol (version, classifier, census, references, ref tag, subsample_ref, cutoff, repository); used to create the protocol in Gemma if it does not exist
   - preferred_cta_level:
       type: string
       description: Preferred cell type annotation level
@@ -26,7 +29,7 @@ input:
 output:
   - message:
       type: file
-      description: Gemma CLI output message
+      description: Gemma CLI output, including the addProtocol output
       pattern: "message.txt"
 
 authors:

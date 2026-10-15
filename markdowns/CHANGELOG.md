@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Added`
 
 - Built the CTA protocol from the pipeline configuration: `sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>`, with `cta_protocol` (override) and `ref_tag` parameters and `assets/ref_tags.tsv`
+- Created the CTA protocol in Gemma from the pipeline (`addProtocol` in `LOAD_CTA`), with a description recording the configuration; an existing protocol is not an error.
 - Added `--classifier knn` option for the scVI embedding classifier (`rf` stays the default); process `RF_CLASSIFY` renamed to `CLASSIFY_SCVI`
 - Added `use_gemma` master switch, with `upload_gemma` nested under it
 - Added full human and mouse test profile matrix and `scripts/run_test_profiles.sh`
