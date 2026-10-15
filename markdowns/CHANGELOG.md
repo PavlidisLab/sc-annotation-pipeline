@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed apptainer container resolution
 - Fixed MEX ingestion: categorical `sample_name` crash, unrecoverable samples now skipped, blank Ensembl ids dropped
 - Fixed dead paths and broken test fixtures
+- Cells with zero counts are removed before QC and classification (a sample that loaded empty crashed the QC fit); the number removed per sample is logged
+- `get_gemma_meta.py` falls back to the dataset taxon when the platform has none (generic platforms such as `Generic_mouse_ncbiIds` returned a null taxon)
 
 ## v2.0.0 - 2026-01-12
 
