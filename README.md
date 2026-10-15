@@ -1,7 +1,7 @@
 # Single-cell Re-annotation Pipeline for Human and Mouse Neocortex
 
 
-Nextflow pipeline for automated single-cell cell type annotation using scVI embeddings and a random forest or kNN classifier, or Seurat label transfer. Designed to annotate cell types from single-cell data loaded into the [Gemma database](https://gemma.msl.ubc.ca). Cell types are assigned using a random forest or kNN classifier (`--classifier`) trained on scVI embeddings from the CellxGene data corpus<sup>1</sup><sup>2</sup><sup>3</sup>.
+Nextflow pipeline for automated single-cell cell type annotation. Designed to annotate cell types from single-cell data loaded into the [Gemma database](https://gemma.msl.ubc.ca). Cells are labelled with a random forest or kNN classifier on scVI embeddings, or by Seurat label transfer (`--classifier rf|knn|seurat`), against references from the CellxGene data corpus<sup>1</sup><sup>2</sup><sup>3</sup>.
 
 
 ![sc-metro-map](docs/diagrams/scannotate_metro_map.svg)
@@ -64,7 +64,7 @@ sc-annotation-pipeline-rachel-dev/
 │   ├── samplesheet.csv
 │   ├── cell_type_markers.tsv
 │   └── ...
-├── bin/                         # Python scripts
+├── bin/                         # Python and R scripts
 ├── scripts/                     # Standalone maintenance scripts (test runner, cleanup, etc.)
 ├── params.mm.json               # Mouse parameters
 ├── params.hs.json               # Human parameters
@@ -79,7 +79,7 @@ sc-annotation-pipeline-rachel-dev/
 | `INPUT_CHECK` | Validates inputs and downloads/prepares studies from Gemma |
 | `PREPARE_REFERENCE` | Downloads scVI model and Census reference data |
 | `PROCESS_QUERIES` | Processes query data through scVI model to generate embeddings |
-| `CLASSIFY_CELLTYPES` | Random forest or kNN classification using reference embeddings |
+| `CLASSIFY_CELLTYPES` | Random forest or kNN classification on reference embeddings (`CLASSIFY_SCVI`), or Seurat label transfer |
 | `QC_REPORTING` | QC analysis, outlier detection, and MultiQC report generation |
 | `GEMMA_UPLOAD` | Uploads cell type annotations and QC masks to Gemma |
 
@@ -180,7 +180,7 @@ local_study,,/path/to/local/data
 | `study_name` | No* | Study name to download from Gemma |
 | `study_path` | No* | Path to pre-downloaded MEX data, or a single pre-combined `.h5ad` file |
 
-*At least one of `study_name` or `study_path` must be provided per row.
+*At least one of `study_name` or `study_path` must be provided per row. Cells with zero total counts are dropped when the query is loaded.
 
 **Example usage:**
 
@@ -337,10 +337,10 @@ nextflow run main.nf --nmads.mito 3 --nmads.counts 4
 
 #### Cell Type Assignment Protocols
 
-The specified `ctaProtocol` must exist in Gemma prior to upload. The ctaProtocol is built from the pipeline configuration as `sc-pipeline-<version>-<classifier>-ref<subsample_ref>-cutoff<cutoff>`, e.g. `sc-pipeline-2.0.0dev-seurat-ref100-cutoff0`, so runs with different classifiers or settings never replace each other's assignments. The ctaName is the protocol plus the level, e.g. `sc-pipeline-2.0.0dev-seurat-ref100-cutoff0-class`. Set `--cta_protocol` to override the identifier. Other settings (reference collections, census version, Seurat parameters) are not in the identifier; they are fixed by the pipeline version and `nextflow.config`. To create a ctaProtocol in gemma, run:
+The specified `ctaProtocol` must exist in Gemma prior to upload. The ctaProtocol is built from the pipeline configuration as `sc-pipeline-<version>-<classifier>-ref<subsample_ref>-cutoff<cutoff>`, e.g. `sc-pipeline-2.0.0-seurat-ref100-cutoff0`, so runs with different classifiers or settings never replace each other's assignments. The ctaName is the protocol plus the level, e.g. `sc-pipeline-2.0.0-seurat-ref100-cutoff0-class`. Set `--cta_protocol` to override the identifier. Other settings (reference collections, census version, Seurat parameters) are not in the identifier; they are fixed by the pipeline version and `nextflow.config`. To create a ctaProtocol in gemma, run:
 
 ```
-gemma-cli addProtocol --name "sc-pipeline-2.0.0dev-seurat-ref100-cutoff0"
+gemma-cli addProtocol --name "sc-pipeline-2.0.0-seurat-ref100-cutoff0"
 ```
 
 **Note:** Set `GEMMA_USERNAME` and `GEMMA_PASSWORD` environment variables for Gemma uploads.
@@ -360,7 +360,7 @@ Parameter priority: CLI arguments > params.json > nextflow.config
 
 ```
 results/
-└── mus_musculus_subsample_ref_500_2025-01-15_17-51-37/
+└── mus_musculus_subsample_ref_100_2025-01-15_17-51-37/
     ├── scvi_model/                     # Downloaded scVI model
     ├── reference/                      # Census reference embeddings
     ├── <study_name>/
