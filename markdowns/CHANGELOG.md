@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Changed`
 
+- Replaced the workflow diagram with a Mermaid flow diagram (`docs/diagrams/scannotate_flow.mmd`)
 - Dropped Tabula Muris Senis from mouse `ref_collections` and mouse `subsample_ref` 100
 - Mouse rename map gained `OPC` and `L6 IT Car3` rows
 - Merged two human VIP subclass names into `VIP GABAergic interneuron` and remapped `Micro-PVM` to `Microglia`

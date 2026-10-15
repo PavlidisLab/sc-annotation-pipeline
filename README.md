@@ -4,6 +4,10 @@
 
 This Nextflow pipeline annotates cell types in single-cell RNA-seq data from the [Gemma database](https://gemma.msl.ubc.ca) or from local files. Cells are labelled against CELLxGENE Census references with a random forest or kNN classifier on scVI embeddings. Assignments are made at subclass, class and family level. The pipeline also computes a QC mask, writes a MultiQC report per study and can upload the cell type assignments (CTAs), mask and report to Gemma.
 
+![Workflow of the scannotate pipeline](docs/diagrams/scannotate_flow.png)
+
+*Figure 1. Workflow of the pipeline (source: `docs/diagrams/scannotate_flow.mmd`). Blue nodes are inputs, green nodes are pipeline steps and amber nodes are outputs; arrows show data flow. The figure shows how studies and the Census reference are embedded with the scVI model, classified, scored for QC and optionally uploaded to Gemma.*
+
 ## Quick start
 
 ```bash
