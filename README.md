@@ -49,7 +49,7 @@ MultiQC is only produced when `process_samples` is false.
 
 ## Gemma upload
 
-Uploads use `gemma-cli`, or `gemma-cli-staging` when `use_staging` is true (the default), so set `--use_staging false` for production. Credentials come from the `GEMMA_USERNAME` and `GEMMA_PASSWORD` environment variables, never from arguments. The `singularity` and `apptainer` profiles pass these variables into containers by name (`envWhitelist`), and `GET_META` runs on the launch host (`conf/modules.config`) because SLURM jobs do not inherit them.
+Uploads use `gemma-cli`, or `gemma-cli-staging` when `use_staging` is true (the default), so set `--use_staging false` for production. Credentials come from the `GEMMA_USERNAME` and `GEMMA_PASSWORD` environment variables, never from arguments. The `singularity` and `apptainer` profiles pass these variables into containers by name (`envWhitelist`), and `GET_META` runs on the launch host (`conf/modules.config`) so the credentials never pass through a Slurm job (inheritance by Slurm tasks was not tested).
 
 The CTA protocol is `sc-pipeline-<version>` and the CTA name is `sc-pipeline-<version>-<level>`, with the version taken from `params.version` (2.1.0). Each upload replaces the CTA of the same name. The protocol must exist in Gemma before upload:
 
