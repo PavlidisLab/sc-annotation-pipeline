@@ -8,7 +8,7 @@ This Nextflow pipeline annotates cell types in single-cell data from the [Gemma 
 
 ![scannotate-flow](docs/diagrams/scannotate_flow.png)
 
-*Figure 1. Data flow of the pipeline (version 2.1.0), from the input samplesheet to the Gemma upload. Blue boxes are inputs, green boxes are pipeline steps and amber boxes are outputs; arrows show the direction of data flow. The figure shows how study data and the CellxGene Census reference are turned into scVI embeddings, cell type predictions, QC masks and reports. The source is `docs/diagrams/scannotate_flow.mmd`.*
+*Figure 1. Pipeline data flow (version 2.1.0). Blue boxes are inputs, green boxes are steps, amber boxes are outputs; arrows show data flow. Source: docs/diagrams/scannotate_flow.mmd.*
 
 ## Table of Contents
 
