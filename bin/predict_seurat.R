@@ -1,5 +1,9 @@
 library(reticulate)
-use_condaenv("~/anaconda3/envs/r4.3/")
+if (nzchar(Sys.getenv("RETICULATE_PYTHON"))) {
+  use_python(Sys.getenv("RETICULATE_PYTHON"), required = TRUE)
+} else {
+  use_condaenv("~/anaconda3/envs/r4.3/")
+}
 library(Seurat)
 library(dplyr)
 library(argparse)

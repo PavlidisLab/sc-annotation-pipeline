@@ -1,7 +1,11 @@
 
 library(Seurat)
 library(reticulate)
-use_condaenv("/home/rschwartz/anaconda3/envs/r4.3/")
+if (nzchar(Sys.getenv("RETICULATE_PYTHON"))) {
+  use_python(Sys.getenv("RETICULATE_PYTHON"), required = TRUE)
+} else {
+  use_condaenv("/home/rschwartz/anaconda3/envs/r4.3/")
+}
 library(sceasy)
 library(argparse)
 library(tidyr)
