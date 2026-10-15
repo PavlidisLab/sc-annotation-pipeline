@@ -131,7 +131,12 @@
                 },
                 "cta_protocol": {
                     "type": "string",
-                    "description": "Cell type assignment protocol identifier for Gemma upload. Default is built from the version, classifier, subsample_ref and cutoff.",
+                    "description": "Cell type assignment protocol identifier for Gemma upload. Default is built from the version, classifier, census version, reference tag, subsample_ref and cutoff.",
+                    "fa_icon": "fas fa-tag"
+                },
+                "ref_tag": {
+                    "type": "string",
+                    "description": "Reference tag used in the default CTA protocol. If unset, the first 6 hex characters of the SHA-256 of the sorted ref_collections joined by newlines. See assets/ref_tags.tsv.",
                     "fa_icon": "fas fa-tag"
                 }
             }
