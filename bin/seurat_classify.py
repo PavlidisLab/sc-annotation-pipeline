@@ -31,11 +31,17 @@ def main():
     query_name = os.path.basename(args.query_path).replace(".h5ad", "")
     mapping_df = pd.read_csv(args.mapping_file, sep="\t")
     query = sc.read_h5ad(args.query_path, backed="r").obs.copy()
-    prob_df = pd.read_csv(args.scores, sep="\t")
-    if len(prob_df) != len(query):
-        raise ValueError(f"{len(prob_df)} score rows but {len(query)} query cells")
+    query_obs = query
+    prob_df = pd.read_csv(args.scores, sep="\t", index_col="cell_id")
+    missing = prob_df.index.difference(query.index)
+    if len(missing):
+        raise ValueError(f"{len(missing)} scored cells are not in the query")
 
-    query = classify_cells(query, args.cutoff, prob_df, ref_keys=args.ref_keys, mapping_df=mapping_df)
+    # cells without counts are dropped before Seurat; they stay in the output as unknown
+    scored = classify_cells(query.loc[prob_df.index].copy(), args.cutoff, prob_df, ref_keys=args.ref_keys, mapping_df=mapping_df)
+    query = scored.reindex(query.index)
+    query[args.ref_keys] = query[args.ref_keys].fillna("unknown")
+    query[["sample_id", "cell_id"]] = pd.concat([query_obs[["sample_id", "cell_id"]]], axis=1)
 
     for key in args.ref_keys:
         mapping = dict(mapping_df[[key, f"{key}_uri"]].drop_duplicates().values)
