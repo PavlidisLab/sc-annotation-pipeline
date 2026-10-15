@@ -10,9 +10,16 @@ This Nextflow pipeline (version 2.1.0) annotates cell types in single-cell RNA-s
 
 ## Methods
 
-Studies come from a samplesheet, as Gemma study names or local paths. A local h5ad file needs raw counts and Ensembl gene IDs; cells with zero counts are removed and logged. We drew 500 cells per cell type (default) from Census release 2024-07-01 (default), embedded studies and reference with the scVI model, trained a random forest (default) or kNN classifier, and assigned labels at subclass, class and family level when the probability reached the cutoff (default 0). We computed a QC mask from median absolute deviation thresholds and wrote one MultiQC report per study.
+The pipeline ran six stages.
 
-Upload to Gemma is off unless both the Gemma and upload switches are true, and goes to the staging server by default. Each CTA is named sc-pipeline-2.1.0 plus the label level, and an upload replaces the CTA of the same name. The parameter schema lists all parameters and defaults.
+1. Input validation. Studies were read from a samplesheet as Gemma study names or local paths, and downloaded when needed.
+2. Reference preparation. We downloaded the scVI model for the organism and drew reference cells from CELLxGENE Census.
+3. Query processing. We embedded each query study with the scVI model.
+4. Cell type classification. A random forest (default) or kNN classifier trained on the reference embeddings labelled each query cell at subclass, class and family level.
+5. QC reporting. We computed outlier metrics and a QC mask and wrote one MultiQC report per study.
+6. Gemma upload (optional). Cell type assignments, QC outputs and the report were uploaded to Gemma.
+
+Cells with no counts were removed before stages 3 to 5. Reference size, Census release and cutoff are parameters (see the parameter schema for defaults).
 
 ## Usage
 
