@@ -3,7 +3,37 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v2.0.0dev - [Unreleased]
+## v2.1.0 - 2026-10-15
+
+### `Added`
+
+- Added `--classifier knn` option for the scVI embedding classifier (`rf` stays the default); process `RF_CLASSIFY` renamed to `CLASSIFY_SCVI`
+- Added `use_gemma` master switch, with `upload_gemma` nested under it
+- Added full human and mouse test profile matrix and `scripts/run_test_profiles.sh`
+- Added support for a pre-combined h5ad as `study_path`
+- Added Ma et al. reference collection, rename mappings and markers for human immune, vascular and erythroid cell types
+- Added class and family marker heatmaps and QC outlier mask and tables to MultiQC
+- Added Apache-2.0 license, `audit_docs/`, and a script to clean stale-version Gemma CTAs (`scripts/cleanup_stale_ctas.py`)
+
+### `Changed`
+
+- Dropped Tabula Muris Senis from mouse `ref_collections` and mouse `subsample_ref` 100
+- Mouse rename map gained `OPC` and `L6 IT Car3` rows
+- Merged two human VIP subclass names into `VIP GABAergic interneuron` and remapped `Micro-PVM` to `Microglia`
+- `scvi_classify.py` now requires `--ref_path`
+- Added container and scVI model caching, and SLURM CPU tiers by process label
+- Split `bin/utils.py` into classify, QC, marker and census submodules
+- Removed hardcoded Gemma credentials from script defaults
+
+### `Fixed`
+
+- `use_staging` now honored in the Gemma metadata fetch and the production gemmapy path
+- Fixed sample metadata misalignment in `get_gemma_meta.py`
+- Fixed apptainer container resolution
+- Fixed MEX ingestion: categorical `sample_name` crash, unrecoverable samples now skipped, blank Ensembl ids dropped
+- Fixed dead paths and broken test fixtures
+
+## v2.0.0 - 2026-01-12
 
 ### `Added`
 
@@ -17,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `INPUT_CHECK` - validates inputs and downloads/prepares studies
   - `PREPARE_REFERENCE` - prepares scVI model and Census reference data
   - `PROCESS_QUERIES` - processes query data through scVI model
-  - `CLASSIFY_CELLTYPES` - random forest or kNN classification (process `CLASSIFY_SCVI`)
+  - `CLASSIFY_CELLTYPES` - random forest classification
   - `QC_REPORTING` - QC analysis and MultiQC report generation
   - `GEMMA_UPLOAD` - uploads results to Gemma (optional)
 - Added `conf/base.config` for resource management
@@ -28,12 +58,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ref_keys` parameter for specifying reference keys in classification
 - Added `preferredCtaLevel` parameter for preferred cell type annotation level
 - Added granular Gemma upload controls: `upload_cta`, `upload_clc`, `upload_multiqc`
-- Added `use_gemma` master switch to skip all Gemma interaction (metadata fetch + uploads), for studies given via `--study_paths`/local samplesheet rows
-- Added full human/mouse test profile matrix (8 profiles: `test_mouse`/`test_human`, `_persample`, `_local`, `_upload_off` variants)
-- Added `scripts/run_test_profiles.sh` to run all test profiles and report a pass/fail summary
-- Added Ma et al. (2022, primate dlPFC evolution) as a human `ref_collections` source, with corresponding rename-file mappings for its immune (macrophage, myeloid cell, B cell, T cell), smooth muscle, and erythroid lineage cell types
-- Added marker genes for those immune/vascular/erythroid cell types to `assets/cell_type_markers.tsv` so they render in the QC heatmaps
-- Added `classifier` parameter (`rf` or `knn`) for the scVI embedding classifier. `params.mm.json` sets `knn` (15 neighbors, distance weights), human keeps `rf`
 
 ### `Changed`
 
@@ -43,19 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reorganized modules into `modules/local/<tool>/main.nf` structure
 - Created subworkflows for logical groupings of modules
 - GEMMA_UPLOAD subworkflow now has granular control over which outputs to upload
-- Split `bin/utils.py` god-module into `census_utils.py`, `classify_utils.py`, `qc_utils.py`, `marker_utils.py`
-- SLURM CPU allocation now tiered by process label instead of a blanket reservation, to reduce queue congestion
-- Per-sample QC linear model now uses `numpy.polyfit` instead of `statsmodels` (faster, drops a dependency)
-- Renamed process `RF_CLASSIFY` to `CLASSIFY_SCVI` (module `modules/local/classify_scvi`), since it now runs kNN as well as random forest
-- Dropped Tabula Muris Senis from the mouse `ref_collections`, along with its lowercase ontology name rows in `assets/rename_cells_mus_musculus.tsv`
-- Added `OPC` and `L6 IT Car3` rows to the mouse rename map, which had no rows for these labels
 
 ### `Fixed`
-
-- Fixed MEX ingestion crash from blank Ensembl gene IDs producing duplicate NaN `var_names`
-- Fixed unrecoverable samples being passed to `sc.concat` as `None` instead of being skipped
-- Fixed `sample_name` being entirely NaN (breaking per-sample QC grouping) when `use_gemma=false`
-- Fixed `test_human` samplesheet pointing at a stale `DevBrain` fixture path
 
 ### `Dependencies`
 

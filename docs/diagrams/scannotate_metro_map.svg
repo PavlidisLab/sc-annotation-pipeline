@@ -123,5 +123,5 @@
   </g>
 
   <!-- Pipeline info -->
-  <text x="360" y="710" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#999">v2.0.0dev</text>
+  <text x="360" y="710" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#999">v2.1.0</text>
 </svg>
