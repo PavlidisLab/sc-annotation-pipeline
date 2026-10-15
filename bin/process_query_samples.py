@@ -104,6 +104,11 @@ def main():
     print(f"Sample {sample_id} has no expression data. Skipping.", file=sys.stderr)
     sys.exit(42)
 
+  empty = np.asarray(adata.X.sum(axis=1)).ravel() == 0
+  if empty.any():
+    print(f"Sample {sample_id}: removed {empty.sum()} of {len(empty)} cells with zero counts.", file=sys.stderr)
+    adata = adata[~empty].copy()
+
   if check_size(adata) is False:
     print(f"Sample {sample_id} has less than 50 cells. Skipping.", file=sys.stderr)
     sys.exit(42)

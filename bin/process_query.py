@@ -114,6 +114,14 @@ def main():
 
   combined_adata.obs["cell_id"] = combined_adata.obs.index
   combined_adata.obs_names = combined_adata.obs["cell_id"].astype(str) + "_" + combined_adata.obs["sample_id"].astype(str)
+  # cells with no counts (e.g. a sample whose matrix loaded empty) cannot be normalised or scored
+  empty = np.asarray(combined_adata.X.sum(axis=1)).ravel() == 0
+  if empty.any():
+    per_sample = combined_adata.obs.loc[empty, "sample_id"].value_counts().to_dict()
+    print(f"Removed {empty.sum()} of {len(empty)} cells with zero counts, by sample: {per_sample}", file=sys.stderr)
+    combined_adata = combined_adata[~empty].copy()
+  if combined_adata.n_obs == 0:
+    sys.exit(f"{study_name}: every cell has zero counts")
   # save unprocessed adata
   combined_adata.write_h5ad(f"{study_name}_raw.h5ad")
   combined_adata = process_query(combined_adata, model_path, batch_key="sample_id", seed=SEED)
