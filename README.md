@@ -1,7 +1,9 @@
 # Single-cell Re-annotation Pipeline for Human and Mouse Neocortex
 
 
-Nextflow pipeline for automated single-cell cell type annotation using scVI embeddings and a random forest or kNN classifier. Designed to annotate cell types from single-cell data loaded into the [Gemma database](https://gemma.msl.ubc.ca). Cell types are assigned using a random forest or kNN classifier (`--classifier`) trained on scVI embeddings from the CellxGene data corpus<sup>1</sup><sup>2</sup><sup>3</sup>.
+## Abstract
+
+This Nextflow pipeline annotates cell types in single-cell data from the [Gemma database](https://gemma.msl.ubc.ca) or from local files. We validated the input studies, downloaded the scVI model and reference cells from the CELLxGENE Census<sup>1</sup><sup>2</sup><sup>3</sup>, embedded each query study with scVI, and labelled every cell at subclass, class and family level with a random forest (default) or kNN classifier trained on the reference embeddings. We then computed QC metrics and an outlier mask and wrote a MultiQC report per study. Cell type assignments, QC outputs and the report can optionally be uploaded to Gemma.
 
 
 ![scannotate-flow](docs/diagrams/scannotate_flow.png)
@@ -10,7 +12,6 @@ Nextflow pipeline for automated single-cell cell type annotation using scVI embe
 
 ## Table of Contents
 
-- [Pipeline Summary](#pipeline-summary)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
@@ -19,17 +20,6 @@ Nextflow pipeline for automated single-cell cell type annotation using scVI embe
 - [Output](#output)
 - [QC and Outlier Detection](#qc-and-outlier-detection)
 - [References](#references)
-
----
-
-## Pipeline Summary
-
-1. **Input validation** - Validates study names or paths and downloads data if needed
-2. **Reference preparation** - Downloads scVI model and pulls reference embeddings from CellxGene Census
-3. **Query processing** - Generates scVI embeddings for query datasets
-4. **Cell type classification** - Classifies cells using a random forest or kNN classifier on scVI embeddings
-5. **QC reporting** - Generates QC metrics and MultiQC reports with outlier detection
-6. **Gemma upload** (optional) - Uploads annotations to Gemma database
 
 ---
 
