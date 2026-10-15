@@ -3,6 +3,9 @@ process QUERY_PROCESS_SEURAT {
     label 'process_medium'
 
     conda "/home/rschwartz/anaconda3/envs/r4.3"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
+        'docker://raschwaa/r4.3-seurat:latest' :
+        'raschwaa/r4.3-seurat:latest' }"
 
     input:
     tuple val(study_name), val(query_name), path(h5ad_file)

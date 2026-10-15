@@ -35,7 +35,7 @@ Others (`nmads`, `ref_keys`, asset files) are in `nextflow.config`.
 
 ## Classifiers
 
-`rf` and `knn` embed query cells with the scVI model, then classify against the subsampled reference embeddings. `seurat` runs Seurat label transfer on the reference and query objects. Its R steps have no container yet, so `seurat` needs the `r4.3` conda environment (`-profile conda`). 
+`rf` and `knn` embed query cells with the scVI model, then classify against the subsampled reference embeddings. `seurat` runs Seurat label transfer on the reference and query objects. Its R steps run in the `raschwaa/r4.3-seurat` container (`-profile singularity` or `docker`), or in the `r4.3` conda environment with `-profile conda`. 
 
 ## Outputs
 
