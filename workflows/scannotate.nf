@@ -17,6 +17,33 @@ include { GEMMA_UPLOAD       } from "$projectDir/subworkflows/local/gemma_upload
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+// CTA protocol: sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>
+// The tag is params.ref_tag or the first 6 hex chars of SHA-256 over the sorted ref_collections joined by "\n".
+def refTag(collections) {
+    def text = ((collections ?: []) as List).collect { it.toString() }.sort().join("\n")
+    def digest = java.security.MessageDigest.getInstance("SHA-256").digest(text.getBytes("UTF-8"))
+    return digest.collect { String.format("%02x", it & 0xff) }.join("").substring(0, 6)
+}
+
+def ctaProtocol(p) {
+    def tag = p.ref_tag ?: refTag(p.ref_collections)
+    def census = p.census_version.toString().replace("-", "")
+    return "sc-pipeline-${p.version}-${p.classifier}-census${census}-ref${tag}-n${p.subsample_ref}-cutoff${p.cutoff}"
+}
+
+// One-line protocol description that records the settings behind the protocol name (no credentials).
+def ctaProtocolDescription(p) {
+    def tag = p.ref_tag ?: refTag(p.ref_collections)
+    def refs = ((p.ref_collections ?: []) as List).collect { it.toString() }.join(" | ")
+    def text = "Cell type annotations from sc-annotation-pipeline version ${p.version}; " +
+        "classifier: ${p.classifier} on scVI embeddings (reference and query normalized and embedded with scVI); " +
+        "CELLxGENE Census version: ${p.census_version}; " +
+        "reference collections: ${refs}; " +
+        "reference tag: ${tag}; subsample_ref: ${p.subsample_ref}; cutoff: ${p.cutoff}; " +
+        "repository: ${workflow.manifest.homePage}"
+    return text.replaceAll(/[\r\n]+/, " ")
+}
+
 workflow SCANNOTATE {
 
     take:
@@ -96,8 +123,6 @@ workflow SCANNOTATE {
         params.census_version,
         params.cutoff,
         params.process_samples,
-        params.GEMMA_USERNAME,
-        params.GEMMA_PASSWORD,
         params.use_gemma
     )
     ch_clc     = QC_REPORTING.out.clc
@@ -120,6 +145,10 @@ workflow SCANNOTATE {
     //
     ch_messages = Channel.empty()
     if (params.use_gemma && params.upload_gemma) {
+        cta_protocol = params.cta_protocol ?: ctaProtocol(params)
+        cta_protocol_description = ctaProtocolDescription(params)
+        log.info "CTA protocol: ${cta_protocol}"
+        log.info "CTA protocol description: ${cta_protocol_description}"
         GEMMA_UPLOAD(
             ch_celltypes,
             ch_clc,
@@ -127,6 +156,8 @@ workflow SCANNOTATE {
             ch_multiqc,
             params.use_staging,
             params.version,
+            cta_protocol,
+            cta_protocol_description,
             params.preferredCtaLevel,
             params.nmads,
             params.upload_cta ?: false,

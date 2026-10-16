@@ -128,6 +128,16 @@
                     "description": "Preferred cell type annotation level for Gemma upload.",
                     "enum": ["subclass", "class", "family"],
                     "fa_icon": "fas fa-star"
+                },
+                "cta_protocol": {
+                    "type": "string",
+                    "description": "Cell type assignment protocol identifier for Gemma upload. Default is built from the version, classifier, census version, reference tag, subsample_ref and cutoff.",
+                    "fa_icon": "fas fa-tag"
+                },
+                "ref_tag": {
+                    "type": "string",
+                    "description": "Reference tag used in the default CTA protocol. If unset, the first 6 hex characters of the SHA-256 of the sorted ref_collections joined by newlines. See assets/ref_tags.tsv.",
+                    "fa_icon": "fas fa-tag"
                 }
             }
         },
@@ -232,18 +242,6 @@
                     "default": true,
                     "description": "Use Gemma staging environment instead of production.",
                     "fa_icon": "fas fa-flask"
-                },
-                "GEMMA_USERNAME": {
-                    "type": "string",
-                    "description": "Gemma API username (from environment variable).",
-                    "fa_icon": "fas fa-user",
-                    "hidden": true
-                },
-                "GEMMA_PASSWORD": {
-                    "type": "string",
-                    "description": "Gemma API password (from environment variable).",
-                    "fa_icon": "fas fa-lock",
-                    "hidden": true
                 },
                 "upload_cta": {
                     "type": "boolean",

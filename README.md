@@ -1,15 +1,17 @@
 # Single-cell Re-annotation Pipeline for Human and Mouse Neocortex
 
 
-Nextflow pipeline for automated single-cell cell type annotation using scVI embeddings and a random forest or kNN classifier. Designed to annotate cell types from single-cell data loaded into the [Gemma database](https://gemma.msl.ubc.ca). Cell types are assigned using a random forest or kNN classifier (`--classifier`) trained on scVI embeddings from the CellxGene data corpus<sup>1</sup><sup>2</sup><sup>3</sup>.
+## Abstract
+
+This Nextflow pipeline annotates cell types in single-cell data from the [Gemma database](https://gemma.msl.ubc.ca) or from local files. We validated the input studies, downloaded the scVI model and reference cells from the CELLxGENE Census<sup>1</sup><sup>2</sup><sup>3</sup>, embedded each query study with scVI, and labelled every cell at subclass, class and family level with a random forest (default) or kNN classifier trained on the reference embeddings. We then computed QC metrics and an outlier mask and wrote a MultiQC report per study. Cell type assignments, QC outputs and the report can optionally be uploaded to Gemma.
 
 
-![sc-metro-map](docs/diagrams/scannotate_metro_map.svg)
+![scannotate-flow](docs/diagrams/scannotate_flow.png)
+
+*Figure 1. Pipeline data flow (version 2.1.0). Blue boxes are inputs, green boxes are steps, amber boxes are outputs; arrows show data flow.*
 
 ## Table of Contents
 
-- [Pipeline Summary](#pipeline-summary)
-- [Pipeline Structure](#pipeline-structure)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
@@ -20,71 +22,6 @@ Nextflow pipeline for automated single-cell cell type annotation using scVI embe
 - [References](#references)
 
 ---
-
-## Pipeline Summary
-
-1. **Input validation** - Validates study names or paths and downloads data if needed
-2. **Reference preparation** - Downloads scVI model and pulls reference embeddings from CellxGene Census
-3. **Query processing** - Generates scVI embeddings for query datasets
-4. **Cell type classification** - Classifies cells using a random forest or kNN classifier on scVI embeddings
-5. **QC reporting** - Generates QC metrics and MultiQC reports with outlier detection
-6. **Gemma upload** (optional) - Uploads annotations to Gemma database
-
----
-
-## Pipeline Structure
-
-This pipeline follows [nf-core best practices](https://nf-co.re/docs/contributing/pipelines/pipeline_file_structure) with a modular architecture.
-
-### Directory Layout
-
-
-```
-sc-annotation-pipeline-rachel-dev/
-├── main.nf                      # Entry point
-├── nextflow.config              # Main configuration
-├── nextflow_schema.json         # Nextflow schema
-├── workflows/
-│   └── scannotate.nf            # Main workflow orchestration
-├── subworkflows/
-│   └── local/
-│       ├── input_check/
-│       ├── prepare_reference/
-│       ├── process_queries/
-│       ├── classify_celltypes/
-│       ├── qc_reporting/
-│       └── gemma_upload/
-├── modules/
-│   └── local/
-├── conf/
-│   ├── base.config              # Resource defaults (CPU/memory/time)
-│   ├── modules.config           # Module-specific settings
-│   └── test_*.config            # Human/mouse test profile matrix (8 profiles, see Test Profiles below)
-├── assets/                      # Reference files and configs
-│   ├── samplesheet.csv
-│   ├── cell_type_markers.tsv
-│   └── ...
-├── bin/                         # Python scripts
-├── scripts/                     # Standalone maintenance scripts (test runner, cleanup, etc.)
-├── params.mm.json               # Mouse parameters
-├── params.hs.json               # Human parameters
-├── README.md
-└── ...
-```
-
-### Subworkflows
-
-| Subworkflow | Description |
-|-------------|-------------|
-| `INPUT_CHECK` | Validates inputs and downloads/prepares studies from Gemma |
-| `PREPARE_REFERENCE` | Downloads scVI model and Census reference data |
-| `PROCESS_QUERIES` | Processes query data through scVI model to generate embeddings |
-| `CLASSIFY_CELLTYPES` | Random forest or kNN classification using reference embeddings |
-| `QC_REPORTING` | QC analysis, outlier detection, and MultiQC report generation |
-| `GEMMA_UPLOAD` | Uploads cell type annotations and QC masks to Gemma |
-
----
-
 
 ## Test Profiles
 
@@ -101,7 +38,7 @@ A full human/mouse test profile matrix is provided:
 | `test_mouse_upload_off` | mouse | `--upload_gemma false` |
 | `test_human_upload_off` | human | `--upload_gemma false` |
 
-Use with e.g. `-profile test_mouse,conda`. Run all of them and get a pass/fail summary with `scripts/run_test_profiles.sh`.
+Use with e.g. `-profile test_mouse,conda`. Run all of them and get a pass/fail summary with `scripts/run_test_profiles.sh`. The pipeline has no continuous integration; the eight test profiles, run with this script, are the tests.
 
 ## Requirements
 
@@ -112,7 +49,9 @@ Use with e.g. `-profile test_mouse,conda`. Run all of them and get a pass/fail s
 
 ## Installation
 
-Stable release is installed in:
+Nextflow can run the pipeline directly from GitHub, with no clone or checkout (see [Quick Start](#quick-start)). Cloning is needed only for development or to edit the pipeline files. The default branch (`main`) is kept at the latest release. To pin a version, add `-r` with a release tag (for example `-r v2.1.0`).
+
+The stable release is also installed on the Pavlidis lab file system in:
 
 ```
 /space/grp/Pipelines/sc-annotation-pipeline
@@ -128,6 +67,15 @@ cd sc-annotation-pipeline
 ---
 
 ## Quick Start
+
+Run directly from GitHub without cloning (add `-r <release tag>`, for example `-r v2.1.0`, to pin a version):
+
+```bash
+nextflow run PavlidisLab/sc-annotation-pipeline -r v2.1.0 -profile conda \
+    --input /full/path/to/samplesheet.csv --organism mus_musculus
+```
+
+Run from a clone (the examples below use `main.nf` from the repository directory):
 
 ```bash
 # Using a samplesheet (recommended)
@@ -281,15 +229,16 @@ nextflow run main.nf -profile conda -work-dir /scratch/my_workdir ...
 | `--census_version` | CellxGene Census version | `2024-07-01` |
 | `--organ` | Organ to sample from Census | `brain` |
 | `--subsample_ref` | Cells per cell type to subsample | `500` |
-| `--ref_collections` | Reference collection names (list) | See params.json |
+| `--ref_collections` | Reference collection names (list). The mouse default in `nextflow.config` is the two collections used in `params.mm.json` (Tabula Muris Senis is no longer included); the human collections are in `params.hs.json` | Mouse collections |
+| `--ref_tag` | Short reference tag used in the CTA protocol; `null` uses the first 6 hex characters of the SHA-256 of the sorted `ref_collections` | `null` |
 | `--ref_keys` | Reference annotation keys | `["subclass_cell_type", "class_cell_type", "family_cell_type"]` |
 
 ### Classification Options
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `--classifier` | Classifier on scVI embeddings: `rf` or `knn` (`params.mm.json` sets `knn`) | `rf` |
-| `--cutoff` | Min probability to assign label | `0` |
+| `--classifier` | Classifier on scVI embeddings: `rf` (random forest) or `knn` (e.g. `--classifier knn`), both run in the `CLASSIFY_SCVI` process (`params.mm.json` sets `knn`) | `rf` |
+| `--cutoff` | Min probability to assign label (configurable) | `0` |
 | `--seed` | Random seed | `42` |
 | `--process_samples` | Process samples individually | `false` |
 | `--preferredCtaLevel` | Preferred annotation level | `class` |
@@ -333,16 +282,17 @@ nextflow run main.nf --nmads.mito 3 --nmads.counts 4
 | `--upload_clc` | Upload cell-level characteristics | `true` |
 | `--upload_mask` | Upload outlier mask | `true` |
 | `--upload_multiqc` | Upload MultiQC report | `true` |
+| `--cta_protocol` | CTA protocol identifier override; `null` builds it from the configuration (see Cell Type Assignment Protocols) | `null` |
 
 #### Cell Type Assignment Protocols
 
-The specified `ctaProtocol` must exist in Gemma prior to upload. The ctaProtocol is determined by the pipeline version e.g. `sc-pipeline-2.0.0dev`. The corresponding ctaName is determined by a combintion of pipeline version and level of granularity, e.g. `sc-pipeline-2.0.0dev-class`. To create a ctaProtocol in gemma, run:
+The ctaProtocol is built as `sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>`, e.g. `sc-pipeline-2.1.0-rf-census20240701-ref1710b1-n500-cutoff0`. The tag is `--ref_tag` or the first six hex characters of the SHA-256 of the sorted `ref_collections` (see `assets/ref_tags.tsv`). The ctaName is the protocol plus the level, e.g. `sc-pipeline-2.1.0-rf-census20240701-ref1710b1-n500-cutoff0-class`. Set `--cta_protocol` to override.
 
-```
-gemma-cli addProtocol --name "sc-pipeline-<new version>"
-```
+The pipeline creates the protocol in Gemma before the upload (`gemma-cli addProtocol`, in `LOAD_CTA`), so no manual step is needed. The protocol description is one line that records the pipeline version, classifier, census version, reference collections, reference tag, `subsample_ref`, cutoff, the scVI normalization and embedding, and the repository URL; it is logged at launch. If the protocol already exists, the CLI exits with code 2 and the message `There is already a protocol object with this name`; the pipeline ignores that case only, and any other `addProtocol` error (credentials, connectivity) stops the process. The `addProtocol` output is kept in `message.txt`.
 
-**Note:** Set `GEMMA_USERNAME` and `GEMMA_PASSWORD` environment variables for Gemma uploads.
+**Note:** Set the `GEMMA_USERNAME` and `GEMMA_PASSWORD` environment variables for Gemma uploads and for downloading studies by name. They are read from the environment only; they are not pipeline parameters and are never passed as command-line arguments, so they do not appear in command lines or work files. The `singularity` and `apptainer` profiles forward both variables into the containers by name (`envWhitelist`). The `GET_META` process runs on the launch host (`conf/modules.config`), so it also reads them from the environment of the Nextflow launch. If they are unset, export them or set `--use_gemma false`.
+
+The query loaders (`bin/process_query.py` and `bin/process_query_samples.py`) remove cells with zero counts before QC and classification and log the number removed per sample. The Gemma metadata fetch (`bin/get_gemma_meta.py`) falls back to the dataset taxon when a platform has no taxon.
 
 ### Parameter Files
 
@@ -368,7 +318,7 @@ results/
     │   ├── masks/                      # QC outlier masks
     │   ├── qc/                         # Per-sample QC output
     │   └── combined_qc/                # Combined QC output
-    ├── multiqc/
+    ├── multiqc/                        # Only when process_samples is false
     │   └── <study_name>/
     │       └── multiqc_report.html     # QC summary report
     └── pipeline_info/
@@ -384,7 +334,7 @@ results/
 
 ### MultiQC Report
 
-A custom MultiQC report is generated by `process_QC.py` for each experiment. Outliers are defined using Median Absolute Deviations (MAD) per-sample following <a href="https://www.sc-best-practices.org/preprocessing_visualization/quality_control.html">best practices</a><sup>4</sup>.
+A custom MultiQC report is generated by `process_QC.py` for each experiment, only when `--process_samples` is `false`. Outliers are defined using Median Absolute Deviations (MAD) per-sample following <a href="https://www.sc-best-practices.org/preprocessing_visualization/quality_control.html">best practices</a><sup>4</sup>.
 
 ### Outlier Metrics
 

@@ -18,6 +18,8 @@ workflow GEMMA_UPLOAD {
     ch_multiqc            // channel: [ study_name, multiqc_report.html ]
     use_staging           // boolean: use Gemma staging environment
     version               // string: pipeline version
+    cta_protocol          // string: CTA protocol identifier, built from the pipeline configuration
+    cta_protocol_description // string: one-line description recording the settings behind the protocol
     preferred_cta_level   // string: preferred CTA level
     nmads                 // integer: MADs used
     upload_cta            // boolean: upload cell type annotations
@@ -31,7 +33,7 @@ workflow GEMMA_UPLOAD {
 
     // Upload cell type annotations
     if (upload_cta) {
-        LOAD_CTA(ch_celltypes, use_staging, version, preferred_cta_level)
+        LOAD_CTA(ch_celltypes, use_staging, cta_protocol, cta_protocol_description, preferred_cta_level)
         ch_messages = ch_messages.mix(LOAD_CTA.out.message)
     }
 

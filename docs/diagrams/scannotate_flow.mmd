@@ -1,0 +1,33 @@
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
+flowchart LR
+    SS["Samplesheet<br/>or study lists"] --> IC["INPUT_CHECK"]
+    GEM[(Gemma study)] --> IC
+    LOC[("Local MEX<br/>or h5ad")] --> IC
+    CEN[("CELLxGENE<br/>Census")] --> GCA["GET_CENSUS_ADATA"]
+    SCVI[("scVI model")] --> SET["SETUP_SCVI"]
+
+    IC --> PQ["PROCESS_QUERY_COMBINED<br/>or _SAMPLE"]
+    SET --> PQ
+    SET --> GCA
+    PQ --> CL["CLASSIFY_SCVI<br/>rf or knn"]
+    GCA --> CL
+    CL --> CTA["COMBINE_CTA<br/>(process_samples)"]
+    CL --> CTAS[("CTAs: subclass,<br/>class, family")]
+    CTA --> CTAS
+
+    PQ --> QC["GET_META, PROCESS_QC,<br/>COMBINE_QC/CLC/MASK"]
+    QC --> MASK[("QC mask")]
+    QC --> MQC["RUN_MULTIQC<br/>(process_samples false)"]
+    MQC --> REP[("MultiQC report")]
+
+    CTAS --> UP["LOAD_CTA, LOAD_CLC,<br/>LOAD_MASK, PUBLISH_MULTIQC<br/>(use_gemma and upload_gemma)"]
+    MASK --> UP
+    REP --> UP
+    UP --> GOUT[(Gemma)]
+
+    classDef up fill:#dbeafe,stroke:#2563eb
+    classDef mid fill:#dcfce7,stroke:#16a34a
+    classDef down fill:#fef3c7,stroke:#d97706
+    class SS,GEM,LOC,CEN,SCVI up
+    class IC,SET,GCA,PQ,CL,CTA,QC,MQC,UP mid
+    class CTAS,MASK,REP,GOUT down
