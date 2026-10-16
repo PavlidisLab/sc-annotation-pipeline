@@ -3,7 +3,44 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v2.0.0dev - [Unreleased]
+## v2.1.0 - 2026-10-15
+
+### `Added`
+
+- Built the CTA protocol from the pipeline configuration: `sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>`, with `cta_protocol` (override) and `ref_tag` parameters and `assets/ref_tags.tsv`
+- Created the CTA protocol in Gemma from the pipeline (`addProtocol` in `LOAD_CTA`), with a description recording the configuration; an existing protocol is not an error.
+- Added `--classifier knn` option for the scVI embedding classifier (`rf` stays the default); process `RF_CLASSIFY` renamed to `CLASSIFY_SCVI`
+- Added `use_gemma` master switch, with `upload_gemma` nested under it
+- Added full human and mouse test profile matrix and `scripts/run_test_profiles.sh`
+- Added support for a pre-combined h5ad as `study_path`
+- Added Ma et al. reference collection, rename mappings and markers for human immune, vascular and erythroid cell types
+- Added class and family marker heatmaps and QC outlier mask and tables to MultiQC
+- Added Apache-2.0 license, `audit_docs/`, and a script to clean stale-version Gemma CTAs (`scripts/cleanup_stale_ctas.py`)
+
+### `Changed`
+
+- Replaced the workflow diagram with a Mermaid flow diagram (`docs/diagrams/scannotate_flow.mmd`)
+- Dropped Tabula Muris Senis from mouse `ref_collections` and mouse `subsample_ref` 100
+- Mouse rename map gained `OPC` and `L6 IT Car3` rows
+- Merged two human VIP subclass names into `VIP GABAergic interneuron` and remapped `Micro-PVM` to `Microglia`
+- `scvi_classify.py` now requires `--ref_path`
+- Added container and scVI model caching, and SLURM CPU tiers by process label
+- Split `bin/utils.py` into classify, QC, marker and census submodules
+- Removed hardcoded Gemma credentials from script defaults
+- Gemma credentials are read from the environment (`GEMMA_USERNAME`, `GEMMA_PASSWORD`) and no longer appear on command lines or in work files
+- Shortened the README to the essentials; the full text is in git history
+
+### `Fixed`
+
+- `use_staging` now honored in the Gemma metadata fetch and the production gemmapy path
+- Fixed sample metadata misalignment in `get_gemma_meta.py`
+- Fixed apptainer container resolution
+- Fixed MEX ingestion: categorical `sample_name` crash, unrecoverable samples now skipped, blank Ensembl ids dropped
+- Fixed dead paths and broken test fixtures
+- Cells with zero counts are removed before QC and classification (a sample that loaded empty crashed the QC fit); the number removed per sample is logged
+- `get_gemma_meta.py` falls back to the dataset taxon when the platform has none (generic platforms such as `Generic_mouse_ncbiIds` returned a null taxon)
+
+## v2.0.0 - 2026-01-12
 
 ### `Added`
 

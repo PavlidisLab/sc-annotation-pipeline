@@ -1,15 +1,15 @@
 {
     "organism": "mus_musculus",
     "census_version": "2024-07-01",
+    "classifier": "knn",
     "cutoff": 0,
     "seed": 42,
-    "subsample_ref": 500,
+    "subsample_ref": 100,
     "study_names": null,
     "study_paths": null,
     "ref_collections": [
         "A taxonomy of transcriptomic cell types across the isocortex and hippocampal formation",
-        "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types",
-        "Tabula Muris Senis"
+        "An integrated transcriptomic and epigenomic atlas of mouse primary motor cortex cell types"
     ],
     "organ": "brain",
     "nmads": {

@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import argparse
 import json
-from utils import *
+from qc_utils import *
+from marker_utils import *
 from PIL import Image
 import io
 import math
@@ -21,16 +22,12 @@ from upsetplot import UpSet, from_memberships
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
     parser.add_argument('--organism', type=str, default='homo_sapiens', help='Organism name (e.g., homo_sapiens)')
-    parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/1203472_HQ4T_raw.h5ad")
-    parser.add_argument('--assigned_celltypes_paths', type=str, nargs="+", default=[
-        "/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_family_combined_celltypes.tsv",
-        "/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_subclass_combined_celltypes.tsv",
-        "/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_class_combined_celltypes.tsv"
-    ])
-    parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/cell_type_markers.tsv")
-    parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/gemma_genes.tsv")
+    parser.add_argument('--query_path', type=str, required=True)
+    parser.add_argument('--assigned_celltypes_paths', type=str, nargs="+", required=True)
+    parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/assets/cell_type_markers.tsv")
+    parser.add_argument('--gene_mapping', type=str, default="/space/grp/rschwartz/rschwartz/annotation-benchmark/assets/gemma_genes.tsv")
     parser.add_argument('--nmads', type=str, default='{"mito":20,"umi":5,"genes":5,"counts":5}')
-    parser.add_argument('--sample_meta', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/work/b3/52a38a995954f0720c20047ff00b33/UCLA-ASD_sample_meta.tsv")
+    parser.add_argument('--sample_meta', type=str, required=True)
     parser.add_argument('--cell_type_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type","family_cell_type"], help='Column names in assigned celltypes to use for cell type')
     parser.add_argument('--outlier_cols', type=str, nargs="+", default=[
         "non_outlier",
@@ -353,6 +350,7 @@ def main():
 
     query_combined = ad.concat(query_subsets.values(), axis=0)
     plot_joint_umap(query_combined, study_name=study_name, sample_name="all_samples")
+
     # List of cell type keys to process
     for cell_type_key in cell_type_keys:
         # If the key doesn't exist, skip
@@ -391,10 +389,10 @@ def main():
     # Write mask file (single boolean for any outlier)
     write_mask_file(query_combined, study_name, metrics=existing_outlier_cols)
 
-    # Write mask statistics for QC report
     write_mask_statistics(query_combined, study_name, cell_type_keys, metrics=existing_outlier_cols)
 
-    make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key="subclass_cell_type")
+    for cell_type_key in cell_type_keys:
+        make_celltype_matrices(query, markers_file, organism=organism, study_name=study_name, cell_type_key=cell_type_key)
 
 if __name__ == "__main__":
     main()

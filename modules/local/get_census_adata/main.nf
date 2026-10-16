@@ -1,11 +1,11 @@
 process GET_CENSUS_ADATA {
     tag "$organism"
-    // label 'process_high'
+    label 'process_high'
 
     conda "/home/rschwartz/anaconda3/envs/scanpyenv"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'docker://raschwaa/census_pipeline:latest' :
-        'raschwaa/census_pipeline:latest' }"
+    container "${ workflow.containerEngine in ['singularity', 'apptainer'] && !task.ext.singularity_pull_docker_container ?
+        'docker://raschwaa/census-minimal:latest' :
+        'raschwaa/census-minimal:latest' }"
 
     input:
     val ref_collections
@@ -20,7 +20,6 @@ process GET_CENSUS_ADATA {
 
     output:
     path "refs/*.h5ad", emit: ref_paths
-    path "versions.yml", emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -41,23 +40,11 @@ process GET_CENSUS_ADATA {
         ${original_cols_arg} \\
         ${author_annot_arg} \\
         ${args}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version | sed 's/Python //g')
-        cellxgene_census: \$(python -c "import cellxgene_census; print(cellxgene_census.__version__)")
-    END_VERSIONS
     """
 
     stub:
     """
     mkdir -p refs
     touch refs/reference.h5ad
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version | sed 's/Python //g')
-        cellxgene_census: \$(python -c "import cellxgene_census; print(cellxgene_census.__version__)")
-    END_VERSIONS
     """
 }

@@ -5,6 +5,8 @@ __pycache__/
 *.nextflow
 *log*
 work/
+.singularity_cache/
+.apptainer_cache/
 *h5ad
 *mex
 *mtx
@@ -108,3 +110,13 @@ psychencode*
 assets/large-studies-samplesheet.csv
 assets/mouse-samplesheet.csv
 assets/psychencode-samplesheet.csv
+environment-scanpyenv.yml
+
+# Personal notes, conference correspondence, planning docs - not for the repo
+*.eml
+docs/usability-roadmap.md
+docs/bosc-2026-review-feedback.md
+CLAUDE.md
+
+# Dormant/orphaned CI config - kept locally, not tracked
+Jenkinsfile

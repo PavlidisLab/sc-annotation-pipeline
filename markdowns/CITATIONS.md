@@ -90,6 +90,14 @@ If you use nf-core/scannotate for your analysis, please cite it as follows:
 > Nat Neurosci. 2024.
 > doi: [10.1038/s41593-024-01774-5](https://doi.org/10.1038/s41593-024-01774-5)
 
+### Ma et al. (primate dlPFC evolution)
+
+> Ma S, Skarica M, Li Q, et al.
+> Molecular and cellular evolution of the primate dorsolateral prefrontal cortex.
+> Science. 2022 Sep 30;377(6614):eabo7257.
+> doi: [10.1126/science.abo7257](https://doi.org/10.1126/science.abo7257)
+> PubMed PMID: 36007006.
+
 ## Best Practices
 
 > Heumos L, Schaar AC, Lance C, et al.

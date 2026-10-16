@@ -11,7 +11,6 @@ import anndata as ad
 import re
 from scipy.sparse import csr_matrix
 import warnings
-from utils import *
 import matplotlib.pyplot as plt
 import seaborn as sns
 import json
@@ -25,7 +24,7 @@ import csv
 # Function to parse command line arguments
 def parse_arguments():
   parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
-  parser.add_argument('--markers_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/Hybrid_subclass_markers.json")
+  parser.add_argument('--markers_file', type=str, required=True)
 
   if __name__ == "__main__":
       known_args, _ = parser.parse_known_args()
@@ -44,7 +43,7 @@ def main():
 
 
 
-  with open("/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/cell_type_markers.tsv", "w", newline="") as tsvfile:
+  with open("cell_type_markers.tsv", "w", newline="") as tsvfile:
       writer = csv.writer(tsvfile, delimiter="\t")
       writer.writerow(["Cell Type", "Subtype", "Markers"])  # updated header
       

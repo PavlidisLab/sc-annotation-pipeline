@@ -3,18 +3,17 @@
 from pathlib import Path
 import os
 import sys
+import random
 import scanpy as sc
 import numpy as np
 import pandas as pd
 import anndata as ad
-import cellxgene_census
 from scipy.sparse import csr_matrix
 import warnings
-import cellxgene_census
-import cellxgene_census.experimental
 import scvi
 from sklearn.ensemble import RandomForestClassifier
-from utils import *
+from sklearn.neighbors import KNeighborsClassifier
+from classify_utils import *
 from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -35,10 +34,12 @@ warnings.filterwarnings("ignore")
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Classify cells given 1 ref and 1 query")
     parser.add_argument('--query_path', type=str, default="")
-    parser.add_argument('--ref_path', type=str, default="/space/grp/rschwartz/rschwartz/nextflow_eval_pipeline/refs/whole_cortex.h5ad") #nargs ="+")
+    parser.add_argument('--ref_path', type=str, required=True, help="reference h5ad (the old nextflow_eval_pipeline/refs default no longer exists; classify_scvi/main.nf always passes it)") #nargs ="+")
     parser.add_argument('--cutoff', type=float, default=0, help="Cutoff probability for classification, else cell will be assigned unknown")
+    parser.add_argument('--classifier', type=str, default="rf", choices=["rf", "knn"], help="classifier fit on the scVI embeddings")
+    parser.add_argument('--n_neighbors', type=int, default=15, help="neighbors for the knn classifier")
     parser.add_argument('--ref_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type"], help="levels of granularity to classify corresponding to column names of rename_cells file")
-    parser.add_argument('--mapping_file', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/meta/rename_cells_mus_musculus.tsv", help="cell type taxonomy mapping file")
+    parser.add_argument('--mapping_file', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/assets/rename_cells_mus_musculus.tsv", help="cell type taxonomy mapping file")
     if __name__ == "__main__":
         known_args, _ = parser.parse_known_args()
         return known_args
@@ -66,15 +67,18 @@ def main():
     query_name = os.path.basename(query_path).replace(".h5ad", "")
     ref = ad.read_h5ad(ref_path, backed="r")
 
-    # Fit a random forest classifier to the reference scvi embeddings and cell type annotations
+    # Fit a classifier to the reference scvi embeddings and cell type annotations
     # Training on the subclass level of granularity
     rename_cell_type = ref_keys[0]
-    rfc = RandomForestClassifier(class_weight='balanced', random_state=SEED)
-    rfc.fit(ref.obsm["scvi"], ref.obs[rename_cell_type].values)
+    if args.classifier == "knn":
+        clf = KNeighborsClassifier(n_neighbors=args.n_neighbors, weights='distance')
+    else:
+        clf = RandomForestClassifier(class_weight='balanced', random_state=SEED)
+    clf.fit(ref.obsm["scvi"], ref.obs[rename_cell_type].values)
 
     # Predict cell type using embeddings generated from scvi model
-    probs = rfc.predict_proba(query_h5ad.obsm["scvi"])
-    prob_df = pd.DataFrame(probs, columns=rfc.classes_)
+    probs = clf.predict_proba(query_h5ad.obsm["scvi"])
+    prob_df = pd.DataFrame(probs, columns=clf.classes_)
 
 
     query = query_h5ad.obs

@@ -47,10 +47,6 @@ output:
       type: file
       description: Reference AnnData files
       pattern: "refs/*.h5ad"
-  - versions:
-      type: file
-      description: File containing software versions
-      pattern: "versions.yml"
 
 authors:
   - "@rachadele"

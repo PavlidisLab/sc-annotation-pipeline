@@ -2,11 +2,12 @@
 
 import os
 import sys
+import random
 import scanpy as sc
 import numpy as np
 import pandas as pd
 import scvi
-from utils import *
+from classify_utils import *
 import argparse
 import scipy
 import gzip
@@ -15,9 +16,9 @@ from scipy.sparse import csr_matrix
     
 def parse_arguments():
   parser = argparse.ArgumentParser(description="Download model file based on organism, census version, and tree file.")
-  parser.add_argument('--model_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/31/eda2bebc822637d00e3b8963b1d11f/scvi-homo_sapiens-2024-07-01", help='Path to the scvi model file')
+  parser.add_argument('--model_path', type=str, required=True, help='Path to the scvi model file')
   parser.add_argument('--query_name', type=str, default="1011640_GSM7050280", help='Name of the study')
-  parser.add_argument('--query_path', type=str, default="/space/grp/rschwartz/rschwartz/cell_annotation_cortex.nf/work/5a/8b93c45f0cf99abbc07813af44d247/GSE225554/1011640_GSM7050280", help='Path to the study file')
+  parser.add_argument('--query_path', type=str, required=True, help='Path to the study file')
   parser.add_argument('--seed', type=int, default=42)
    
   if __name__ == "__main__":
@@ -51,6 +52,9 @@ def main():
   try:
     # Attempt to read the 10x mtx data
     adata = sc.read_10x_mtx(query_path)
+    # drop genes with blank Ensembl ids - duplicate NaN var_names break things downstream
+    adata = adata[:, adata.var_names.notna()].copy()
+    adata.var_names_make_unique()
     adata.obs["sample_id"] = sample_id  # Add sample_id to obs
     adata.obs_names_make_unique()
   except Exception as e:
@@ -72,7 +76,12 @@ def main():
             genes = [line.strip().split("\t") for line in f]
         with gzip.open(barcodes_path, 'rt') as f:
             barcodes = [line.strip() for line in f]
-        
+
+        # drop genes with blank Ensembl ids, same as above
+        keep = [i for i, gene in enumerate(genes) if gene[1]]
+        matrix = matrix[keep, :]
+        genes = [genes[i] for i in keep]
+
         # Create AnnData object
         adata = sc.AnnData(X=matrix.T)  # Transpose to match expected shape (cells x genes)
         adata.var_names = [gene[1] for gene in genes]
@@ -94,6 +103,11 @@ def main():
   if has_expression_data(adata) is False:
     print(f"Sample {sample_id} has no expression data. Skipping.", file=sys.stderr)
     sys.exit(42)
+
+  empty = np.asarray(adata.X.sum(axis=1)).ravel() == 0
+  if empty.any():
+    print(f"Sample {sample_id}: removed {empty.sum()} of {len(empty)} cells with zero counts.", file=sys.stderr)
+    adata = adata[~empty].copy()
 
   if check_size(adata) is False:
     print(f"Sample {sample_id} has less than 50 cells. Skipping.", file=sys.stderr)
