@@ -63,11 +63,13 @@ def subsample_cells(data, filtered_ids, subsample=500, seed=42, organism="Homo s
 
     obs = data[data['soma_joinid'].isin(filtered_ids)]
     obs = rename_cells(obs, rename_file=rename_file)
-    celltypes = obs["cell_type"].unique()
-    print(obs["cell_type"].value_counts().reset_index())
+    # subsample per renamed subclass (second column of the rename file), as the benchmark does
+    group_key = pd.read_csv(rename_file, sep=None, engine="python", nrows=1).columns[1]
+    celltypes = obs[group_key].unique()
+    print(obs[group_key].value_counts().reset_index())
     final_idx = []
     for celltype in celltypes:
-        celltype_ids = obs[obs["cell_type"] == celltype]['soma_joinid'].values
+        celltype_ids = obs[obs[group_key] == celltype]['soma_joinid'].values
         if len(celltype_ids) > subsample:
             subsampled_cell_idx = random.sample(list(celltype_ids), subsample)
         else:
