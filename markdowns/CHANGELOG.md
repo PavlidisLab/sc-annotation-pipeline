@@ -3,6 +3,21 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.1.1 - 2026-10-19
+
+### `Fixed`
+
+- The mouse reference lost two of its three Census datasets (and the Macrophage, Pericyte, Neural stem cell, OPC and CA2-IG-FC subclasses) when their gitignored author label files were absent; it now matches the benchmark reference (26 subclasses).
+- The reference is subsampled per renamed subclass rather than per Census `cell_type`, as in the benchmark (applies to human and mouse).
+
+### `Added`
+
+- `assets/REFERENCE_INPUTS.sha256` and `scripts/reference_inputs.sh` record and check the SHA-256 of the reference build inputs, including gitignored files.
+
+### `Changed`
+
+- Removed author label files and `original_celltype_columns.tsv` rows for datasets outside the default `ref_collections`.
+
 ## v2.1.0 - 2026-10-15
 
 ### `Added`
