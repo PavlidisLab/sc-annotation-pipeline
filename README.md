@@ -8,7 +8,7 @@ This Nextflow pipeline annotates cell types in single-cell data from the [Gemma 
 
 ![scannotate-flow](docs/diagrams/scannotate_flow.png)
 
-*Figure 1. Pipeline data flow (version 2.1.1). Blue boxes are inputs, green boxes are steps, amber boxes are outputs; arrows show data flow.*
+*Figure 1. Pipeline data flow (version 2.1.2). Blue boxes are inputs, green boxes are steps, amber boxes are outputs; arrows show data flow.*
 
 ## Table of Contents
 
@@ -49,7 +49,7 @@ Use with e.g. `-profile test_mouse,conda`. Run all of them and get a pass/fail s
 
 ## Installation
 
-Nextflow can run the pipeline directly from GitHub, with no clone or checkout (see [Quick Start](#quick-start)). Cloning is needed only for development or to edit the pipeline files. The default branch (`main`) is kept at the latest release. To pin a version, add `-r` with a release tag (for example `-r v2.1.1`).
+Nextflow can run the pipeline directly from GitHub, with no clone or checkout (see [Quick Start](#quick-start)). Cloning is needed only for development or to edit the pipeline files. The default branch (`main`) is kept at the latest release. To pin a version, add `-r` with a release tag (for example `-r v2.1.2`).
 
 The stable release is also installed on the Pavlidis lab file system in:
 
@@ -68,10 +68,10 @@ cd sc-annotation-pipeline
 
 ## Quick Start
 
-Run directly from GitHub without cloning (add `-r <release tag>`, for example `-r v2.1.1`, to pin a version):
+Run directly from GitHub without cloning (add `-r <release tag>`, for example `-r v2.1.2`, to pin a version):
 
 ```bash
-nextflow run PavlidisLab/sc-annotation-pipeline -r v2.1.1 -profile conda \
+nextflow run PavlidisLab/sc-annotation-pipeline -r v2.1.2 -profile conda \
     --input /full/path/to/samplesheet.csv --organism mus_musculus
 ```
 
@@ -286,7 +286,7 @@ nextflow run main.nf --nmads.mito 3 --nmads.counts 4
 
 #### Cell Type Assignment Protocols
 
-The ctaProtocol is built as `sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>`, e.g. `sc-pipeline-2.1.1-rf-census20240701-ref1710b1-n500-cutoff0`. The tag is `--ref_tag` or the first six hex characters of the SHA-256 of the sorted `ref_collections` (see `assets/ref_tags.tsv`). The ctaName is the protocol plus the level, e.g. `sc-pipeline-2.1.1-rf-census20240701-ref1710b1-n500-cutoff0-class`. Set `--cta_protocol` to override.
+The ctaProtocol is built as `sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>`, e.g. `sc-pipeline-2.1.2-rf-census20240701-ref1710b1-n500-cutoff0`. The tag is `--ref_tag` or the first six hex characters of the SHA-256 of the sorted `ref_collections` (see `assets/ref_tags.tsv`). The ctaName is the protocol plus the level, e.g. `sc-pipeline-2.1.2-rf-census20240701-ref1710b1-n500-cutoff0-class`. Set `--cta_protocol` to override.
 
 The pipeline creates the protocol in Gemma before the upload (`gemma-cli addProtocol`, in `LOAD_CTA`), so no manual step is needed. The protocol description is one line that records the pipeline version, classifier, census version, reference collections, reference tag, `subsample_ref`, cutoff, the scVI normalization and embedding, and the repository URL; it is logged at launch. If the protocol already exists, the CLI exits with code 2 and the message `There is already a protocol object with this name`; the pipeline ignores that case only, and any other `addProtocol` error (credentials, connectivity) stops the process. The `addProtocol` output is kept in `message.txt`.
 

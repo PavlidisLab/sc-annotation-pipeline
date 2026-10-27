@@ -123,9 +123,9 @@ def main():
   if combined_adata.n_obs == 0:
     sys.exit(f"{study_name}: every cell has zero counts")
   # save unprocessed adata
-  combined_adata.write_h5ad(f"{study_name}_raw.h5ad")
+  write_h5ad_safely(combined_adata, f"{study_name}_raw.h5ad")
   combined_adata = process_query(combined_adata, model_path, batch_key="sample_id", seed=SEED)
-  combined_adata.write_h5ad(f"{study_name}.h5ad")
+  write_h5ad_safely(combined_adata, f"{study_name}.h5ad")
 
   
   

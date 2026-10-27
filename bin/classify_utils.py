@@ -9,6 +9,14 @@ import scvi
 from sklearn.ensemble import RandomForestClassifier
 
 
+def write_h5ad_safely(adata, path):
+    # Nextflow stages inputs as symlinks; if the output name equals a staged input, writing
+    # through the link would overwrite the original file, so remove the link first.
+    if os.path.islink(path):
+        os.unlink(path)
+    adata.write_h5ad(path)
+
+
 def relabel(adata, relabel_path, join_key="", sep=None):
     # Read the relabel table from the file
     relabel_df = pd.read_csv(relabel_path, sep=sep)  # Adjust the separator as needed
