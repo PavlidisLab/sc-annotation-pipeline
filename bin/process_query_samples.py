@@ -114,9 +114,9 @@ def main():
     sys.exit(42)
   else:
     adata.obs["cell_id"] = adata.obs.index
-    adata.write_h5ad(f"{query_name}_raw.h5ad")
+    write_h5ad_safely(adata, f"{query_name}_raw.h5ad")
     adata = process_query(adata, model_path, batch_key="sample_id", seed=SEED)
-    adata.write_h5ad(f"{query_name}.h5ad")
+    write_h5ad_safely(adata, f"{query_name}.h5ad")
       
         
 if __name__ == "__main__":
