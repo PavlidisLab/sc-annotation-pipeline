@@ -35,8 +35,11 @@ def ctaProtocol(p) {
 def ctaProtocolDescription(p) {
     def tag = p.ref_tag ?: refTag(p.ref_collections)
     def refs = ((p.ref_collections ?: []) as List).collect { it.toString() }.join(" | ")
+    def method = p.classifier == 'seurat' ?
+        "classifier: seurat label transfer (normalization: ${p.seurat_normalization}, dims: ${p.seurat_dims}); " :
+        "classifier: ${p.classifier} on scVI embeddings (reference and query normalized and embedded with scVI); "
     def text = "Cell type annotations from sc-annotation-pipeline version ${p.version}; " +
-        "classifier: ${p.classifier} on scVI embeddings (reference and query normalized and embedded with scVI); " +
+        method +
         "CELLxGENE Census version: ${p.census_version}; " +
         "reference collections: ${refs}; " +
         "reference tag: ${tag}; subsample_ref: ${p.subsample_ref}; cutoff: ${p.cutoff}; " +
