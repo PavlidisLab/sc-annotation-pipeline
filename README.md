@@ -3,7 +3,7 @@
 
 ## Abstract
 
-This Nextflow pipeline annotates cell types in single-cell data from the [Gemma database](https://gemma.msl.ubc.ca) or from local files. We validated the input studies, downloaded the scVI model and reference cells from the CELLxGENE Census<sup>1</sup><sup>2</sup><sup>3</sup>, embedded each query study with scVI, and labelled every cell at subclass, class and family level with a random forest (default) or kNN classifier trained on the reference embeddings. We then computed QC metrics and an outlier mask and wrote a MultiQC report per study. Cell type assignments, QC outputs and the report can optionally be uploaded to Gemma.
+This Nextflow pipeline annotates cell types in single-cell data from the [Gemma database](https://gemma.msl.ubc.ca) or from local files. We validated the input studies, downloaded the scVI model and reference cells from the CELLxGENE Census<sup>1</sup><sup>2</sup><sup>3</sup>, embedded each query study with scVI, and labelled every cell at subclass, class and family level with a random forest (default) or kNN classifier trained on the reference embeddings, or with Seurat label transfer<sup>5</sup> from the same reference. We then computed QC metrics and an outlier mask and wrote a MultiQC report per study. Cell type assignments, QC outputs and the report can optionally be uploaded to Gemma.
 
 
 ![scannotate-flow](docs/diagrams/scannotate_flow.png)
@@ -237,11 +237,19 @@ nextflow run main.nf -profile conda -work-dir /scratch/my_workdir ...
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `--classifier` | Classifier on scVI embeddings: `rf` (random forest) or `knn` (e.g. `--classifier knn`), both run in the `CLASSIFY_SCVI` process (`params.mm.json` sets `knn`) | `rf` |
-| `--cutoff` | Min probability to assign label (configurable) | `0` |
+| `--classifier` | `rf` (random forest) or `knn` on scVI embeddings, both run in the `CLASSIFY_SCVI` process, or `seurat` for Seurat label transfer (see below). `params.mm.json` sets `knn` | `rf` |
+| `--cutoff` | Min probability (rf, knn) or top Seurat prediction score (seurat) to assign a label | `0` |
 | `--seed` | Random seed | `42` |
 | `--process_samples` | Process samples individually | `false` |
 | `--preferredCtaLevel` | Preferred annotation level | `class` |
+| `--seurat_normalization` | Seurat normalization (`SCT` or `LogNormalize`) | `SCT` |
+| `--seurat_dims` | PCA dimensions for anchors | `50` |
+| `--seurat_nfeatures` | Variable features | `2000` |
+| `--seurat_max_features`, `--seurat_k_anchor`, `--seurat_k_score`, `--seurat_k_weight` | Anchor finding and transfer settings | `200`, `10`, `30`, `50` |
+
+#### Seurat label transfer
+
+With `--classifier seurat`, the pipeline converts the subsampled reference and each processed query to Seurat objects (`REF_PROCESS_SEURAT`, `QUERY_PROCESS_SEURAT`), transfers the subclass label with `FindTransferAnchors` and `TransferData` using PCA projection (`PREDICT_SEURAT`), and assigns each cell its top-scoring subclass, or `unknown` below `--cutoff` (`CLASSIFY_SEURAT`). Class and family labels come from the same mapping file as for `rf` and `knn`. The defaults match the annotation benchmark. Seurat works with whole-study (default) and per-sample (`--process_samples true`) processing. The R steps run in the `raschwaa/r4.3-seurat` container with `-profile singularity`, `apptainer` or `docker`, or in the `r4.3` conda environment with `-profile conda`; `CLASSIFY_SEURAT` uses the same Python container as the other steps. The scVI model is still downloaded, because query processing and QC use it.
 
 ### QC Options
 
@@ -328,6 +336,8 @@ results/
         └── pipeline_dag.dot            # Pipeline DAG
 ```
 
+With `--classifier seurat`, the Seurat steps publish to `ref/`, `query/` (Seurat `.rds` objects), `predict/` (prediction scores) and `classify/` (per-level cell type files) under the run directory instead of `<study_name>/predicted_celltypes/`; with `--process_samples true` the combined per-study files still go to `<study_name>/predicted_celltypes/`.
+
 ---
 
 ## QC and Outlier Detection
@@ -380,3 +390,4 @@ Doublets are predicted using the <a href="https://scanpy.readthedocs.io/en/stabl
 2. CZI Single-Cell Biology Program, et al. "CZ CELL×GENE Discover: A Single-Cell Data Platform for Scalable Exploration, Analysis and Modeling of Aggregated Data," November 2, 2023. https://doi.org/10.1101/2023.10.30.563174.
 3. Lopez, Romain, et al. "Deep Generative Modeling for Single-Cell Transcriptomics." Nature Methods 15, no. 12 (December 2018): 1053–58. https://doi.org/10.1038/s41592-018-0229-2.
 4. Heumos, L., Schaar, A.C., Lance, C. et al. Best practices for single-cell analysis across modalities. Nat Rev Genet (2023). https://doi.org/10.1038/s41576-023-00586-w
+5. Hao, Y., et al. Integrated analysis of multimodal single-cell data. Cell 184, 3573-3587 (2021). https://doi.org/10.1016/j.cell.2021.04.048
