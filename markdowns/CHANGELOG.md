@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.1.3 - 2026-10-28
+
+### `Changed`
+
+- Mouse defaults (`params.mm.json`) are now the random forest at 500 cells per subclass, replacing kNN at 100. With the reference subsampled per renamed subclass (v2.1.1), the merged IT subclass gets as many cells as each hippocampal subclass, and kNN called 69% of excitatory neurons in a prefrontal cortex study (GSE124952) hippocampal; the random forest called 10%.
+
 ## v2.1.2 - 2026-10-27
 
 ### `Fixed`
