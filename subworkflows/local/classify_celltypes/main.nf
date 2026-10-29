@@ -1,10 +1,14 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CLASSIFY CELL TYPES ON SCVI EMBEDDINGS (RANDOM FOREST OR KNN)
+    CLASSIFY CELL TYPES (RANDOM FOREST OR KNN ON SCVI EMBEDDINGS, OR SEURAT LABEL TRANSFER)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 include { CLASSIFY_SCVI  } from "$projectDir/modules/local/classify_scvi/main"
+include { REF_PROCESS_SEURAT   } from "$projectDir/modules/local/ref_process_seurat/main"
+include { QUERY_PROCESS_SEURAT } from "$projectDir/modules/local/query_process_seurat/main"
+include { PREDICT_SEURAT       } from "$projectDir/modules/local/predict_seurat/main"
+include { CLASSIFY_SEURAT      } from "$projectDir/modules/local/classify_seurat/main"
 include { COMBINE_CTA  } from "$projectDir/modules/local/combine_cta/main"
 
 workflow CLASSIFY_CELLTYPES {
@@ -19,12 +23,23 @@ workflow CLASSIFY_CELLTYPES {
 
     main:
 
-    // Combine processed queries with reference paths
-    ch_combos = ch_processed.combine(ch_refs)
+    if (params.classifier == 'seurat') {
+        // Seurat label transfer: the cutoff applies to the top prediction score, as for rf and knn
+        REF_PROCESS_SEURAT(ch_refs)
+        QUERY_PROCESS_SEURAT(ch_processed)
+        ch_seurat_combos = QUERY_PROCESS_SEURAT.out.query_rds.combine(REF_PROCESS_SEURAT.out.ref_rds)
+        PREDICT_SEURAT(ch_seurat_combos, ref_keys)
+        CLASSIFY_SEURAT(PREDICT_SEURAT.out.scores, cutoff, mapping_file, ref_keys)
+        ch_celltype_files = CLASSIFY_SEURAT.out.celltype_files
+    }
+    else {
+        // Combine processed queries with reference paths
+        ch_combos = ch_processed.combine(ch_refs)
 
-    // Classify with the random forest or kNN set by params.classifier
-    CLASSIFY_SCVI(ch_combos, cutoff, mapping_file, ref_keys)
-    ch_celltype_files = CLASSIFY_SCVI.out.celltype_files
+        // Classify with the random forest or kNN set by params.classifier
+        CLASSIFY_SCVI(ch_combos, cutoff, mapping_file, ref_keys)
+        ch_celltype_files = CLASSIFY_SCVI.out.celltype_files
+    }
 
     if (process_samples) {
         // Group and combine cell type files by study and level

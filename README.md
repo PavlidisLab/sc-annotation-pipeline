@@ -3,12 +3,12 @@
 
 ## Abstract
 
-This Nextflow pipeline annotates cell types in single-cell data from the [Gemma database](https://gemma.msl.ubc.ca) or from local files. We validated the input studies, downloaded the scVI model and reference cells from the CELLxGENE Census<sup>1</sup><sup>2</sup><sup>3</sup>, embedded each query study with scVI, and labelled every cell at subclass, class and family level with a random forest (default) or kNN classifier trained on the reference embeddings. We then computed QC metrics and an outlier mask and wrote a MultiQC report per study. Cell type assignments, QC outputs and the report can optionally be uploaded to Gemma.
+This Nextflow pipeline annotates cell types in single-cell data from the [Gemma database](https://gemma.msl.ubc.ca) or from local files. We validated the input studies, downloaded the scVI model and reference cells from the CELLxGENE Census<sup>1</sup><sup>2</sup><sup>3</sup>, embedded each query study with scVI, and labelled every cell at subclass, class and family level with a random forest (default) or kNN classifier trained on the reference embeddings, or with Seurat label transfer<sup>5</sup> from the same reference. We then computed QC metrics and an outlier mask and wrote a MultiQC report per study. Cell type assignments, QC outputs and the report can optionally be uploaded to Gemma.
 
 
 ![scannotate-flow](docs/diagrams/scannotate_flow.png)
 
-*Figure 1. Pipeline data flow (version 2.1.2). Blue boxes are inputs, green boxes are steps, amber boxes are outputs; arrows show data flow.*
+*Figure 1. Pipeline data flow (version 2.2.0). Blue boxes are inputs, green boxes are steps, amber boxes are outputs; arrows show data flow.*
 
 ## Table of Contents
 
@@ -49,7 +49,7 @@ Use with e.g. `-profile test_mouse,conda`. Run all of them and get a pass/fail s
 
 ## Installation
 
-Nextflow can run the pipeline directly from GitHub, with no clone or checkout (see [Quick Start](#quick-start)). Cloning is needed only for development or to edit the pipeline files. The default branch (`main`) is kept at the latest release. To pin a version, add `-r` with a release tag (for example `-r v2.1.2`).
+Nextflow can run the pipeline directly from GitHub, with no clone or checkout (see [Quick Start](#quick-start)). Cloning is needed only for development or to edit the pipeline files. The default branch (`main`) is kept at the latest release. To pin a version, add `-r` with a release tag (for example `-r v2.2.0`).
 
 The stable release is also installed on the Pavlidis lab file system in:
 
@@ -68,10 +68,10 @@ cd sc-annotation-pipeline
 
 ## Quick Start
 
-Run directly from GitHub without cloning (add `-r <release tag>`, for example `-r v2.1.2`, to pin a version):
+Run directly from GitHub without cloning (add `-r <release tag>`, for example `-r v2.2.0`, to pin a version):
 
 ```bash
-nextflow run PavlidisLab/sc-annotation-pipeline -r v2.1.2 -profile conda \
+nextflow run PavlidisLab/sc-annotation-pipeline -r v2.2.0 -profile conda \
     --input /full/path/to/samplesheet.csv --organism mus_musculus
 ```
 
@@ -237,11 +237,19 @@ nextflow run main.nf -profile conda -work-dir /scratch/my_workdir ...
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `--classifier` | Classifier on scVI embeddings: `rf` (random forest) or `knn` (e.g. `--classifier knn`), both run in the `CLASSIFY_SCVI` process (`params.mm.json` sets `knn`) | `rf` |
-| `--cutoff` | Min probability to assign label (configurable) | `0` |
+| `--classifier` | `rf` (random forest) or `knn` on scVI embeddings, both run in the `CLASSIFY_SCVI` process, or `seurat` for Seurat label transfer (see below). `params.mm.json` sets `knn` | `rf` |
+| `--cutoff` | Min probability (rf, knn) or top Seurat prediction score (seurat) to assign a label | `0` |
 | `--seed` | Random seed | `42` |
 | `--process_samples` | Process samples individually | `false` |
 | `--preferredCtaLevel` | Preferred annotation level | `class` |
+| `--seurat_normalization` | Seurat normalization (`SCT` or `LogNormalize`) | `SCT` |
+| `--seurat_dims` | PCA dimensions for anchors | `50` |
+| `--seurat_nfeatures` | Variable features | `2000` |
+| `--seurat_max_features`, `--seurat_k_anchor`, `--seurat_k_score`, `--seurat_k_weight` | Anchor finding and transfer settings | `200`, `10`, `30`, `50` |
+
+#### Seurat label transfer
+
+With `--classifier seurat`, the pipeline converts the subsampled reference and each processed query to Seurat objects (`REF_PROCESS_SEURAT`, `QUERY_PROCESS_SEURAT`), transfers the subclass label with `FindTransferAnchors` and `TransferData` using PCA projection (`PREDICT_SEURAT`), and assigns each cell its top-scoring subclass, or `unknown` below `--cutoff` (`CLASSIFY_SEURAT`). Class and family labels come from the same mapping file as for `rf` and `knn`. The defaults match the annotation benchmark. Seurat works with whole-study (default) and per-sample (`--process_samples true`) processing. The R steps run in the `raschwaa/r4.3-seurat` container with `-profile singularity`, `apptainer` or `docker`, or in the `r4.3` conda environment with `-profile conda`; `CLASSIFY_SEURAT` uses the same Python container as the other steps. The scVI model is still downloaded, because query processing and QC use it.
 
 ### QC Options
 
@@ -286,7 +294,7 @@ nextflow run main.nf --nmads.mito 3 --nmads.counts 4
 
 #### Cell Type Assignment Protocols
 
-The ctaProtocol is built as `sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>`, e.g. `sc-pipeline-2.1.2-rf-census20240701-ref1710b1-n500-cutoff0`. The tag is `--ref_tag` or the first six hex characters of the SHA-256 of the sorted `ref_collections` (see `assets/ref_tags.tsv`). The ctaName is the protocol plus the level, e.g. `sc-pipeline-2.1.2-rf-census20240701-ref1710b1-n500-cutoff0-class`. Set `--cta_protocol` to override.
+The ctaProtocol is built as `sc-pipeline-<version>-<classifier>-census<census>-ref<tag>-n<subsample_ref>-cutoff<cutoff>`, e.g. `sc-pipeline-2.2.0-rf-census20240701-ref1710b1-n500-cutoff0`. The tag is `--ref_tag` or the first six hex characters of the SHA-256 of the sorted `ref_collections` (see `assets/ref_tags.tsv`). The ctaName is the protocol plus the level, e.g. `sc-pipeline-2.2.0-rf-census20240701-ref1710b1-n500-cutoff0-class`. Set `--cta_protocol` to override.
 
 The pipeline creates the protocol in Gemma before the upload (`gemma-cli addProtocol`, in `LOAD_CTA`), so no manual step is needed. The protocol description is one line that records the pipeline version, classifier, census version, reference collections, reference tag, `subsample_ref`, cutoff, the scVI normalization and embedding, and the repository URL; it is logged at launch. If the protocol already exists, the CLI exits with code 2 and the message `There is already a protocol object with this name`; the pipeline ignores that case only, and any other `addProtocol` error (credentials, connectivity) stops the process. The `addProtocol` output is kept in `message.txt`.
 
@@ -327,6 +335,8 @@ results/
         ├── execution_trace.txt         # Resource usage trace
         └── pipeline_dag.dot            # Pipeline DAG
 ```
+
+With `--classifier seurat`, the Seurat steps publish to `ref/`, `query/` (Seurat `.rds` objects), `predict/` (prediction scores) and `classify/` (per-level cell type files) under the run directory instead of `<study_name>/predicted_celltypes/`; with `--process_samples true` the combined per-study files still go to `<study_name>/predicted_celltypes/`.
 
 ---
 
@@ -380,3 +390,4 @@ Doublets are predicted using the <a href="https://scanpy.readthedocs.io/en/stabl
 2. CZI Single-Cell Biology Program, et al. "CZ CELL×GENE Discover: A Single-Cell Data Platform for Scalable Exploration, Analysis and Modeling of Aggregated Data," November 2, 2023. https://doi.org/10.1101/2023.10.30.563174.
 3. Lopez, Romain, et al. "Deep Generative Modeling for Single-Cell Transcriptomics." Nature Methods 15, no. 12 (December 2018): 1053–58. https://doi.org/10.1038/s41592-018-0229-2.
 4. Heumos, L., Schaar, A.C., Lance, C. et al. Best practices for single-cell analysis across modalities. Nat Rev Genet (2023). https://doi.org/10.1038/s41576-023-00586-w
+5. Hao, Y., et al. Integrated analysis of multimodal single-cell data. Cell 184, 3573-3587 (2021). https://doi.org/10.1016/j.cell.2021.04.048
