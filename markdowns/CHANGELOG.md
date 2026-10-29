@@ -3,6 +3,18 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.1.4 - 2026-10-29
+
+### `Fixed`
+
+- Per-sample mode (`--process_samples true`) passed both the processed and the raw `.h5ad` to the classifier; it now passes only the processed file. Results were unaffected because the classifier ignored the extra argument and read the processed file.
+- The metadata step emitted every `*sample_meta.tsv` it found, including one inside a staged local study directory; it now emits only `<study>_sample_meta.tsv`.
+- QC no longer passes `--rename_file`, which `process_QC.py` never used.
+
+### `Changed`
+
+- All scripts parse arguments strictly (`parse_args`), so an unexpected argument stops the run instead of being ignored.
+
 ## v2.1.3 - 2026-10-28
 
 ### `Changed`
