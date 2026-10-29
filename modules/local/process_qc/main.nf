@@ -35,7 +35,6 @@ process PROCESS_QC {
         --query_path ${study_path} \\
         --assigned_celltypes_paths ${predicted_files_str} \\
         --gene_mapping ${gene_mapping} \\
-        --rename_file ${rename_file} \\
         --nmads '${nmads_json}' \\
         --sample_meta ${sample_meta} \\
         --organism ${organism} \\

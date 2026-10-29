@@ -14,7 +14,7 @@ process PROCESS_QUERY_SAMPLE {
     val seed
 
     output:
-    tuple val(study_name), val(query_name), path("${query_name}**.h5ad")    , emit: processed_query
+    tuple val(study_name), val(query_name), path("${query_name}.h5ad")    , emit: processed_query
     tuple val(study_name), val(query_name), path("${query_name}_raw.h5ad"), emit: raw_query
 
     when:
