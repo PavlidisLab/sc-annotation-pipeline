@@ -22,7 +22,7 @@ def parse_arguments():
     p.add_argument("--cutoff", type=float, default=0, help="Cutoff on the top Seurat prediction score, else the cell is unknown")
     p.add_argument("--mapping_file", required=True)
     p.add_argument("--ref_keys", nargs="+", default=["subclass_cell_type", "class_cell_type", "family_cell_type"])
-    known, _ = p.parse_known_args()
+    known = p.parse_args()
     return known
 
 
