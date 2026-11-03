@@ -172,7 +172,7 @@ Each path can be either a directory of per-sample MEX subdirectories, or a singl
 - `X`: raw counts (cells x genes)
 - `var_names` (index): Ensembl gene IDs — required for matching against the scVI reference
 - `var['feature_name']` (optional): gene symbol per gene. If present, used directly for QC (ribo/hb detection). If absent, symbols are looked up from `var_names` via `assets/gemma_genes.tsv`
-- Mitochondrial genes are flagged by Ensembl ID against `assets/mito_genes_hs.tsv` and `assets/mito_genes_mm.tsv` (the 15 chrM genes per organism), because Gemma symbols for them are bare names (COX1, ND4). Only when `var` holds no Ensembl IDs does QC fall back to an `MT-`/`mt-` symbol prefix. The PROCESS_QC log reports the rule used and the number of genes matched.
+- Mitochondrial genes are flagged by Ensembl ID against `assets/mito_genes_hs.tsv` and `assets/mito_genes_mm.tsv` (all 37 chrM genes per organism: 13 protein-coding, 2 rRNA, 22 tRNA; built from Ensembl and NCBI Gene by `bin/make_mito_gene_lists.py`, sources in `assets/mito_genes_<org>.source.json`), because Gemma symbols for them are bare names (COX1, ND4). Only when `var` holds no Ensembl IDs does QC fall back to an `MT-`/`mt-` symbol prefix. The PROCESS_QC log reports the rule used and the number of genes matched.
 - `obs['sample_id']` (optional): defaults to the samplesheet `sample` value if missing (treats the whole file as one sample)
 
 This matches the shape of a Gemma-exported `.h5ad` (e.g. from `get_gemma_data.nf`). A `.h5ad` from a different source (e.g. counts in `layers['counts']` instead of `X`, or non-Ensembl `var_names`) is not currently supported without preprocessing it into this shape first.
