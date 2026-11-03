@@ -454,18 +454,34 @@ mt_rb_hb_pcs <- function(seurat_obj, dims = 30, pval_cutoff = 0.01) {
   
   # Grep for specific gene patterns
   ribosomal_genes <- grep("^Rpl|^Rps|^Mrp|^RPL|^RPS|^MRP-", sig, value = TRUE)
-  mitochondrial_genes <- grep("^mt-|^MT-", sig, value = TRUE)
+  mitochondrial_genes <- mito_features(sig)
   hemoglobin_genes <- grep("^Hb|^HB", sig, value = TRUE)
   
   # Return a named list of gene names
   return(c(ribosomal_genes, mitochondrial_genes, hemoglobin_genes))
 }
 
+# Mitochondrially encoded genes, by Ensembl ID or symbol, from assets/mito_genes_{hs,mm}.tsv.
+# Gemma names them without the MT- prefix (COX1, ND4), so a "^MT-" pattern finds none on Gemma queries.
+mito_features <- function(features) {
+  # callers set script_dir (bin/) before sourcing this file
+  assets <- file.path(if (exists("script_dir")) script_dir else "bin", "..", "assets")
+  tabs <- lapply(c("mito_genes_hs.tsv", "mito_genes_mm.tsv"), function(f) read.delim(file.path(assets, f), colClasses = "character"))
+  ids <- unique(unlist(lapply(tabs, function(t) c(t$ensembl_id, t$symbol, t$gemma_symbol))))
+  hits <- features[features %in% ids]
+  if (length(hits) == 0) {
+    hits <- grep("^mt-|^MT-", features, value = TRUE)
+    message("mito_features: no listed chrM gene found; fell back to the MT- prefix (", length(hits), " genes)")
+  } else {
+    message("mito_features: ", length(hits), " chrM genes matched by ID or symbol")
+  }
+  hits
+}
+
 get_mt_rb_percentage <- function(seurat_obj) {
 
     ribo_genes <- "^Rpl|^Rps|^Mrp|^RPL|^RPS|^MRP"
-    mito_genes <- "^mt-|^MT-"
-    seurat_obj$percent.mt <- PercentageFeatureSet(seurat_obj, pattern=mito_genes)
+    seurat_obj$percent.mt <- PercentageFeatureSet(seurat_obj, features=mito_features(rownames(seurat_obj)))
     seurat_obj$percent.rp <- PercentageFeatureSet(seurat_obj, pattern=ribo_genes)
     return(seurat_obj)
 }
