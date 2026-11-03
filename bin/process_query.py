@@ -28,7 +28,7 @@ def parse_arguments():
   parser.add_argument('--seed', type=int, default=42)
    
   if __name__ == "__main__":
-    known_args, _ = parser.parse_known_args()
+    known_args = parser.parse_args()
     return known_args
 
 def main():

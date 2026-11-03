@@ -12,7 +12,7 @@ process GET_META {
     val use_gemma
 
     output:
-    tuple val(study_name), path("**sample_meta.tsv"), emit: meta
+    tuple val(study_name), path("${study_name}_sample_meta.tsv"), emit: meta
 
     when:
     task.ext.when == null || task.ext.when
@@ -37,7 +37,6 @@ process GET_META {
 
     stub:
     """
-    mkdir -p ${study_name}
-    echo "sample_id\tsample_name" > ${study_name}/sample_meta.tsv
+    echo "sample_id\tsample_name" > ${study_name}_sample_meta.tsv
     """
 }

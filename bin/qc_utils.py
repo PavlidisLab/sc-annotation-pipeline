@@ -1,8 +1,18 @@
 import warnings
 warnings.filterwarnings("ignore")
+import os
 import numpy as np
+import pandas as pd
 import scanpy as sc
 from scipy.stats import median_abs_deviation
+
+# chrM genes per organism (Ensembl ID, nomenclature symbol, NCBI ID, Gemma symbol), shipped with the pipeline
+MITO_GENE_FILES = [
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", f"mito_genes_{org}.tsv")
+    for org in ("hs", "mm")
+]
+ENSEMBL_GENE_RE = r"^ENS[A-Z]*G\d{11}$"
+ENSEMBL_ID_COLUMNS = ("ensembl_id", "gene_id", "gene_ids", "feature_id")
 
 
 def read_query(query_path, gene_mapping, new_meta, sample_meta):
@@ -22,6 +32,10 @@ def read_query(query_path, gene_mapping, new_meta, sample_meta):
         # astype(object) first: feature_name is often a pandas Categorical, and fillna
         # can't insert values that aren't already in the category list.
         query.var["feature_name"] = query.var["feature_name"].astype(object).fillna(query.var.index.to_series())
+        # keep the original (Ensembl) ids: get_qc_metrics flags mito genes by id, since Gemma symbols
+        # for chrM genes are bare names (COX1, ND4) that no MT- prefix rule can find
+        if "ensembl_id" not in query.var.columns:
+            query.var["ensembl_id"] = query.var.index.astype(str)
         query.var.set_index("feature_name", inplace=True, drop=False)
         query.var_names_make_unique()
 
@@ -106,6 +120,43 @@ def get_lm(query, nmads=5, scale="normal"):
     }
 
 
+def get_ensembl_ids(var):
+    """Ensembl gene ids aligned to var (version suffix stripped), from var_names or an id column; None if absent."""
+    candidates = [pd.Series(var.index, index=var.index)]
+    candidates += [var[c] for c in ENSEMBL_ID_COLUMNS if c in var.columns]
+    for ids in candidates:
+        ids = ids.astype(str).str.replace(r"\.\d+$", "", regex=True)
+        if ids.str.match(ENSEMBL_GENE_RE).mean() > 0.5:
+            return ids
+    return None
+
+
+def load_mito_ids(paths=MITO_GENE_FILES):
+    return set(pd.concat([pd.read_csv(p, sep="\t", dtype=str) for p in paths])["ensembl_id"])
+
+
+def flag_mito_genes(var, mito_ids=None):
+    """
+    Boolean mask of mitochondrially encoded (chrM) genes in var, and the rule used.
+
+    Matches Ensembl ids against assets/mito_genes_{hs,mm}.tsv. NCBI's main symbol for these genes is the
+    bare name (COX1, ND4), which Gemma imports, so a name prefix rule finds no chrM gene on Gemma queries
+    and many nuclear genes (MTOR, MTHFR, ...). The name rule (MT-/mt- prefix) is used only when var has
+    no Ensembl ids.
+    """
+    ids = get_ensembl_ids(var)
+    if ids is not None:
+        mask = ids.isin(load_mito_ids() if mito_ids is None else mito_ids).values
+        rule = "ensembl_id"
+    else:
+        mask = var["feature_name"].astype(str).str.match(r"^(MT|mt)-").values
+        rule = "feature_name prefix MT-/mt- (no Ensembl ids in var)"
+    print(f"mito genes: rule={rule}, n_matched={int(mask.sum())}")
+    if mask.sum() == 0:
+        print("WARNING: no mitochondrial genes matched; pct_counts_mito will be 0 for every cell")
+    return pd.Series(mask, index=var.index), rule
+
+
 def get_qc_metrics(query, nmads):
     """
     Calculate QC metrics and flag outliers.
@@ -115,11 +166,10 @@ def get_qc_metrics(query, nmads):
         nmads: dict with keys 'mito', 'umi', 'genes', 'counts' for per-metric NMAD values.
     """
 
-    query.var["mito"] = query.var["feature_name"].str.startswith(("MT", "mt", "Mt"))
+    query.var["mito"], query.uns["mito_rule"] = flag_mito_genes(query.var)
     query.var["ribo"] = query.var["feature_name"].str.startswith(("RP", "Rp", "rp"))
     query.var["hb"] = query.var["feature_name"].str.startswith(("HB", "Hb","hb"))
     # fill NaN values with False
-    query.var["mito"].fillna(False, inplace=True)
     query.var["ribo"].fillna(False, inplace=True)
     query.var["hb"].fillna(False, inplace=True)
 

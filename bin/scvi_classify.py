@@ -41,7 +41,7 @@ def parse_arguments():
     parser.add_argument('--ref_keys', type=str, nargs="+", default=["subclass_cell_type","class_cell_type"], help="levels of granularity to classify corresponding to column names of rename_cells file")
     parser.add_argument('--mapping_file', type=str, default="/space/grp/rschwartz/rschwartz/sc-annotation-pipeline-rachel-dev/assets/rename_cells_mus_musculus.tsv", help="cell type taxonomy mapping file")
     if __name__ == "__main__":
-        known_args, _ = parser.parse_known_args()
+        known_args = parser.parse_args()
         return known_args
 
     

@@ -3,6 +3,25 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.2.0 - 2026-10-28
+
+### `Added`
+
+- Added Seurat label transfer as a third classifier (`--classifier seurat`): the reference and each query are converted to Seurat objects, the subclass label is transferred with `FindTransferAnchors` and `TransferData` (PCA projection), and each cell takes its top-scoring subclass or `unknown` below `cutoff`; class and family labels come from the same mapping file as `rf` and `knn`
+- Added the processes `REF_PROCESS_SEURAT`, `QUERY_PROCESS_SEURAT`, `PREDICT_SEURAT` and `CLASSIFY_SEURAT`, the scripts `bin/seurat_*.R`, `bin/ref_preprocessing.R`, `bin/predict_seurat.R` and `bin/seurat_classify.py`, and the parameters `seurat_normalization`, `seurat_dims`, `seurat_nfeatures`, `seurat_max_features`, `seurat_k_anchor`, `seurat_k_score` and `seurat_k_weight` (defaults match the annotation benchmark)
+- The Seurat R steps run in the `raschwaa/r4.3-seurat` container (`singularity`, `apptainer`, `docker`) or the `r4.3` conda environment; `RETICULATE_PYTHON` is honored when set
+- Seurat works with whole-study (default) and per-sample (`--process_samples true`) processing
+- Added `classifier` to `nextflow_schema.json`
+
+### `Changed`
+
+- The CTA protocol name and description record `seurat` as the classifier for Seurat runs
+- Moved `audit_docs/` out of the pipeline repository (to the benchmark-tracking project)
+
+### `Fixed`
+
+- The empty-sample `.h5ad` written by `process_query_samples.py` also goes through `write_h5ad_safely`, so no query write can replace a staged input
+
 ## v2.1.2 - 2026-10-27
 
 ### `Fixed`
