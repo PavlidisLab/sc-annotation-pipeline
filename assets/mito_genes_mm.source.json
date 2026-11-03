@@ -1,0 +1,14 @@
+{
+ "ensembl_release": 116,
+ "ensembl_url": "https://rest.ensembl.org/overlap/region/mouse/MT:1-16299?feature=gene",
+ "ensembl_sha256": "50889b53f2059aa1e982c0e14b3e25336d288855311a71ed4c8689bf57422aee",
+ "ncbi_url": "https://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/Mus_musculus.gene_info.gz",
+ "ncbi_last_modified": "Tue, 03 Nov 2026 08:00:50 GMT",
+ "ncbi_sha256": "da5a7736d8f8f5235db6d3c99f99fe6baaf932f372d78a99254eb1b9e515b8ef",
+ "downloaded": "2026-11-03T12:49:27",
+ "by_type": {
+  "protein-coding": 13,
+  "rRNA": 2,
+  "tRNA": 22
+ }
+}

@@ -1,0 +1,14 @@
+{
+ "ensembl_release": 116,
+ "ensembl_url": "https://rest.ensembl.org/overlap/region/human/MT:1-16569?feature=gene",
+ "ensembl_sha256": "3006033820c98348338ed797cc3091ed9b28685379ce3b728d338f0477dbd6d3",
+ "ncbi_url": "https://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz",
+ "ncbi_last_modified": "Tue, 03 Nov 2026 08:00:49 GMT",
+ "ncbi_sha256": "e4f8ece9deca0653da25cd6e3c089bfba4dc163bbed878800ff6bd21035f30e4",
+ "downloaded": "2026-11-03T12:49:23",
+ "by_type": {
+  "protein-coding": 13,
+  "rRNA": 2,
+  "tRNA": 22
+ }
+}
