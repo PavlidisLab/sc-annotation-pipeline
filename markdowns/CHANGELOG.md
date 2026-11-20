@@ -22,6 +22,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The empty-sample `.h5ad` written by `process_query_samples.py` also goes through `write_h5ad_safely`, so no query write can replace a staged input
 
+## v2.1.4 - 2026-10-29
+
+### `Fixed`
+
+- Per-sample mode (`--process_samples true`) passed both the processed and the raw `.h5ad` to the classifier; it now passes only the processed file. Results were unaffected because the classifier ignored the extra argument and read the processed file.
+- The metadata step emitted every `*sample_meta.tsv` it found, including one inside a staged local study directory; it now emits only `<study>_sample_meta.tsv`.
+- QC no longer passes `--rename_file`, which `process_QC.py` never used.
+
+### `Changed`
+
+- All scripts parse arguments strictly (`parse_args`), so an unexpected argument stops the run instead of being ignored.
+
+## v2.1.3 - 2026-10-28
+
+### `Changed`
+
+- Mouse defaults (`params.mm.json`) are now the random forest at 500 cells per subclass, replacing kNN at 100. With the reference subsampled per renamed subclass (v2.1.1), the merged IT subclass gets as many cells as each hippocampal subclass, and kNN called 69% of excitatory neurons in a prefrontal cortex study (GSE124952) hippocampal; the random forest called 10%.
+
 ## v2.1.2 - 2026-10-27
 
 ### `Fixed`

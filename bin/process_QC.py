@@ -154,6 +154,8 @@ def write_clc_files(query_combined, study_name, metrics=None):
 
     # change true and false to lower
     CLC_df["value"] = CLC_df["value"].astype(str).str.lower()
+    # each characteristic is named after its category, so the file says which name goes with which data
+    CLC_df["name"] = CLC_df["category"]
     # Save to TSV file
     CLC_df.to_csv(f"{study_name}_clc.tsv", sep="\t", index=False)
 
