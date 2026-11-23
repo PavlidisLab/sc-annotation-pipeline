@@ -38,7 +38,7 @@ def parse_arguments():
         "predicted_doublet"
     ], help='List of outlier columns to use')
     if __name__ == "__main__":
-        known_args, _ = parser.parse_known_args()
+        known_args = parser.parse_args()
         return known_args
 
 

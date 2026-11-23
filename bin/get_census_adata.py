@@ -29,7 +29,7 @@ def parse_arguments():
     parser.add_argument('--author_annotations_path', type=str, default=None)
     
     if __name__ == "__main__":
-        known_args, _ = parser.parse_known_args()
+        known_args = parser.parse_args()
         return known_args
 
 def main():
