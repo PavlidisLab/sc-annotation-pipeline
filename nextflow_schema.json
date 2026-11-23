@@ -100,6 +100,13 @@
             "fa_icon": "fas fa-cogs",
             "description": "Options for cell type classification.",
             "properties": {
+                "classifier": {
+                    "type": "string",
+                    "default": "rf",
+                    "enum": ["rf", "knn", "seurat"],
+                    "description": "Classifier: random forest or kNN on scVI embeddings, or Seurat label transfer.",
+                    "fa_icon": "fas fa-project-diagram"
+                },
                 "cutoff": {
                     "type": "number",
                     "default": 0,

@@ -96,7 +96,7 @@ def main():
     except Exception as manual_e:
       adata = sc.AnnData(X=csr_matrix((0, 0)))
       adata.obs["sample_id"] = sample_id  # Add sample_id to obs
-      adata.write_h5ad(f"{sample_id}_empty.h5ad")
+      write_h5ad_safely(adata, f"{sample_id}_empty.h5ad")
       #print(f"Error processing {sample_id} manually: {manual_e}")
       raise Warning(f"Failed to process {sample_id} using both automatic and manual methods: {manual_e}")
 
